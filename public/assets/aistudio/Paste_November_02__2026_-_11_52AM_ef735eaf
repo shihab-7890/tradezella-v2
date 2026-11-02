@@ -1,0 +1,1326 @@
+# PHASE 3 — ADVANCED SMART MONEY CONCEPTS, LIQUIDITY INTELLIGENCE, MARKET STRUCTURE & PRECISION ENTRY ENGINE
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative algorithm developer, Smart Money Concepts specialist, ICT price-action researcher, professional trading systems architect, and Next.js optimization engineer.
+
+Your task is to implement a production-quality **Advanced Smart Money Concepts and Liquidity Intelligence Engine** into my EXISTING TradeZella Canvas application.
+
+Implement actual code, tests, settings and chart integration. Do not provide only theoretical recommendations.
+
+## MAIN REQUIREMENTS
+
+My application already includes:
+
+- Finage historical OHLC data.
+- Automatic 2-day API chunk fetching and timestamp merging.
+- Multi-timeframe candlestick charts.
+- HTML5 Canvas chart rendering.
+- Historical candle replay.
+- Liquidity sweep detection.
+- Order Blocks.
+- Fair Value Gaps.
+- MSS and breakout algorithms.
+- ICT Power of Three.
+- Phase 1 repaired BUY/SELL signal engine.
+- Phase 1 signal scoring, approval, deduplication and non-repainting protection.
+- Phase 2 candle psychology.
+- Phase 2 bullish/bearish momentum analysis.
+- Phase 2 waterfall detection.
+- Phase 2 continuation, pullback and exhaustion analysis.
+- Existing SL/TP, strategy settings and trade logs.
+
+**CRITICAL: Preserve existing functionality from Phase 1 and Phase 2.**
+
+Do not replace working modules unnecessarily. Audit, extend and integrate with them.
+
+The objective is to identify meaningful price structure and liquidity setups, generate better entry candidates, and improve both scalping and swing analysis.
+
+Keep signal filtering **BALANCED / MEDIUM-LIGHT**.
+
+Do not build a system so strict that almost no signals appear.
+
+Do not fabricate trading signals or guarantee any win rate.
+
+SMC/ICT concepts are price-action models and interpretations, not direct proof that institutional traders caused particular moves.
+
+---
+
+# 1. COMPLETE EXISTING CODE AUDIT
+
+Inspect:
+
+- `src/lib/liquidity.js`
+- Existing candle psychology modules.
+- Existing momentum and waterfall modules.
+- Existing central signal engine.
+- Existing HTF analysis.
+- Existing ATR and pivot calculations.
+- `src/app/page.jsx`
+- `src/services/finageService.js`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+
+Identify existing implementations of:
+
+- BOS.
+- MSS.
+- CHoCH, if present.
+- Swing structure.
+- Liquidity pools.
+- BSL/SSL sweeps.
+- Order Blocks.
+- Breaker Blocks.
+- Mitigation Blocks.
+- FVG.
+- Imbalance zones.
+- Confluence scoring.
+
+Do not create duplicate implementations when existing logic can be corrected or reused.
+
+Preserve signal data contracts and settings compatibility.
+
+Suggested modular architecture, only where appropriate:
+
+- `src/lib/smc/marketStructure.js`
+- `src/lib/smc/liquidityIntelligence.js`
+- `src/lib/smc/orderBlocks.js`
+- `src/lib/smc/fairValueGaps.js`
+- `src/lib/smc/fibonacci.js`
+- `src/lib/smc/premiumDiscount.js`
+- `src/lib/smc/smcSetups.js`
+
+Use the existing project conventions.
+
+---
+
+# 2. ADVANCED MARKET STRUCTURE INTELLIGENCE
+
+Build an accurate market structure model for both bullish and bearish conditions.
+
+## 2.1 Swing Structure Detection
+
+Detect confirmed:
+
+- Swing Highs.
+- Swing Lows.
+- Higher Highs (HH).
+- Higher Lows (HL).
+- Lower Highs (LH).
+- Lower Lows (LL).
+- Equal Highs (EQH).
+- Equal Lows (EQL).
+
+Support two independent structural layers:
+
+### Internal Structure
+
+Smaller local market swings useful for:
+
+- Scalping.
+- Microstructure changes.
+- Early momentum recognition.
+- Lower-timeframe entries.
+- Pullback continuation.
+
+### External Structure
+
+Larger confirmed swings useful for:
+
+- Higher-timeframe trend.
+- Major liquidity.
+- Significant BOS/CHoCH.
+- Swing trading.
+- Structural invalidation.
+
+Make the swing confirmation rules configurable and volatility-aware.
+
+Do not use future candles to confirm a pivot earlier than the point at which enough candles were available.
+
+Store both:
+
+- Swing origin timestamp.
+- Swing confirmation timestamp.
+
+## 2.2 Bullish Structure
+
+Recognize:
+
+- HH + HL sequences.
+- Bullish continuation.
+- Bullish pullback structure.
+- Bullish structural break.
+- Potential bullish reversal.
+
+## 2.3 Bearish Structure
+
+Recognize:
+
+- LH + LL sequences.
+- Bearish continuation.
+- Bearish pullback structure.
+- Bearish structural break.
+- Potential bearish reversal.
+
+Maintain independent bullish and bearish calculations.
+
+Do not accidentally invert structural references.
+
+---
+
+# 3. PROFESSIONAL BOS, CHoCH AND MSS ENGINE
+
+Create a centralized, clearly defined market structure event model.
+
+## 3.1 Break of Structure (BOS)
+
+Recognize directional continuation breaks.
+
+### Bullish BOS
+
+A confirmed break above a relevant, previously established structural high in an appropriate bullish continuation context.
+
+### Bearish BOS
+
+A confirmed break below a relevant, previously established structural low in an appropriate bearish continuation context.
+
+Validate:
+
+- Reference swing.
+- Candle close relative to structure.
+- Displacement.
+- Break significance.
+- Internal/external structure classification.
+- Relevant trend context.
+
+## 3.2 Change of Character (CHoCH)
+
+Recognize potential changes in structural behavior.
+
+Examples:
+
+- Bullish structure losing a meaningful protected low.
+- Bearish structure losing a meaningful protected high.
+
+A CHoCH is a possible structural transition, not guaranteed trend reversal.
+
+Track:
+
+- Previous trend state.
+- Broken protected level.
+- Confirmation time.
+- Subsequent structure.
+- Invalidation.
+
+## 3.3 Market Structure Shift (MSS)
+
+Preserve existing MSS semantics where working.
+
+Where appropriate, strengthen MSS analysis with:
+
+- Liquidity sweep context.
+- Displacement confirmation.
+- Significant structural break.
+- Phase 2 candle psychology.
+- Opposing momentum evidence.
+
+Clearly document how MSS differs from BOS and CHoCH in this application.
+
+Do not assign all three labels indiscriminately to the same price break.
+
+If one event qualifies for multiple interpretations, use one canonical structure event with associated classifications.
+
+## 3.4 Structure Event Output
+
+Each event should contain:
+
+- Event ID.
+- Symbol.
+- Timeframe.
+- Direction.
+- Type: BOS / CHoCH / MSS.
+- Internal or external classification.
+- Reference swing ID.
+- Broken level.
+- Origin timestamp.
+- Confirmation timestamp.
+- Relevant displacement metrics.
+- Evidence.
+- Invalidation criteria.
+
+**No repainting and no look-ahead bias.**
+
+---
+
+# 4. ADVANCED LIQUIDITY INTELLIGENCE
+
+Build a professional liquidity map based on observable price structures.
+
+Support:
+
+1. Buy-Side Liquidity (BSL).
+2. Sell-Side Liquidity (SSL).
+3. Equal Highs (EQH).
+4. Equal Lows (EQL).
+5. Previous Day High/Low.
+6. Previous Week High/Low.
+7. Session High/Low.
+8. Asian Session High/Low.
+9. Confirmed Swing High/Low liquidity.
+10. Internal structural liquidity.
+11. External structural liquidity.
+12. Range High/Low liquidity.
+
+All levels must have clear formation and availability timestamps.
+
+## 4.1 Liquidity Pool Formation
+
+Group relevant price levels using normalized price tolerance.
+
+Use ATR, instrument tick size or another justified volatility-sensitive mechanism.
+
+Avoid relying exclusively on fixed percentage tolerances across all symbols.
+
+Assign each pool:
+
+- Unique ID.
+- Direction/type.
+- Price or price zone.
+- Formation timestamp.
+- Confirmation timestamp.
+- Number of relevant swing touches.
+- Internal/external classification.
+- Freshness.
+- Active/consumed status.
+
+Do not interpret every repeated high or low as guaranteed resting liquidity.
+
+## 4.2 Liquidity Sweep Detection
+
+### SSL Sweep
+
+Recognize price moving below relevant sell-side liquidity and subsequently reclaiming the level under defined confirmation rules.
+
+Potential bullish reversal context.
+
+### BSL Sweep
+
+Recognize price moving above relevant buy-side liquidity and subsequently rejecting or reclaiming below the level.
+
+Potential bearish reversal context.
+
+Evaluate:
+
+- Sweep penetration.
+- Wick rejection.
+- Close position.
+- Candle psychology.
+- Relative volatility.
+- Structure context.
+- Subsequent confirmation.
+
+## 4.3 Sweep vs Genuine Breakout
+
+Distinguish:
+
+- Wick sweep and reclaim.
+- Close beyond level with follow-through.
+- Failed breakout.
+- Breakout and retest.
+- Temporary liquidity penetration.
+- Unconfirmed break.
+
+Do not automatically classify every price break as a liquidity sweep.
+
+Use completed candles and explicit confirmation states.
+
+## 4.4 Liquidity Targets
+
+Identify relevant opposing structural levels that may serve as candidate price targets.
+
+Examples:
+
+- Bullish setup toward nearby BSL.
+- Bearish setup toward nearby SSL.
+- Breakout toward next significant swing zone.
+
+Only show targets if there is a valid price path and meaningful remaining reward relative to risk.
+
+Do not guarantee that price will reach these levels.
+
+---
+
+# 5. ADVANCED ORDER BLOCK ENGINE
+
+Improve existing Order Block detection.
+
+Support:
+
+- Bullish Order Blocks.
+- Bearish Order Blocks.
+- Continuation Order Blocks.
+- Breaker Blocks.
+- Mitigation Blocks.
+- Refined Order Blocks.
+- Internal and external Order Blocks.
+
+## 5.1 Bullish Order Block
+
+Identify a valid bearish-origin candle or candle range associated with subsequent bullish displacement and meaningful structural movement, according to the documented algorithm.
+
+## 5.2 Bearish Order Block
+
+Identify a valid bullish-origin candle or range associated with bearish displacement and meaningful structural movement.
+
+Do not mark every opposite-color candle as an Order Block.
+
+## 5.3 OB Quality Scoring
+
+Use relevant factors such as:
+
+- Associated displacement.
+- Structural break.
+- FVG association.
+- Zone freshness.
+- Number of prior mitigations.
+- Structural relevance.
+- Phase 2 rejection behavior.
+- HTF context.
+
+Normalize scores and avoid double-counting the same underlying displacement evidence.
+
+## 5.4 Order Block Lifecycle
+
+Implement:
+
+1. Detected.
+2. Confirmed.
+3. Active.
+4. Touched.
+5. Partially mitigated.
+6. Fully mitigated.
+7. Invalidated.
+8. Expired or no longer relevant.
+
+Define precise zone boundary and invalidation rules.
+
+Do not keep a broken OB active indefinitely.
+
+Do not retroactively create an entry at the OB origin candle if OB confirmation occurred later.
+
+## 5.5 Refined Entries
+
+Support entries based on:
+
+- Full OB range.
+- Configured midpoint.
+- Refined internal candle zone.
+- OB + FVG overlap.
+- OB + rejection confirmation.
+
+Refined stop placement must remain valid relative to current market price and available entry timing.
+
+Avoid unrealistically tight stops that ignore spread, tick size and volatility.
+
+---
+
+# 6. FAIR VALUE GAP AND IMBALANCE INTELLIGENCE
+
+Enhance the existing FVG engine.
+
+Support:
+
+- Bullish FVG.
+- Bearish FVG.
+- Inverse FVG (IFVG).
+- FVG clusters.
+- Institutional-style imbalance zones.
+- Partial FVG fills.
+- Full FVG mitigation.
+- FVG invalidation.
+- FVG continuation setups.
+
+## 6.1 Standard Three-Candle FVG
+
+### Bullish FVG
+
+A qualifying three-candle structure where Candle 1 high remains below Candle 3 low.
+
+### Bearish FVG
+
+A qualifying three-candle structure where Candle 1 low remains above Candle 3 high.
+
+Add optional filters based on:
+
+- Gap size relative to ATR.
+- Middle-candle displacement.
+- Structure context.
+- Freshness.
+- Volatility.
+
+Never identify a confirmed FVG before its third candle is complete.
+
+## 6.2 FVG Zones
+
+Maintain:
+
+- Upper boundary.
+- Lower boundary.
+- Midpoint.
+- Formation timestamp.
+- Confirmation timestamp.
+- Direction.
+- Fill percentage.
+- Active/inactive state.
+
+## 6.3 Inverse FVG
+
+Recognize a previously established FVG that becomes invalidated and subsequently behaves as a potential flipped zone under defined rules.
+
+Do not assume every invalidated FVG produces a tradable IFVG.
+
+Require appropriate retest or confirmation conditions for an IFVG trade.
+
+## 6.4 FVG Entry Types
+
+Support:
+
+- First return to FVG.
+- Midpoint reaction.
+- FVG + Order Block overlap.
+- FVG + MSS.
+- FVG + Candle Rejection.
+- FVG + Momentum Continuation.
+- IFVG retest.
+
+Each setup must use actual eligible entry timing.
+
+Prevent duplicate entries from repeated touches of the same underlying setup unless a clearly defined new opportunity forms.
+
+---
+
+# 7. AUTOMATIC FIBONACCI INTELLIGENCE
+
+Add an automatic Fibonacci analysis engine.
+
+The user should not need to manually draw every Fibonacci retracement.
+
+Use confirmed, relevant swing structures.
+
+## 7.1 Swing Selection
+
+Select Fibonacci anchors based on:
+
+- Confirmed swing high and swing low.
+- Internal versus external structure.
+- Selected timeframe.
+- Structural relevance.
+- Current trend context.
+
+Never select a swing anchor using future information that was unavailable at the corresponding historical decision time.
+
+## 7.2 Fibonacci Levels
+
+Support configurable retracement levels:
+
+- 0%.
+- 23.6%.
+- 38.2%.
+- 50%.
+- 61.8%.
+- 70.5% (optional).
+- 78.6%.
+- 100%.
+
+Optional extension levels:
+
+- 127.2%.
+- 161.8%.
+
+The selected anchor direction must be unambiguous.
+
+### Bullish structure
+
+Evaluate pullbacks from a confirmed upward impulse.
+
+### Bearish structure
+
+Evaluate rallies into retracement levels of a confirmed downward impulse.
+
+Use exact price formulas and verify directional mapping.
+
+## 7.3 Optimal Trade Entry (OTE) Zone
+
+Support an optional configurable OTE zone, such as approximately 62%–79% retracement.
+
+Treat it as a price area for evaluation, not an automatic high-probability signal.
+
+A Fibonacci level by itself should not generate a trade.
+
+Combine it with relevant structure, liquidity, OB/FVG or candle confirmation where appropriate.
+
+## 7.4 Multiple Fibonacci Timeframes
+
+Allow:
+
+- Micro Fibonacci for scalping context.
+- Intraday Fibonacci.
+- Higher-timeframe Fibonacci for swing context.
+
+Prevent chart clutter by selecting relevant active Fibonacci structures.
+
+---
+
+# 8. PREMIUM, EQUILIBRIUM AND DISCOUNT ZONES
+
+Implement an automatic dealing-range engine using confirmed structural anchors.
+
+For each valid range:
+
+- Determine confirmed range high.
+- Determine confirmed range low.
+- Calculate equilibrium midpoint.
+- Classify the current price location.
+
+### Premium
+
+Price above the range midpoint.
+
+### Equilibrium
+
+Price near the midpoint within a configurable tolerance.
+
+### Discount
+
+Price below the range midpoint.
+
+## 8.1 Directional Context
+
+For bullish setups:
+
+- Discount areas may support pullback-entry analysis.
+- Premium areas may provide targets or continuation context.
+
+For bearish setups:
+
+- Premium areas may support rally-entry analysis.
+- Discount areas may provide targets or continuation context.
+
+Do not automatically reject all bullish opportunities in premium or bearish opportunities in discount.
+
+Strong trending breakout conditions may require separate continuation logic.
+
+## 8.2 Multiple Dealing Ranges
+
+Support:
+
+- Internal range.
+- Intraday range.
+- External / HTF range.
+
+Keep them distinct.
+
+Prevent smaller ranges from overwriting higher-timeframe range context.
+
+---
+
+# 9. DISPLACEMENT, INDUCEMENT AND SWING FAILURE
+
+Integrate Phase 2 candle psychology with advanced price-structure interpretation.
+
+## 9.1 Displacement
+
+Detect meaningful directional movement associated with:
+
+- Strong candle bodies.
+- ATR-relative expansion.
+- Relevant price level breaks.
+- Follow-through.
+- Structure confirmation.
+
+Reuse Phase 2 displacement metrics rather than recalculating conflicting values.
+
+## 9.2 Inducement
+
+Implement a carefully defined heuristic for potential inducement setups, such as local liquidity or structural features preceding a larger sweep or structural reaction.
+
+Clearly distinguish observed pattern evidence from inferred trader intentions.
+
+Do not assert that a specific candle proves market manipulation.
+
+## 9.3 Swing Failure Patterns
+
+Identify failed attempts to extend beyond confirmed swing levels.
+
+Support:
+
+- Bullish swing failure.
+- Bearish swing failure.
+- Reclaim confirmation.
+- Invalidated failure setups.
+
+Integrate these with existing liquidity sweep and reversal logic.
+
+Avoid duplicate signal creation for the same event.
+
+---
+
+# 10. ADVANCED SMC TRADING SETUPS
+
+Use the existing Phase 1 centralized signal approval engine.
+
+Implement setup detectors that produce candidates, not independent trade execution decisions.
+
+## Setup A — Liquidity Sweep + MSS
+
+Potential reversal:
+
+1. Identify established liquidity.
+2. Detect sweep.
+3. Observe relevant structural confirmation.
+4. Evaluate candle psychology.
+5. Identify eligible entry and invalidation.
+
+Support BUY and SELL.
+
+## Setup B — Order Block + FVG
+
+Potential continuation:
+
+1. Identify confirmed OB.
+2. Detect associated FVG.
+3. Establish valid zone relationship.
+4. Wait for suitable price return or confirmation.
+5. Generate an entry candidate.
+
+Do not require a separate new liquidity sweep if the strategy does not logically need one.
+
+## Setup C — CHoCH + Retest
+
+Potential structural transition:
+
+1. Confirm meaningful CHoCH.
+2. Establish the broken structural level.
+3. Observe a retest or permitted continuation.
+4. Evaluate reaction.
+5. Generate a candidate.
+
+## Setup D — BOS + Continuation
+
+Potential trend-following trade:
+
+1. Confirm directional BOS.
+2. Evaluate displacement.
+3. Locate appropriate pullback zone or breakout continuation.
+4. Evaluate remaining reward/risk.
+5. Generate a candidate.
+
+## Setup E — Premium/Discount + OB/FVG
+
+Potential pullback entry using structural dealing range context.
+
+Avoid requiring every indicator simultaneously.
+
+## Setup F — Fibonacci + Structural Confluence
+
+Potential retracement setup with optional OB/FVG, liquidity or candle confirmation.
+
+Do not trigger trades solely from Fibonacci levels.
+
+## Setup G — Breaker Retest
+
+Use confirmed failed Order Blocks and properly validated flips.
+
+## Setup H — Liquidity Sweep + Swing Failure
+
+Potential reversal around an established structural level.
+
+## Setup I — Waterfall + SMC Continuation
+
+Integrate the Phase 2 Waterfall Engine.
+
+Examples:
+
+- Bearish waterfall plus confirmed bearish BOS.
+- Bearish first pullback into an eligible FVG.
+- Bullish momentum cascade plus bullish continuation OB.
+- Compression breakout from a valid structure.
+- Momentum retest of a significant broken level.
+
+**Important:**
+
+Do not delay every momentum entry until all SMC confirmations are present.
+
+Allow the Phase 2 momentum engine to retain its independent valid continuation setups.
+
+SMC evidence should improve context and selection, not eliminate all faster scalping opportunities.
+
+---
+
+# 11. SCALPING, INTRADAY AND SWING CONTEXT
+
+Make all SMC engines reusable across different timeframes.
+
+### Scalping
+
+Example timeframes:
+
+- Entry: 1m / 3m / 5m.
+- Context: 15m / 1h.
+
+Emphasize:
+
+- Internal structure.
+- Micro liquidity sweeps.
+- Micro BOS/CHoCH.
+- Intraday OB/FVG.
+- Fast retests.
+- First pullback.
+- Waterfall continuation.
+
+### Intraday
+
+Example timeframes:
+
+- Entry: 5m / 15m.
+- Context: 1h / 4h.
+
+Emphasize:
+
+- Session liquidity.
+- Intraday structure.
+- Structural breakouts.
+- Significant FVG zones.
+- Range premium/discount.
+- Relevant Fibonacci retracements.
+
+### Swing
+
+Example timeframes:
+
+- Entry: 15m / 1h.
+- Context: 4h / 1D.
+
+Emphasize:
+
+- External structure.
+- Major swing liquidity.
+- HTF Order Blocks.
+- Significant BOS/CHoCH.
+- Larger dealing ranges.
+- Multi-session continuation.
+
+These are configurable starting examples, not guaranteed optimal timeframes.
+
+Do not introduce a separate full trading execution architecture in this phase.
+
+The dedicated scalping and swing engines will be expanded in later phases.
+
+---
+
+# 12. CENTRALIZED CONFLUENCE INTEGRATION
+
+All Phase 3 detectors must integrate with the existing Phase 1 signal engine.
+
+Do not create multiple separate signal-approval systems.
+
+Each SMC setup should output:
+
+- Setup ID.
+- Direction.
+- Strategy.
+- Symbol.
+- Timeframe.
+- Structural context.
+- Liquidity context.
+- OB/FVG references.
+- Fibonacci context.
+- Premium/discount context.
+- Candle psychology evidence.
+- Confirmation timestamp.
+- Entry reference.
+- Invalidation level.
+- Setup freshness.
+- Evidence and rejection reason codes.
+
+Use existing scoring and signal contracts wherever possible.
+
+### Confluence quality
+
+Consider independent evidence groups:
+
+1. Structure.
+2. Liquidity.
+3. Price-action confirmation.
+4. Zone relevance.
+5. Higher-timeframe context.
+6. Entry suitability.
+
+Avoid double-counting the same structure break through BOS, MSS, OB and FVG as though they were four independent confirmations.
+
+Use balanced filtering.
+
+Do not make every signal require BOS + CHoCH + Sweep + OB + FVG + Fibonacci.
+
+A valid strategy can qualify with fewer, but meaningful, pieces of evidence.
+
+---
+
+# 13. SMC ZONE LIFECYCLE MANAGEMENT
+
+All structural objects and zones must have stable identities and lifecycles.
+
+For example:
+
+- Newly detected.
+- Confirmed.
+- Active.
+- Touched.
+- Partially mitigated.
+- Fully mitigated.
+- Invalidated.
+- Expired.
+
+Keep formation time separate from confirmation time.
+
+Do not treat invalidated zones as active trading entries.
+
+Do not recalculate historic zone boundaries using future price data.
+
+Handle overlapping zones intelligently.
+
+Cluster related OB/FVG/liquidity references when suitable for visualization, but preserve their individual metadata and invalidation logic.
+
+---
+
+# 14. PROFESSIONAL SMC CHART VISUALIZATION
+
+Improve the existing HTML5 Canvas chart.
+
+Preserve its current zoom, pan, crosshair, replay and candle rendering functionality.
+
+Add optional overlays for:
+
+- BOS.
+- CHoCH.
+- MSS.
+- Internal Structure.
+- External Structure.
+- BSL.
+- SSL.
+- EQH/EQL.
+- Liquidity Sweeps.
+- Order Blocks.
+- Breaker Blocks.
+- Mitigation Blocks.
+- FVG.
+- IFVG.
+- Fibonacci.
+- Premium/Discount Zones.
+- Active Dealing Range.
+- Confirmed SMC Entry Zones.
+
+### Visual priorities
+
+- Important HTF levels must be visually distinct from local levels.
+- Active zones should be clearer than invalidated zones.
+- Avoid dozens of overlapping labels.
+- Only render relevant visible zones where appropriate.
+- Provide show/hide controls.
+- Maintain chart performance.
+- Keep existing signal markers visible.
+
+### Signal Details
+
+When clicking a trade signal, show:
+
+- Signal type.
+- BUY or SELL.
+- Strategy name.
+- Structure confirmation.
+- Liquidity evidence.
+- OB/FVG relevance.
+- Fibonacci relationship.
+- Entry price.
+- Stop loss.
+- Take profits.
+- Invalidation.
+- Confluence explanation.
+
+Use actual calculated values rather than decorative or hardcoded metrics.
+
+---
+
+# 15. SMC STRATEGY SETTINGS
+
+Add an advanced SMC section to the existing settings drawer.
+
+Organize settings into:
+
+### Market Structure
+
+- Enable BOS.
+- Enable CHoCH.
+- Enable MSS.
+- Internal Structure.
+- External Structure.
+- Swing Confirmation Strength.
+- Breakout Close Confirmation.
+
+### Liquidity
+
+- Enable Liquidity Intelligence.
+- EQH/EQL Detection.
+- BSL/SSL Detection.
+- Session Liquidity.
+- Sweep Detection.
+- Liquidity Level Sensitivity.
+- Liquidity Zone Freshness.
+
+### Order Blocks
+
+- Enable Advanced OB.
+- Minimum OB Quality.
+- Fresh OB Priority.
+- Continuation OB.
+- Breaker Block.
+- Mitigation Block.
+- OB Refinement.
+
+### Fair Value Gaps
+
+- Enable FVG.
+- Enable IFVG.
+- Minimum Gap Size.
+- FVG Mitigation Tracking.
+- FVG + OB Confluence.
+
+### Fibonacci
+
+- Enable Auto Fibonacci.
+- Internal Fibonacci.
+- External Fibonacci.
+- Show OTE Zone.
+- Fibonacci Confluence.
+
+### Premium/Discount
+
+- Enable Dealing Range.
+- Show Equilibrium.
+- Show Premium/Discount.
+- HTF Range Context.
+
+### Signal Filtering
+
+Provide:
+
+- Light.
+- Balanced.
+- Selective.
+
+Default to Balanced for new users, without overwriting existing saved configurations.
+
+All controls must update actual algorithm behavior.
+
+Use advanced sections to avoid overwhelming users.
+
+Do not implement continuously changing automatic parameter optimization yet. That belongs to Phase 4.
+
+---
+
+# 16. HISTORICAL DATA AND EPOCH TIMESTAMP INTEGRITY
+
+Preserve the existing Finage historical data pipeline.
+
+My app may retrieve selected historical dates using multiple consecutive two-day API requests.
+
+After merging, all SMC calculations must operate on the complete chronological candle series.
+
+Requirements:
+
+- Correct UTC epoch timestamps.
+- Correct symbol and timeframe.
+- No duplicate candles.
+- No missing data introduced by chunk boundaries.
+- Proper session boundary calculations.
+- Accurate previous-day and previous-week high/low.
+- Proper timezone handling.
+- No resetting market structure at API chunk boundaries.
+- No resetting liquidity pools at chunk boundaries.
+- No incorrect Order Block/FVG calculations at chunk boundaries.
+
+Where indicators require warm-up candles before the selected start date, fetch or reuse sufficient historical context while showing trade signals only within the selected analysis range.
+
+Never silently mix simulated market data with genuine Finage candles.
+
+---
+
+# 17. NON-REPAINTING AND HISTORICAL REPLAY
+
+All new calculations must support deterministic candle-by-candle replay.
+
+Strict rules:
+
+1. Use only market data available at the calculation timestamp.
+2. Do not confirm structural pivots early.
+3. Do not use future HTF candle values.
+4. Do not retroactively move a confirmed entry signal to an earlier candle.
+5. Keep zone formation and confirmation timestamps separate.
+6. Maintain stable setup IDs.
+7. Respect zone invalidation and expiry.
+8. Ensure playback backward/forward reproduces the same historical states.
+9. Invalidate caches properly when data or configuration changes.
+10. Ensure batch and sequential replay calculations produce equivalent eligible signal events.
+
+For historical analysis, avoid introducing look-ahead through full-window swing selection, Fibonacci anchors, session highs/lows or premium/discount ranges.
+
+---
+
+# 18. PERFORMANCE OPTIMIZATION
+
+The system must remain responsive with large historical datasets.
+
+Improve:
+
+- Swing calculation efficiency.
+- Liquidity pool lookup.
+- OB/FVG zone indexing.
+- Active zone filtering.
+- Incremental market-structure updates.
+- ATR and candle psychology reuse.
+- Multi-timeframe context caching.
+- Stable setup identities.
+- Efficient Canvas rendering.
+- Strategy deduplication.
+- React update frequency.
+
+Avoid recalculating the entire historical structure after each replay candle if incremental updates can produce identical results.
+
+Use measured benchmarks rather than arbitrary performance claims.
+
+Do not introduce infinite loops or unbounded state growth.
+
+---
+
+# 19. REQUIRED AUTOMATED TESTS
+
+Implement deterministic unit and integration tests.
+
+### Test 1 — Bullish Structure
+
+Validate HH/HL recognition and bullish BOS confirmation.
+
+### Test 2 — Bearish Structure
+
+Validate LH/LL recognition and bearish BOS confirmation.
+
+### Test 3 — CHoCH
+
+Validate a meaningful structural transition and correct confirmation timestamp.
+
+### Test 4 — MSS
+
+Verify valid bullish/bearish structural shifts with Phase 2 displacement evidence.
+
+### Test 5 — Swing Confirmation Delay
+
+Confirm that no pivot becomes available before the required candles close.
+
+### Test 6 — Equal Highs/Lows
+
+Validate volatility-adjusted EQH/EQL clustering.
+
+### Test 7 — BSL/SSL Sweep
+
+Verify correct sweep direction, rejection, and invalidation behavior.
+
+### Test 8 — Genuine Breakout
+
+Verify a real structural breakout is not incorrectly labeled as a sweep.
+
+### Test 9 — Bullish Order Block
+
+Validate origin, boundaries, confirmation and lifecycle.
+
+### Test 10 — Bearish Order Block
+
+Validate the equivalent bearish logic.
+
+### Test 11 — Breaker and Mitigation
+
+Verify invalidation, flip confirmation and eligible retest behavior.
+
+### Test 12 — Bullish/Bearish FVG
+
+Verify exact three-candle calculations.
+
+### Test 13 — IFVG
+
+Verify correct invalidation and subsequent flipped-zone qualification.
+
+### Test 14 — Fibonacci
+
+Validate anchor selection, retracement formulas and directional mapping.
+
+### Test 15 — Premium/Discount
+
+Validate correct dealing-range midpoint and zone classification.
+
+### Test 16 — Liquidity + MSS Entry
+
+Validate BUY and SELL setup detection with correct timing.
+
+### Test 17 — OB + FVG Entry
+
+Verify related-zone confluence and no duplicate signals.
+
+### Test 18 — Waterfall + BOS
+
+Ensure Phase 2 waterfall sequences integrate correctly without creating repeated trades.
+
+### Test 19 — Independent Scalping Setups
+
+Confirm multiple genuinely independent opportunities are not suppressed.
+
+### Test 20 — Swing Context
+
+Verify HTF zones and structures are correctly evaluated without future HTF data.
+
+### Test 21 — Multi-API Historical Data
+
+Verify uninterrupted structure analysis across merged Finage chunks.
+
+### Test 22 — Replay Consistency
+
+Verify batch calculations and candle-by-candle replay produce equivalent confirmed signals.
+
+### Test 23 — Balanced Filtering
+
+Verify the new SMC engine does not unintentionally disable existing valid momentum, breakout or reversal strategies.
+
+### Test 24 — Data Integrity
+
+Validate zero-range candles, sparse trading sessions, duplicate timestamps, missing volume and invalid prices.
+
+### Test 25 — Performance Regression
+
+Compare runtime, memory consumption and chart responsiveness before and after implementation.
+
+---
+
+# 20. IMPLEMENTATION ORDER
+
+Complete Phase 3 in the following order:
+
+1. Audit existing SMC/ICT logic.
+2. Establish the unified internal/external market structure model.
+3. Implement confirmed swings, HH/HL/LH/LL.
+4. Repair and extend BOS/CHoCH/MSS.
+5. Build advanced liquidity mapping.
+6. Improve BSL/SSL sweep and breakout classification.
+7. Upgrade Order Block detection and lifecycle.
+8. Upgrade FVG/IFVG and imbalance management.
+9. Implement automatic Fibonacci.
+10. Implement dealing ranges and premium/discount zones.
+11. Integrate Phase 2 displacement and waterfall evidence.
+12. Implement distinct SMC setup detectors.
+13. Connect candidates to the existing Phase 1 signal engine.
+14. Add settings and chart visualization.
+15. Validate no-repainting and replay behavior.
+16. Optimize large historical-data performance.
+17. Run regression tests and verify the existing app.
+
+Do not expand into unrelated future phases.
+
+---
+
+# 21. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rewrite the application from scratch.
+- Break Phase 1 directional signal repairs.
+- Break Phase 1 deduplication.
+- Break Phase 2 candle psychology.
+- Break waterfall momentum detection.
+- Break Finage historical data fetching.
+- Break automatic two-day API chunking.
+- Break chart replay.
+- Replace the existing HTML5 Canvas chart.
+- Remove existing settings.
+- Force bullish and bearish signals to appear equally.
+- Create duplicate signals from overlapping strategies.
+- Use future candles in historical decisions.
+- Automatically approve every FVG or OB touch.
+- Require all SMC conditions simultaneously.
+- Disable otherwise valid momentum continuation signals.
+- Create trades solely because a Fibonacci level was touched.
+- Claim that SMC patterns prove actual institutional activity.
+- Promise a specific win rate.
+- Add unnecessary AI dependencies.
+- Implement Phase 4 automatic market regime tuning yet.
+- Start future phases automatically.
+
+Keep the default signal filtering medium-light.
+
+Prefer accurate structure, clean signals and meaningful entry opportunities over arbitrary indicator complexity.
+
+---
+
+# 22. PHASE 3 COMPLETION CRITERIA
+
+Phase 3 is complete when:
+
+1. Internal and external structure detection works.
+2. Bullish and bearish BOS/CHoCH/MSS work correctly.
+3. Liquidity pools and BSL/SSL sweeps are properly tracked.
+4. Order Blocks have correct confirmation and lifecycle handling.
+5. FVG/IFVG and imbalance zones work.
+6. Auto Fibonacci uses confirmed structural anchors.
+7. Premium/discount ranges are calculated correctly.
+8. SMC continuation and reversal setup candidates integrate with Phase 1.
+9. Phase 2 candle psychology and waterfall signals remain functional.
+10. Signal overload is not reintroduced.
+11. No look-ahead or repainting is introduced.
+12. Historical replay remains deterministic.
+13. Multi-API historical data remains correctly processed.
+14. Chart overlays and settings function correctly.
+15. Performance remains acceptable on large datasets.
+16. Available lint, type checks, tests and production build pass, or failures are documented accurately.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+- Files created.
+- Files modified.
+- Existing logic reused.
+- Structural event definitions.
+- BOS/CHoCH/MSS detection rules.
+- Liquidity detection logic.
+- Order Block lifecycle rules.
+- FVG/IFVG lifecycle rules.
+- Fibonacci anchor and pricing logic.
+- Premium/discount calculations.
+- New setup detectors.
+- Signal engine integration details.
+- Settings added.
+- Chart rendering changes.
+- BUY/SELL signal counts on fixed test datasets.
+- Duplicate suppression results.
+- Non-repainting test results.
+- Replay consistency test results.
+- Performance results.
+- Remaining issues or limitations.
+
+**FINAL OBJECTIVE**
+
+Create a professional, multi-timeframe SMC and Liquidity Intelligence Engine capable of identifying meaningful market structure, external/internal liquidity, valid Order Blocks, FVG/IFVG, Fibonacci pullbacks, premium/discount dealing ranges, structural reversals and trend continuation opportunities.
+
+The engine must support scalping, intraday and swing analysis, integrate with candle psychology and waterfall detection, and generate explainable BUY/SELL candidates through the existing centralized signal engine.
+
+Preserve the application architecture and completed Phase 1/2 functionality.
+
+**Complete Phase 3 only. Do not begin Phase 4 automatically.**

@@ -1,0 +1,1773 @@
+# PHASE 6 — ADVANCED INTRADAY & SWING TRADING INTELLIGENCE, HIGHER-TIMEFRAME STRUCTURE & LARGE-MOVE SIGNAL ENGINE
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative trading systems engineer, professional intraday and swing trading researcher, ICT/SMC price-action analyst, multi-timeframe algorithm architect, backtesting specialist and expert Next.js developer.
+
+Your task is to implement **Phase 6 — Advanced Intraday & Swing Trading Intelligence Engine** into my EXISTING TradeZella Canvas application.
+
+This phase must introduce dedicated intraday and swing trading engines that work alongside the existing scalping engine.
+
+**IMPORTANT: Implement actual production-quality functionality, not just explanations or plans.**
+
+Do not rebuild the application.
+
+Do not break the existing Phases 1–5.
+
+Do not automatically proceed to Phase 7.
+
+---
+
+# 1. EXISTING APPLICATION CONTEXT
+
+The application includes, or has been designed to implement:
+
+### Core Platform
+
+- Next.js + React.
+- Finage historical market data.
+- Automatic two-day API chunk fetching.
+- UTC epoch timestamp normalization.
+- Historical candle merging.
+- HTML5 Canvas chart.
+- Multi-timeframe analysis.
+- Historical market replay.
+- Strategy settings.
+- BUY/SELL signals.
+- Trade logs.
+- CSV export.
+
+### Phase 1 — Signal Engine Foundation
+
+- Correct BUY and SELL detection.
+- Centralized signal approval.
+- Signal scoring.
+- Duplicate suppression.
+- Multi-timeframe synchronization.
+- Non-repainting protections.
+- Signal lifecycle tracking.
+
+### Phase 2 — Candle Psychology
+
+- Candle body and wick analysis.
+- Bullish/bearish pressure proxies.
+- Displacement.
+- Rejection.
+- Exhaustion.
+- Momentum sequences.
+- Waterfall detection.
+- First-pullback continuation.
+
+### Phase 3 — Advanced SMC
+
+- Internal/external structure.
+- BOS/CHoCH/MSS.
+- Liquidity pools.
+- BSL/SSL sweeps.
+- Order Blocks.
+- FVG/IFVG.
+- Breaker Blocks.
+- Fibonacci.
+- Premium/Discount dealing ranges.
+
+### Phase 4 — Adaptive Market Intelligence
+
+- Market regime detection.
+- Trend strength.
+- Volatility classification.
+- Adaptive strategy selection.
+- AUTO/HYBRID/MANUAL settings.
+- Trading-style profiles.
+- Bounded adaptive parameters.
+
+### Phase 5 — Scalping Intelligence
+
+- 1m/3m/5m scalping.
+- Microstructure.
+- Fast liquidity sweeps.
+- Waterfall continuation.
+- Breakout and retest.
+- First-pullback scalping.
+- Precision entries.
+- Scalp-specific risk and signal lifecycle.
+
+Before implementing Phase 6, verify which modules actually exist and their current working behavior.
+
+Do not assume previous phase specifications were fully implemented.
+
+Preserve functioning modules and reuse them wherever possible.
+
+---
+
+# 2. MAIN PHASE 6 OBJECTIVE
+
+Create two dedicated but coordinated trading engines:
+
+1. **Professional Intraday Intelligence Engine**
+2. **Professional Swing Trading Intelligence Engine**
+
+Both engines must independently identify valid BUY and SELL opportunities.
+
+They should analyze:
+
+- Higher-timeframe market direction.
+- Major structural levels.
+- Significant liquidity.
+- Institutional-style price-action zones.
+- Trend continuation.
+- Trend reversals.
+- Multi-session momentum.
+- Fibonacci pullbacks.
+- Significant Order Blocks.
+- Major Fair Value Gaps.
+- Deep corrections.
+- Breakout and retest.
+- Large directional displacement.
+- Momentum exhaustion.
+- Structural invalidation.
+- Potential target liquidity.
+
+The objective is to identify high-quality trading opportunities that may capture larger price movements than ordinary scalping.
+
+For XAUUSD, support user-defined target objectives such as 200–300 pips where the instrument's pip convention is explicitly configured.
+
+Do not force every trade to target a fixed pip amount.
+
+Use actual price structure, volatility, available reward and risk.
+
+A large projected move is not a guaranteed market outcome.
+
+---
+
+# 3. COMPLETE CODEBASE AUDIT
+
+Inspect all relevant modules.
+
+Primary files:
+
+- `src/lib/liquidity.js`
+- Phase 1 signal engine.
+- Phase 2 candle psychology modules.
+- Phase 2 waterfall momentum modules.
+- Phase 3 SMC modules.
+- Phase 4 adaptive market modules.
+- Phase 5 scalping modules.
+- `src/app/page.jsx`
+- `src/services/finageService.js`
+- `src/app/api/finage/route.js`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+
+Identify:
+
+- Current timeframe mappings.
+- Market structure calculations.
+- HTF trend calculations.
+- Liquidity detection.
+- Swing confirmation.
+- Adaptive strategy profiles.
+- Signal scoring and publication.
+- Signal expiry.
+- Entry, SL and TP methods.
+- Historical trade execution assumptions.
+- Historical replay behavior.
+
+Reuse current calculation utilities.
+
+Avoid introducing conflicting implementations of the same ATR, structure, OB, FVG or liquidity algorithm.
+
+Suggested modules, only if justified:
+
+- `src/lib/intraday/intradayEngine.js`
+- `src/lib/intraday/intradayStrategies.js`
+- `src/lib/intraday/sessionStructure.js`
+- `src/lib/swing/swingEngine.js`
+- `src/lib/swing/swingStrategies.js`
+- `src/lib/swing/htfStructure.js`
+- `src/lib/swing/deepPullback.js`
+- `src/lib/swing/largeMoveTargets.js`
+- `src/lib/trading/mtfContext.js`
+- `src/lib/trading/tradePlanning.js`
+
+Maintain existing data contracts and settings compatibility.
+
+---
+
+# 4. ADVANCED MULTI-TIMEFRAME ARCHITECTURE
+
+Build a coordinated multi-timeframe analysis model.
+
+Do not simply check whether all timeframes have bullish or bearish candles.
+
+Use three distinct levels:
+
+1. Macro Direction.
+2. Setup Formation.
+3. Entry Confirmation.
+
+## 4.1 Intraday Timeframe Profiles
+
+Suggested starting mappings:
+
+### Fast Intraday
+
+Entry: 5m.
+
+Setup: 15m.
+
+Macro Context: 1h.
+
+### Standard Intraday
+
+Entry: 15m.
+
+Setup: 30m or 1h.
+
+Macro Context: 4h.
+
+### Extended Intraday
+
+Entry: 15m / 30m.
+
+Setup: 1h.
+
+Macro Context: 4h.
+
+Allow configurable profiles.
+
+## 4.2 Swing Timeframe Profiles
+
+### Short Swing
+
+Entry: 15m.
+
+Setup: 1h.
+
+Macro Context: 4h.
+
+### Standard Swing
+
+Entry: 1h.
+
+Setup: 4h.
+
+Macro Context: 1D.
+
+### Extended Swing
+
+Entry: 4h.
+
+Setup: 1D.
+
+Macro Context: 1D and available historical weekly context, if supported.
+
+Do not invent unsupported higher-timeframe candles.
+
+If weekly data is needed, derive it only from sufficiently complete, correctly aligned daily candles or fetch it through a verified supported provider route.
+
+## 4.3 Multi-Timeframe Context
+
+For each trading decision, calculate:
+
+- Macro trend.
+- Setup timeframe structure.
+- Entry timeframe structure.
+- HTF liquidity.
+- Current pullback state.
+- Trend strength.
+- Relevant structural invalidation.
+- Opposing zones.
+- Volatility.
+- Momentum condition.
+- Conflicting evidence.
+
+### Example
+
+Daily: Bullish.
+
+4h: Bullish structure.
+
+1h: Bearish pullback into an HTF demand/OB zone.
+
+15m: Bullish MSS.
+
+This may form a bullish swing continuation candidate.
+
+Do not automatically reject it merely because the 1h pullback candles are bearish.
+
+Use correct timestamp synchronization.
+
+Never access an unfinished future higher-timeframe candle when replaying historical decisions.
+
+---
+
+# 5. PROFESSIONAL INTRADAY ENGINE
+
+Build a dedicated intraday analysis system.
+
+Its goal is to identify meaningful opportunities developing within trading sessions.
+
+Support:
+
+- Session directional bias.
+- Opening range breaks.
+- Session liquidity sweeps.
+- Intraday BOS.
+- Intraday CHoCH.
+- Intraday MSS.
+- Momentum continuation.
+- Breakout and retest.
+- Intraday FVG.
+- OB retest.
+- Session range reversal.
+- First pullback.
+- Trend expansion.
+- Failed breakout.
+
+## 5.1 Intraday Market Structure
+
+Identify:
+
+- Current session range.
+- Previous session high/low.
+- Previous day high/low.
+- Confirmed intraday swings.
+- Major active intraday support/resistance.
+- Current dealing range.
+- Structural direction.
+- Breakout status.
+
+## 5.2 Session Intelligence
+
+Analyze:
+
+- Asian range.
+- London session.
+- New York session.
+- London/New York overlap.
+- Session opening range.
+- Session highs/lows.
+- Session expansion and compression.
+
+Use timezone-aware session definitions.
+
+Respect daylight-saving transitions.
+
+Do not hardcode fixed GMT hours when session-local rules require seasonal adjustments.
+
+## 5.3 Intraday BUY Setup
+
+Potential evidence:
+
+- Bullish market context.
+- SSL sweep.
+- Bullish CHoCH or MSS.
+- Strong displacement.
+- Valid OB/FVG.
+- Confirmed pullback.
+- Acceptable entry risk.
+
+Do not require every condition simultaneously.
+
+## 5.4 Intraday SELL Setup
+
+Potential evidence:
+
+- Bearish market context.
+- BSL sweep.
+- Bearish CHoCH or MSS.
+- Strong displacement.
+- Valid OB/FVG.
+- Confirmed rally/retest.
+- Acceptable entry risk.
+
+Implement equivalent independent bearish detection.
+
+---
+
+# 6. ADVANCED SWING TRADING ENGINE
+
+Create a separate Swing Intelligence Engine focused on larger structural movements.
+
+Support:
+
+1. Macro Trend Continuation.
+2. Higher-Timeframe Liquidity Reversal.
+3. Deep Fibonacci Pullback.
+4. Major Order Block Return.
+5. HTF FVG Rebalance.
+6. BOS Continuation.
+7. CHoCH Structural Transition.
+8. Major Breakout and Retest.
+9. Swing Failure Reversal.
+10. Multi-Session Momentum Expansion.
+11. Trend Re-Acceleration.
+12. Consolidation-to-Trend Expansion.
+
+Unlike scalping, swing signals should remain valid over longer setup windows when justified by the selected timeframe.
+
+Do not use the same short expiration rules as 1m scalping.
+
+Use setup-specific lifecycle policies.
+
+## 6.1 Swing Market Structure
+
+Prioritize:
+
+- External structure.
+- Confirmed major swing highs/lows.
+- HH/HL and LH/LL.
+- Protected swing levels.
+- Major BOS.
+- Significant CHoCH.
+- Higher-timeframe premium/discount.
+- Major liquidity pools.
+
+## 6.2 Trend Continuation
+
+For bullish continuation:
+
+- Identify valid bullish macro structure.
+- Detect a meaningful pullback.
+- Locate relevant support/OB/FVG.
+- Analyze declining bearish momentum.
+- Confirm bullish resumption.
+- Generate eligible BUY candidate.
+
+For bearish continuation:
+
+- Identify bearish macro structure.
+- Detect corrective upward movement.
+- Locate resistance/OB/FVG.
+- Analyze weakening bullish recovery.
+- Confirm bearish resumption.
+- Generate eligible SELL candidate.
+
+Avoid issuing swing entries directly from every higher-timeframe trend candle.
+
+---
+
+# 7. MAJOR LIQUIDITY INTELLIGENCE
+
+Integrate Phase 3 liquidity calculations with intraday and swing context.
+
+Prioritize:
+
+- Previous Day High.
+- Previous Day Low.
+- Previous Week High.
+- Previous Week Low.
+- Session highs/lows.
+- Major external swing highs.
+- Major external swing lows.
+- Equal highs.
+- Equal lows.
+- HTF buy-side liquidity.
+- HTF sell-side liquidity.
+- Range extremes.
+
+## 7.1 Major Liquidity Sweep
+
+Detect:
+
+- Significant penetration of relevant liquidity.
+- Rejection/reclaim.
+- Structural context.
+- Phase 2 candle psychology.
+- Opposing displacement.
+- Confirmed reversal when required.
+
+## 7.2 Liquidity Continuation
+
+Identify cases where price breaks a major liquidity level and continues instead of reversing.
+
+Distinguish:
+
+- Sweep and rejection.
+- Breakout and acceptance.
+- Failed breakout.
+- Breakout/retest.
+- Continuation.
+
+Do not treat every liquidity interaction as a reversal.
+
+## 7.3 Liquidity Target Mapping
+
+For each eligible trade, identify:
+
+- Nearest relevant opposing liquidity.
+- Intermediate structural target.
+- Larger HTF target.
+- Target distance.
+- Distance to invalidation.
+- Estimated reward-to-risk.
+
+Only use liquidity levels that existed at the decision timestamp.
+
+---
+
+# 8. AUTOMATIC FIBONACCI & DEEP PULLBACK INTELLIGENCE
+
+Extend the Phase 3 Fibonacci engine specifically for intraday and swing setups.
+
+## 8.1 Automatic Swing Selection
+
+Choose relevant confirmed price anchors from:
+
+- Major bullish impulse.
+- Major bearish impulse.
+- External structure.
+- Recent significant BOS.
+- Active dealing range.
+
+Do not select anchors using future price data.
+
+## 8.2 Fibonacci Retracement Analysis
+
+Support:
+
+- 23.6%.
+- 38.2%.
+- 50%.
+- 61.8%.
+- 70.5%, optional.
+- 78.6%.
+
+Support optional OTE zones.
+
+Use directional formulas that are correct for bullish and bearish impulses.
+
+## 8.3 Deep Pullback Detection
+
+A meaningful swing pullback may reach deeper retracement zones.
+
+Analyze:
+
+- Pullback depth.
+- Pullback speed.
+- Internal corrective structure.
+- Candle psychology.
+- OB/FVG confluence.
+- Remaining macro trend validity.
+- HTF premium/discount.
+- Opposing liquidity.
+- Reversal confirmation.
+
+Avoid automatically buying every deep bullish retracement or selling every deep bearish retracement.
+
+A deep pullback may indicate trend weakening or a genuine reversal.
+
+Require setup-specific confirmation.
+
+## 8.4 Fibonacci Extensions
+
+Support optional structural target projections using:
+
+- 127.2%.
+- 161.8%.
+
+Do not assume projected extensions will be reached.
+
+Prefer relevant actual market structure where available.
+
+---
+
+# 9. ADVANCED HTF ORDER BLOCK & FVG ENGINE
+
+Reuse the existing Phase 3 OB/FVG modules.
+
+Build a higher-timeframe zone prioritization layer.
+
+## 9.1 Higher-Timeframe Order Blocks
+
+Identify:
+
+- Fresh bullish HTF OB.
+- Fresh bearish HTF OB.
+- Continuation OB.
+- Breaker Block.
+- Mitigation Block.
+- Refined OB.
+- Invalidated OB.
+
+Score zones using:
+
+- Associated structural break.
+- Displacement.
+- Freshness.
+- Previous mitigation.
+- Relevant timeframe.
+- Nearby liquidity.
+- Phase 2 rejection behavior.
+- Current market regime.
+
+## 9.2 Higher-Timeframe FVG
+
+Identify:
+
+- Bullish HTF FVG.
+- Bearish HTF FVG.
+- IFVG.
+- FVG cluster.
+- Partial fill.
+- Full mitigation.
+- Zone invalidation.
+
+## 9.3 OB + FVG Confluence
+
+Recognize meaningful overlap between active zones.
+
+Avoid automatically assuming overlapping zones guarantee a profitable trade.
+
+Use real structure and candle confirmation.
+
+## 9.4 Lower-Timeframe Refinement
+
+When price reaches a confirmed HTF zone:
+
+- Examine entry-timeframe structure.
+- Detect rejection.
+- Detect MSS/CHoCH.
+- Evaluate displacement.
+- Identify an eligible entry.
+
+The HTF zone may be formed earlier, but the entry signal must only be published after its own decision-time confirmation.
+
+---
+
+# 10. PROFESSIONAL INTRADAY & SWING STRATEGY LIBRARY
+
+Implement dedicated setup detectors.
+
+Each detector must publish candidates through the existing Phase 1 centralized signal engine.
+
+## Strategy A — HTF Trend Continuation
+
+- Confirm macro structure.
+- Identify valid pullback.
+- Confirm trend resumption.
+- Generate directional candidate.
+
+## Strategy B — Major Liquidity Sweep Reversal
+
+- Identify established HTF liquidity.
+- Detect meaningful sweep.
+- Analyze rejection.
+- Confirm structural reversal evidence.
+
+## Strategy C — Deep Fibonacci Pullback
+
+- Confirm impulse and anchors.
+- Track retracement.
+- Identify relevant confluence.
+- Confirm entry eligibility.
+
+## Strategy D — Major Order Block Retest
+
+- Detect confirmed HTF OB.
+- Track return.
+- Evaluate lower-timeframe confirmation.
+- Generate setup.
+
+## Strategy E — HTF FVG Continuation
+
+- Identify active HTF FVG.
+- Track price return.
+- Confirm eligible continuation.
+
+## Strategy F — BOS + Pullback
+
+- Confirm major BOS.
+- Detect controlled retracement.
+- Identify structural support/resistance.
+- Confirm continuation.
+
+## Strategy G — CHoCH + Reversal
+
+- Identify structural transition.
+- Evaluate macro context.
+- Confirm reversal.
+- Avoid premature countertrend entries.
+
+## Strategy H — Breakout + Retest
+
+- Identify major consolidation boundary.
+- Confirm breakout.
+- Detect retest.
+- Evaluate continuation.
+
+## Strategy I — Multi-Session Momentum
+
+- Detect directional expansion across sessions.
+- Evaluate trend persistence.
+- Find appropriate continuation opportunities.
+
+## Strategy J — Swing Failure Reversal
+
+- Detect failure beyond a confirmed significant swing.
+- Evaluate reclaim.
+- Confirm reversal setup.
+
+## Strategy K — Waterfall + HTF Continuation
+
+Reuse the Phase 2 waterfall engine.
+
+Identify large bearish or bullish momentum expansion supported by higher-timeframe structure.
+
+Look for:
+
+- Initial structural break.
+- Significant displacement.
+- First retracement.
+- Renewed continuation.
+- Reasonable remaining target distance.
+
+Do not duplicate Phase 5's micro-scalping waterfall entries.
+
+## Strategy L — Range-to-Trend Transition
+
+- Identify longer consolidation.
+- Detect genuine structural breakout.
+- Confirm expansion.
+- Look for continuation or retest.
+
+Do not make all strategies require the same strict confirmation checklist.
+
+Use balanced strategy-specific validation.
+
+---
+
+# 11. LARGE-MOVE TARGET INTELLIGENCE
+
+One important objective is to find larger intraday and swing price movements.
+
+For XAUUSD and other supported instruments, allow the user to define preferred potential move ranges.
+
+Examples:
+
+- Short intraday movement.
+- Standard intraday movement.
+- Extended intraday movement.
+- Swing movement.
+- Large directional movement.
+
+Do not hardcode universal pip targets.
+
+### Instrument Precision
+
+Use instrument metadata for:
+
+- Quote decimals.
+- Tick size.
+- Price increment.
+- Pip definition when configured.
+- Contract specifications when needed.
+- Monetary value calculations when supported.
+
+For Gold, different platforms may use different conventions for the word "pip."
+
+Represent price distance internally using explicit price units or ticks, then convert for UI display using verified instrument configuration.
+
+### Target Evaluation
+
+For each candidate calculate:
+
+- Available distance to opposing liquidity.
+- Distance to relevant HTF structure.
+- ATR-based movement context.
+- Target feasibility.
+- Stop distance.
+- Reward-to-risk.
+- Estimated execution costs.
+
+Do not force a 200–300-pip objective when the available structure or risk does not support it.
+
+Do not label any projected price movement as guaranteed.
+
+---
+
+# 12. PRECISION SWING ENTRY ENGINE
+
+Create a dedicated entry-planning model for intraday and swing strategies.
+
+Support:
+
+1. Market-on-confirmation.
+2. Structural pullback entry.
+3. Order Block retest.
+4. FVG retracement.
+5. Fibonacci zone entry.
+6. Breakout stop entry.
+7. Breakout retest.
+8. Reversal confirmation.
+
+Each entry plan must include:
+
+- Direction.
+- Strategy.
+- Entry type.
+- Entry reference/zone.
+- Confirmation timestamp.
+- Earliest eligible execution timestamp.
+- Invalidation level.
+- Setup expiration.
+- Target plan.
+- Settings snapshot.
+
+Distinguish:
+
+- Signal detected.
+- Signal confirmed.
+- Entry waiting.
+- Entry triggered.
+- Entry expired.
+- Setup invalidated.
+
+Do not assume an entry was filled simply because an earlier candle touched the desired level before confirmation.
+
+Do not invent execution prices.
+
+---
+
+# 13. STRUCTURE-BASED STOP LOSS
+
+Swing trades should use meaningful structural invalidation rather than arbitrary fixed distances.
+
+### BUY Stop Loss
+
+Possible references:
+
+- Confirmed swing low.
+- Major liquidity sweep low.
+- Valid Order Block boundary.
+- Relevant structural invalidation.
+- Volatility buffer.
+
+### SELL Stop Loss
+
+Possible references:
+
+- Confirmed swing high.
+- Major liquidity sweep high.
+- Valid Order Block boundary.
+- Relevant structural invalidation.
+- Volatility buffer.
+
+Validate:
+
+- Direction.
+- Price distance.
+- ATR context.
+- Tick-size alignment.
+- Spread.
+- Feasibility.
+
+Do not automatically tighten a swing SL to scalping dimensions simply to improve theoretical reward-to-risk.
+
+If a structural stop requires excessive risk, reject the setup or calculate an appropriately smaller position size where supported.
+
+A larger expected target does not justify unlimited risk.
+
+---
+
+# 14. ADVANCED TP1 / TP2 / TP3 PLANNING
+
+Support multiple structural targets.
+
+### TP1
+
+Nearest reasonable intermediate structural target or opposing liquidity.
+
+### TP2
+
+More significant intraday/HTF target.
+
+### TP3
+
+Extended structural target or optional trend continuation objective.
+
+For each target show:
+
+- Price.
+- Distance.
+- Price-unit/pip display where configured.
+- Gross R:R.
+- Cost-adjusted R:R where available.
+- Structural reason.
+
+Allow alternative policies:
+
+- Fixed R:R.
+- Structure-based targets.
+- Opposing liquidity targets.
+- ATR-based projections.
+- Hybrid.
+
+Do not automatically choose distant targets that ignore intervening structure.
+
+For partial profit-taking, make target allocations explicit and ensure remaining position size is handled correctly in backtesting.
+
+Do not change historical target calculations after future results become known.
+
+Advanced portfolio risk and position optimization remain part of Phase 8.
+
+---
+
+# 15. MULTI-SESSION TRADE INTELLIGENCE
+
+Swing setups may remain open across multiple market sessions.
+
+Implement correct handling of:
+
+- Overnight holding.
+- Session rollover.
+- Forex weekend market closures.
+- Reopening gaps.
+- Market holidays when verified calendars are available.
+- Missing data.
+- Spread widening.
+- Applicable swap/rollover costs.
+- Multi-session volatility shifts.
+- Trade duration.
+
+If the backtesting engine lacks verified financing-cost information, provide explicit configurable assumptions rather than reporting zero holding costs without disclosure.
+
+### Historical gap behavior
+
+When the market reopens beyond a stop-loss level, do not assume a guaranteed fill at the original stop price.
+
+Use documented gap-fill assumptions.
+
+Do not interpolate artificial candles during closed-market intervals.
+
+---
+
+# 16. AUTOMATIC INTRADAY & SWING SETTINGS
+
+Integrate directly with Phase 4's Auto/Hybrid/Manual engine.
+
+## AUTO Mode
+
+Automatically select relevant existing strategies based on:
+
+- Market regime.
+- Volatility regime.
+- Macro structure.
+- Pullback state.
+- Liquidity location.
+- Momentum.
+- Selected trading style.
+- Timeframe.
+- Session context.
+
+### Example: Bullish Swing Market
+
+Daily: Bullish.
+
+4h: Controlled correction.
+
+1h: Pullback reaching valid HTF zone.
+
+Preferred strategies:
+
+- Bullish HTF OB retest.
+- Deep pullback continuation.
+- Bullish MSS.
+- Fibonacci structural confluence.
+
+### Example: Bearish Intraday Market
+
+1h: Bearish.
+
+15m: Lower-low continuation.
+
+5m: Bearish waterfall first pullback.
+
+Preferred strategies:
+
+- Bearish BOS continuation.
+- Waterfall retest.
+- FVG continuation.
+- Momentum breakout.
+
+AUTO must adjust only parameters permitted by Phase 4's bounded adaptation rules.
+
+## HYBRID Mode
+
+Allow user locks on:
+
+- Trading strategies.
+- Timeframes.
+- Signal sensitivity.
+- Confirmation type.
+- Target method.
+- Stop method.
+- Risk limits.
+
+## MANUAL Mode
+
+Respect existing manually configured settings.
+
+Do not make hidden adaptive changes.
+
+### Critical
+
+Do not automatically switch the user's trading style from Swing to Scalping or vice versa.
+
+Do not allow adaptive settings to weaken risk safeguards.
+
+---
+
+# 17. MEDIUM-LIGHT SIGNAL FILTERING
+
+I do not want an excessively strict system that produces almost no trading opportunities.
+
+But I also do not want low-quality signals on every candle.
+
+Provide:
+
+- Light.
+- Balanced.
+- Selective.
+
+Balanced should be the initial default for new configurations.
+
+Preserve saved user preferences.
+
+### Strategy-specific filtering
+
+A swing continuation setup may require:
+
+- Valid macro structure.
+- Meaningful pullback.
+- Credible continuation trigger.
+- Acceptable risk/reward.
+
+A major liquidity reversal may require:
+
+- Relevant established liquidity.
+- Sweep/rejection.
+- Appropriate structural confirmation.
+
+A breakout continuation may require:
+
+- Relevant range break.
+- Displacement.
+- Follow-through or retest.
+
+Do not require every strategy to have:
+
+BOS + CHoCH + MSS + OB + FVG + Liquidity Sweep + Fibonacci + HTF agreement.
+
+Allow valid strategies to qualify with their own relevant evidence.
+
+No fixed signal quota.
+
+---
+
+# 18. SEPARATE SCALPING, INTRADAY AND SWING SIGNALS
+
+This is a critical architectural requirement.
+
+Phase 5 already contains a dedicated scalping engine.
+
+Phase 6 introduces intraday and swing trading.
+
+These engines must share the central signal framework but maintain distinct strategy contexts.
+
+### Each signal must contain:
+
+- `signalId`
+- `symbol`
+- `tradingStyle`
+- `entryTimeframe`
+- `setupTimeframe`
+- `macroTimeframe`
+- `strategy`
+- `direction`
+- `setupId`
+- `confirmationTimestamp`
+- `entryPlan`
+- `invalidation`
+- `targetPlan`
+- `status`
+- `settingsSnapshot`
+
+### Required behavior
+
+A 5m scalping SELL and a separate 1h swing SELL may both legitimately exist.
+
+Do not merge them simply because direction and symbol are identical.
+
+But do not generate repeated 1h swing signals from one unchanged HTF setup.
+
+Use setup origin, strategy family, timeframe and structural identity for deduplication.
+
+Prevent unrelated trading styles from overwriting each other's state or stop-loss/target plans.
+
+---
+
+# 19. ADVANCED SIGNAL RANKING
+
+Use the existing Phase 1 centralized signal approval engine.
+
+Add higher-timeframe evidence such as:
+
+- Macro structure.
+- HTF trend alignment.
+- Liquidity relevance.
+- OB/FVG quality.
+- Pullback quality.
+- Fibonacci context.
+- Candle psychology.
+- Momentum continuation.
+- Entry timing.
+- Target feasibility.
+- Setup freshness.
+- Volatility.
+- Cost-adjusted risk/reward.
+
+Avoid double-counting related evidence.
+
+Provide classifications:
+
+- A+.
+- A.
+- B.
+- Watch.
+- Rejected.
+
+Grades must be derived from documented scoring logic.
+
+Do not equate an A+ grade with a guaranteed high win probability.
+
+---
+
+# 20. TRADE SETUP LIFECYCLE
+
+Support a longer-duration trade lifecycle.
+
+Suggested states:
+
+1. DETECTED.
+2. STRUCTURE_CONFIRMED.
+3. WAITING_FOR_PULLBACK.
+4. ENTRY_CANDIDATE.
+5. APPROVED.
+6. WAITING_FOR_ENTRY.
+7. TRIGGERED.
+8. ACTIVE.
+9. PARTIALLY_CLOSED.
+10. CLOSED_TP.
+11. CLOSED_SL.
+12. EXPIRED.
+13. INVALIDATED.
+
+Only use statuses supported by actual implemented behavior.
+
+Track:
+
+- Formation timestamp.
+- Confirmation timestamp.
+- Entry eligibility.
+- Trigger timestamp.
+- Exit timestamp.
+- Expiration.
+- Actual or simulated execution metadata.
+
+A swing setup may remain eligible longer than a scalp setup.
+
+Expiration must depend on strategy, timeframe and invalidation rules, not arbitrary universal candle counts.
+
+---
+
+# 21. PROFESSIONAL INTRADAY & SWING DASHBOARD
+
+Extend the existing trading interface without replacing it.
+
+Create separate but consistent sections for:
+
+- Scalping.
+- Intraday.
+- Swing.
+
+### Intraday Dashboard
+
+Display:
+
+- Session.
+- Intraday market bias.
+- Session high/low.
+- Trend strength.
+- Active strategy.
+- Signal direction.
+- Entry.
+- Stop.
+- Targets.
+- Current setup status.
+
+### Swing Dashboard
+
+Display:
+
+- Daily trend.
+- 4h structure.
+- Major liquidity.
+- Active HTF zones.
+- Current pullback.
+- Important Fibonacci levels.
+- Swing setup direction.
+- Entry plan.
+- Structural stop.
+- TP1/TP2/TP3.
+- Expected holding horizon, as a range rather than a guaranteed time.
+
+### Signal Detail Panel
+
+On selecting a signal:
+
+- Highlight the setup candle.
+- Highlight the relevant HTF zone.
+- Show confirmation evidence.
+- Show entry/SL/TP.
+- Show invalidation.
+- Explain why the setup qualified.
+- Show strategy and timeframe.
+- Show actual decision timestamp.
+
+Avoid cluttering the chart with every HTF level at once.
+
+Preserve panning, zooming, hover crosshair and replay.
+
+---
+
+# 22. STRATEGY SETTINGS UX
+
+Extend the existing settings interface.
+
+Recommended sections:
+
+## Trading Style
+
+- Scalping.
+- Intraday.
+- Swing.
+
+## Configuration Mode
+
+- AUTO.
+- HYBRID.
+- MANUAL.
+
+## Intraday Strategies
+
+- Session Sweep.
+- Intraday BOS.
+- Intraday MSS.
+- Breakout Retest.
+- Intraday OB/FVG.
+- Session Range Reversal.
+- Momentum Continuation.
+
+## Swing Strategies
+
+- Macro Trend Continuation.
+- Major Liquidity Sweep.
+- Deep Fibonacci Pullback.
+- HTF Order Block.
+- HTF FVG.
+- BOS Pullback.
+- CHoCH Reversal.
+- Swing Failure.
+- Multi-Session Momentum.
+
+## Entry Preferences
+
+- Early.
+- Balanced.
+- Confirmed.
+- Retest Required when applicable.
+- Setup Expiry.
+
+## Risk and Targets
+
+- Structure-Based SL.
+- ATR Buffer.
+- Fixed R:R.
+- Liquidity Targets.
+- TP1/TP2/TP3.
+- Maximum Entry Extension.
+- Maximum Allowed Risk.
+
+Hide advanced controls under collapsible sections.
+
+All controls must be functional and connected to the real engine.
+
+Maintain existing settings persistence.
+
+---
+
+# 23. HISTORICAL DATA, DATE RANGE & TIMEFRAME ALIGNMENT
+
+My application fetches historical data through Finage.
+
+It may use multiple maximum-two-day API requests to cover longer date ranges.
+
+Preserve this functionality.
+
+### Important requirements
+
+- Correct epoch normalization.
+- Correct UTC timestamps.
+- Correct chronological sorting.
+- No duplicate candles.
+- No reset at API chunk boundaries.
+- Accurate timeframe aggregation.
+- Proper session/day boundaries.
+- Correct HTF candle alignment.
+- Correct handling of incomplete HTF candles.
+- Sufficient warm-up history.
+
+### Swing warm-up
+
+Swing and daily analysis may require significantly more historical context than a short scalping date range provides.
+
+Fetch or reuse necessary earlier candles for indicator and structure warm-up.
+
+Do not display signals outside the user's selected analysis window unless explicitly requested.
+
+Do not use future history for signal calculation.
+
+If the selected historical period is insufficient to establish a reliable macro structure, report insufficient context rather than fabricating a trend.
+
+Do not mix real Finage data with simulated candles without clear provenance.
+
+---
+
+# 24. NON-REPAINTING AND REPLAY ACCURACY
+
+All Phase 6 strategies must be non-repainting in their confirmed historical decisions.
+
+Rules:
+
+1. Confirm HTF candles only after completion.
+2. Respect pivot confirmation delay.
+3. Do not retroactively move trade entries.
+4. Do not use future liquidity levels.
+5. Do not select Fibonacci anchors from future-confirmed swings.
+6. Do not create OB/FVG entries before zone confirmation.
+7. Preserve decision-time settings.
+8. Preserve macro context at signal publication time.
+9. Keep signal IDs deterministic.
+10. Ensure full-history and sequential replay decisions agree under the same information cutoff.
+
+### Replay behavior
+
+When replay moves backward, restore the relevant historical state.
+
+When replay moves forward, recompute or replay state transitions deterministically.
+
+Do not apply the present market regime retroactively to earlier periods.
+
+---
+
+# 25. REALISTIC INTRADAY & SWING BACKTESTING
+
+Track both signals and executed trade simulations.
+
+Distinguish:
+
+- Detected candidate.
+- Approved setup.
+- Entry triggered.
+- Active trade.
+- Closed trade.
+- Expired/unfilled setup.
+
+Include:
+
+- Spread assumptions.
+- Slippage assumptions.
+- Broker/venue fees where applicable.
+- Overnight costs.
+- Weekend gaps.
+- Partial fills if supported.
+- Stop-loss execution.
+- Take-profit execution.
+- Partial target handling.
+
+### Intrabar uncertainty
+
+If one OHLC bar includes both SL and TP, do not assume the profitable event happened first.
+
+Use lower-timeframe historical data when available.
+
+Otherwise apply a consistent documented ambiguity policy.
+
+### Performance Analytics
+
+Track:
+
+- Total candidates.
+- Approved signals.
+- Triggered trades.
+- BUY count.
+- SELL count.
+- Win rate.
+- Loss rate.
+- Average win.
+- Average loss.
+- Net expectancy.
+- Profit factor.
+- Maximum drawdown.
+- Average R multiple.
+- Average holding duration.
+- Cost-adjusted results.
+- Results by strategy.
+- Results by timeframe.
+- Results by market regime.
+- Intraday versus swing comparisons.
+
+Never use untriggered candidates to inflate win-rate calculations.
+
+---
+
+# 26. PERFORMANCE OPTIMIZATION
+
+Large multi-timeframe history can cause expensive calculations.
+
+Optimize:
+
+- Incremental HTF analysis.
+- Rolling structure calculations.
+- Cached macro context.
+- Active liquidity indexing.
+- Active OB/FVG indexing.
+- Fibonacci anchor updates.
+- Setup state transitions.
+- Signal scoring.
+- React state updates.
+- Canvas overlays.
+- Historical replay.
+- Date-range fetching.
+- Timeframe caching.
+
+Avoid recalculating all historical strategies after each new candle.
+
+Do not introduce unnecessary third-party dependencies.
+
+Prevent cache contamination between:
+
+- Symbols.
+- Timeframes.
+- Date ranges.
+- Trading styles.
+- Settings versions.
+- Data sources.
+
+Measure calculation speed and memory usage.
+
+---
+
+# 27. REQUIRED AUTOMATED TESTS
+
+Implement deterministic unit and integration tests.
+
+### Test 1 — Bullish Intraday Structure
+
+Verify correct bullish intraday continuation detection.
+
+### Test 2 — Bearish Intraday Structure
+
+Verify correct bearish intraday continuation detection.
+
+### Test 3 — Bullish Swing Structure
+
+Verify valid HH/HL and macro continuation.
+
+### Test 4 — Bearish Swing Structure
+
+Verify LH/LL and macro continuation.
+
+### Test 5 — Multi-Timeframe Alignment
+
+Verify correct 15m/1h/4h/Daily context.
+
+### Test 6 — Pullback Within Trend
+
+A normal bearish correction in a bullish trend must not automatically produce a bearish macro reversal.
+
+### Test 7 — Major Liquidity Sweep
+
+Verify correct BSL/SSL reversal candidates.
+
+### Test 8 — Genuine Breakout
+
+Verify valid breakout is not misclassified as a liquidity rejection.
+
+### Test 9 — Deep Fibonacci Pullback
+
+Verify anchors, retracement percentages and entry eligibility.
+
+### Test 10 — HTF Order Block
+
+Verify zone confirmation, mitigation and invalidation.
+
+### Test 11 — HTF FVG
+
+Verify correct FVG formation and delayed availability.
+
+### Test 12 — BOS Continuation
+
+Verify structural break and pullback setup.
+
+### Test 13 — CHoCH Reversal
+
+Verify proper reversal confirmation.
+
+### Test 14 — Breakout Retest
+
+Verify correct breakout and subsequent eligible retest.
+
+### Test 15 — Waterfall Swing Continuation
+
+Verify Phase 2 waterfall evidence integrates without duplicating Phase 5 scalp signals.
+
+### Test 16 — Large Target Calculation
+
+Verify price distance, instrument precision and reward-to-risk.
+
+### Test 17 — BUY Stop and Targets
+
+Verify directional price relationships.
+
+### Test 18 — SELL Stop and Targets
+
+Verify directional price relationships.
+
+### Test 19 — Entry Timing
+
+Verify no trade is simulated at a historically unavailable price.
+
+### Test 20 — Setup Expiry
+
+Verify swing setups expire or invalidate correctly.
+
+### Test 21 — Overnight Trades
+
+Verify holding duration, rollover assumptions and costs.
+
+### Test 22 — Weekend Gaps
+
+Verify historical gap handling and execution assumptions.
+
+### Test 23 — AUTO Mode
+
+Verify Phase 4 selects appropriate intraday/swing profiles.
+
+### Test 24 — HYBRID Mode
+
+Verify user-locked settings remain unchanged.
+
+### Test 25 — MANUAL Mode
+
+Verify no hidden adaptive changes.
+
+### Test 26 — Scalping Compatibility
+
+Verify Phase 5 remains functional and unaffected.
+
+### Test 27 — Independent Trading Styles
+
+Verify scalp, intraday and swing signals do not overwrite one another.
+
+### Test 28 — Duplicate Suppression
+
+Verify one HTF setup does not repeatedly publish identical signals.
+
+### Test 29 — Historical API Chunking
+
+Verify uninterrupted analysis across multiple merged Finage requests.
+
+### Test 30 — Replay Consistency
+
+Verify identical decisions in batch and candle-by-candle replay.
+
+### Test 31 — No Look-Ahead
+
+Verify future swing pivots, HTF candles and zones never affect earlier decisions.
+
+### Test 32 — Fixed vs Adaptive
+
+Compare Phase 4 adaptive profiles against fixed configurations on identical data.
+
+### Test 33 — Out-of-Sample Evaluation
+
+Use chronological unseen periods to evaluate results.
+
+### Test 34 — Cost-Adjusted Performance
+
+Verify spreads, slippage and overnight costs are included or transparently marked as unavailable.
+
+### Test 35 — Performance Regression
+
+Benchmark large historical datasets, memory use and chart responsiveness.
+
+Do not claim a strategy is successful solely because deterministic test fixtures pass.
+
+---
+
+# 28. IMPLEMENTATION ORDER
+
+Complete Phase 6 in this order:
+
+1. Audit the current Phase 1–5 implementation.
+2. Create dedicated intraday/swing configurations.
+3. Implement higher-timeframe mapping.
+4. Build intraday session structure.
+5. Build external swing structure intelligence.
+6. Integrate major liquidity mapping.
+7. Extend HTF OB/FVG selection.
+8. Implement Fibonacci and deep pullback analysis.
+9. Implement intraday setup detectors.
+10. Implement swing setup detectors.
+11. Integrate waterfall and large-momentum analysis.
+12. Build large-move target planning.
+13. Implement precision entry plans.
+14. Implement structural stop-loss and TP planning.
+15. Integrate Phase 4 adaptive settings.
+16. Integrate Phase 1 central signal approval.
+17. Implement separate signal lifecycles and deduplication.
+18. Add intraday/swing settings.
+19. Add professional signal dashboards.
+20. Implement multi-session replay and execution assumptions.
+21. Optimize performance.
+22. Run automated tests and regression checks.
+23. Run available lint, type-check and production build commands.
+24. Report implementation results and known limitations.
+
+Do not repeatedly rewrite stable completed modules.
+
+---
+
+# 29. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rebuild the application.
+- Replace Finage.
+- Break historical two-day API chunking.
+- Break timestamp normalization.
+- Break candle merging.
+- Replace the HTML5 Canvas renderer.
+- Break historical replay.
+- Break Phase 1 directional fixes.
+- Reintroduce duplicate signals.
+- Break Phase 2 candle psychology.
+- Break waterfall detection.
+- Break Phase 3 SMC.
+- Break Phase 4 adaptive settings.
+- Break Phase 5 scalping.
+- Mix scalp and swing signals into one undifferentiated state.
+- Force both directions to appear equally.
+- Generate signals merely to increase their count.
+- Require all SMC confirmations for every setup.
+- Overwrite user-saved settings.
+- Use unfinished higher-timeframe candles as confirmed data.
+- Use future market data.
+- Fabricate trading signals.
+- Assume all historical orders fill.
+- Assume zero trading costs.
+- Guarantee 200–300 pips.
+- Claim 70–90% accuracy without independent evidence.
+- Implement automatic real-money order execution.
+- Introduce unnecessary AI dependencies.
+- Begin Phase 7 automatically.
+
+Use medium-light filtering while maintaining structural correctness and trade-risk safeguards.
+
+---
+
+# 30. PHASE 6 COMPLETION CRITERIA
+
+Phase 6 is complete only when:
+
+1. Dedicated Intraday and Swing engines work.
+2. Intraday setups support appropriate 5m/15m/30m/1h context.
+3. Swing setups support 15m/1h/4h/Daily context.
+4. Both BUY and SELL logic work.
+5. Macro and entry timeframe structure synchronize correctly.
+6. Major liquidity setups work.
+7. HTF OB/FVG setup candidates work.
+8. Deep Fibonacci pullbacks work.
+9. Trend continuation and reversal are distinguished.
+10. Waterfall and large-momentum analysis integrate correctly.
+11. Structural SL/TP calculations are correct.
+12. Large-target analysis uses instrument-aware price units.
+13. Signal lifecycles remain independent by trading style.
+14. Duplicate setup publication is prevented.
+15. AUTO/HYBRID/MANUAL modes remain functional.
+16. No look-ahead/repainting is introduced.
+17. Historical replay remains deterministic.
+18. Multi-session holding and cost assumptions are explicit.
+19. Backtesting distinguishes candidates from executed trades.
+20. Existing Phase 1–5 functionality remains intact.
+21. Chart and strategy performance remain acceptable.
+22. Available tests and build checks pass, or failures are reported accurately.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+- Files created and modified.
+- Existing modules reused.
+- Intraday strategy architecture.
+- Swing strategy architecture.
+- Timeframe mapping.
+- HTF structure and liquidity logic.
+- Fibonacci and deep pullback rules.
+- OB/FVG integration.
+- Large-movement target calculation.
+- Entry, stop-loss and take-profit methods.
+- Adaptive settings integration.
+- Scalping compatibility verification.
+- Signal deduplication results.
+- BUY/SELL signal counts by trading style.
+- Historical performance by strategy.
+- Cost-adjusted backtesting metrics.
+- Non-repainting test results.
+- Replay consistency results.
+- Performance benchmarks.
+- Remaining issues and limitations.
+
+## FINAL OBJECTIVE
+
+Upgrade TradeZella Canvas into a professional multi-timeframe trading signal platform that supports:
+
+**Scalping + Intraday + Swing Trading.**
+
+It must identify suitable BUY/SELL opportunities using:
+
+- Candle Psychology.
+- Waterfall Momentum.
+- Market Structure.
+- Liquidity Intelligence.
+- BOS/CHoCH/MSS.
+- Order Blocks.
+- FVG/IFVG.
+- Fibonacci.
+- Premium/Discount Zones.
+- Automatic Market-Adaptive Settings.
+- Structural Entry, SL and TP Planning.
+
+The Intraday Engine should identify meaningful opportunities within trading sessions.
+
+The Swing Engine should identify larger structural opportunities that may develop across multiple sessions.
+
+Maintain independent trading-style lifecycles, medium-light filtering, explainable signals, realistic execution assumptions, verified historical data and non-repainting calculations.
+
+**Implement Phase 6 completely without breaking any existing functionality.**
+
+**Do not proceed to Phase 7 automatically.**

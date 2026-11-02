@@ -1,0 +1,1403 @@
+# PHASE 4 — AUTOMATIC MARKET REGIME DETECTION, ADAPTIVE STRATEGY INTELLIGENCE & SMART SETTINGS ENGINE
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative trading systems architect, algorithmic trading engineer, technical market analyst, statistical backtesting engineer, and expert Next.js developer.
+
+Your task is to implement Phase 4 into my EXISTING TradeZella Canvas trading application.
+
+This is a major improvement focused on automatically understanding market conditions and adapting the existing strategies without requiring me to manually configure dozens of technical parameters.
+
+**IMPORTANT: Implement actual production-quality code, not just an implementation plan.**
+
+Do not rebuild the existing application.
+
+Do not break existing functionality.
+
+Do not implement Phase 5 or later phases automatically.
+
+---
+
+# 1. EXISTING APPLICATION CONTEXT
+
+The application uses:
+
+- Next.js and React.
+- Finage historical market data.
+- Automatic two-day historical API chunking.
+- UTC epoch timestamp normalization.
+- Merged historical OHLC datasets.
+- HTML5 Canvas candlestick rendering.
+- Multi-timeframe market analysis.
+- Historical candle replay.
+- Existing signal settings.
+- Trade logs.
+- BUY/SELL signal scoring and confirmation.
+
+### Phase 1 — Completed Foundation
+
+- BUY/SELL detection fixes.
+- Duplicate signal suppression.
+- Centralized signal approval.
+- Confluence scoring.
+- Non-repainting safeguards.
+- MTF synchronization.
+- Basic signal risk calculations.
+
+### Phase 2 — Candle Psychology
+
+- Candle body/wick analysis.
+- Candle strength.
+- Rejection and exhaustion.
+- Bullish/bearish pressure proxies.
+- Momentum continuation.
+- Waterfall detection.
+- First pullback.
+- Momentum sequence analysis.
+
+### Phase 3 — Advanced SMC
+
+- Internal/external market structure.
+- BOS.
+- CHoCH.
+- MSS.
+- Liquidity sweeps.
+- BSL/SSL.
+- Order Blocks.
+- FVG/IFVG.
+- Fibonacci.
+- Premium/Discount zones.
+- Structural continuation and reversal setups.
+
+Before implementation, verify which of these features actually exist in the current codebase and whether they function correctly.
+
+Do not assume a phase is complete just because its design was previously specified.
+
+Preserve all functioning existing functionality.
+
+---
+
+# 2. MAIN OBJECTIVE
+
+Create an **Automatic Market Intelligence Engine** that continuously analyzes incoming completed candles and answers:
+
+1. Is the market bullish, bearish, ranging or unclear?
+2. Is the trend strong or weakening?
+3. Is volatility low, normal or excessive?
+4. Is the market compressing or expanding?
+5. Is a breakout developing?
+6. Is momentum continuing or exhausting?
+7. Is a possible structural reversal developing?
+8. Which existing strategies fit these conditions?
+9. Which strategy settings should be adjusted?
+10. Should filtering be light, balanced or selective?
+11. Which trading style and timeframe profile should be used?
+12. Is the current environment unsuitable for new entries?
+
+The engine must automatically select suitable strategy configurations while keeping all risk and data-quality constraints intact.
+
+The goal is not to force constant trades.
+
+The goal is to find suitable BUY and SELL opportunities with balanced filtering, consistent logic and explainable decisions.
+
+---
+
+# 3. FIRST — COMPLETE EXISTING CODE AUDIT
+
+Inspect these existing modules:
+
+- `src/lib/liquidity.js`
+- Existing Phase 1 signal engine.
+- Existing Phase 2 candle psychology modules.
+- Existing Phase 2 waterfall momentum module.
+- Existing Phase 3 SMC modules.
+- `src/app/page.jsx`
+- `src/services/finageService.js`
+- `src/app/api/finage/route.js`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+
+Inspect any related configuration, persistence, caching and multi-timeframe utilities.
+
+Determine:
+
+- Existing market-trend calculation methods.
+- ATR implementation.
+- EMA calculations.
+- Swing structure analysis.
+- Available indicator utilities.
+- Existing strategy toggles.
+- Existing threshold ranges.
+- How signals are approved.
+- How settings are persisted.
+- How replay timestamps work.
+- Whether the chart uses incremental or full-history recalculation.
+
+Reuse existing calculations wherever possible.
+
+Do not duplicate the same ATR, EMA, trend or volatility calculations in several modules.
+
+Suggested new modules, only when appropriate:
+
+- `src/lib/adaptive/marketRegime.js`
+- `src/lib/adaptive/trendIntelligence.js`
+- `src/lib/adaptive/volatilityIntelligence.js`
+- `src/lib/adaptive/strategySelector.js`
+- `src/lib/adaptive/adaptiveSettings.js`
+- `src/lib/adaptive/regimeStateMachine.js`
+- `src/lib/adaptive/profileManager.js`
+- `src/lib/adaptive/adaptiveDiagnostics.js`
+
+Follow existing project conventions.
+
+---
+
+# 4. ADVANCED MARKET REGIME DETECTION
+
+Build a market regime classifier using observable price behavior.
+
+Do not rely on a single indicator.
+
+Separate **directional regime**, **volatility regime**, and **transition state** rather than treating them as mutually exclusive.
+
+## 4.1 Directional Regime
+
+Support:
+
+- Strong Bullish Trend.
+- Moderate Bullish Trend.
+- Strong Bearish Trend.
+- Moderate Bearish Trend.
+- Sideways / Ranging.
+- Unclear / Choppy.
+
+Use combinations of:
+
+- Confirmed HH/HL structure.
+- Confirmed LH/LL structure.
+- EMA slope.
+- Price displacement.
+- Directional efficiency.
+- ATR-normalized net movement.
+- Candle psychology.
+- Momentum continuation.
+- Pullback structure.
+
+Optional indicators:
+
+- ADX for trend strength.
+- Directional movement indicators.
+- Choppiness Index.
+- Rolling trend efficiency ratio.
+
+Reuse reliable existing calculations where possible.
+
+Do not treat an indicator value alone as proof of trend direction.
+
+## 4.2 Volatility Regime
+
+Classify volatility independently:
+
+- Low Volatility.
+- Normal Volatility.
+- Elevated Volatility.
+- Extreme Volatility.
+
+Analyze:
+
+- ATR.
+- ATR relative to price where appropriate.
+- Rolling ATR baseline.
+- Percentile-based volatility history.
+- Candle range expansion.
+- Volatility compression.
+- Sudden abnormal movements.
+
+Use completed candles.
+
+Do not use future observations when calculating historical percentiles.
+
+## 4.3 Transition State
+
+Recognize:
+
+- Stable Trend.
+- Trend Weakening.
+- Compression.
+- Breakout Attempt.
+- Confirmed Expansion.
+- Potential Reversal.
+- Uncertain Transition.
+
+Transitions must have their own confirmation and invalidation rules.
+
+The system may report:
+
+Directional regime: Bearish Trend.
+
+Volatility regime: Elevated.
+
+Transition state: Momentum Expansion.
+
+This is more informative than forcing a single market label.
+
+---
+
+# 5. PROFESSIONAL TREND STRENGTH ANALYSIS
+
+Create a normalized Trend Strength Engine.
+
+Combine:
+
+1. Structural higher-high/lower-low progression.
+2. EMA slope and alignment.
+3. ATR-adjusted net displacement.
+4. Directional efficiency.
+5. Pullback depth.
+6. Candle psychology.
+7. Confirmed momentum continuation.
+8. Relevant HTF structure.
+
+Calculate separate analytical outputs:
+
+- Trend Direction.
+- Trend Strength.
+- Bullish Evidence.
+- Bearish Evidence.
+- Trend Persistence.
+- Trend Weakening Warning.
+
+Normalize to documented scales.
+
+A score of 85/100 must mean strong evidence under the algorithm, not an 85% probability of profitable trading.
+
+Avoid counting the same momentum movement as multiple independent confirmations.
+
+### Trend weakening
+
+Look for:
+
+- Slower directional progress.
+- Deeper pullbacks.
+- Failed structural extensions.
+- Opposing rejection.
+- Momentum deceleration.
+- Relevant structural transition.
+
+Do not automatically reverse direction when a trend weakens.
+
+---
+
+# 6. VOLATILITY INTELLIGENCE ENGINE
+
+Use volatility to adjust the sensitivity of existing strategies.
+
+## 6.1 Low Volatility
+
+When volatility is low:
+
+- Recognize compression.
+- Reduce unnecessary momentum triggers.
+- Watch for relevant breakout levels.
+- Evaluate range-edge opportunities.
+- Avoid interpreting tiny absolute movement as strong displacement.
+
+## 6.2 Normal Volatility
+
+Use Balanced settings.
+
+Allow normal liquidity, SMC, candle psychology and continuation setups.
+
+## 6.3 Elevated Volatility
+
+- Evaluate stronger displacement.
+- Use volatility-normalized wick and zone tolerances.
+- Avoid incorrectly identifying every large candle as a new signal.
+- Check whether the setup is already overextended.
+- Consider spread and execution limitations when data is available.
+
+## 6.4 Extreme Volatility
+
+- Flag the environment as high risk.
+- Apply hard execution safeguards.
+- Avoid chasing highly extended movement.
+- Permit only eligible setups with acceptable execution assumptions.
+- Return WAIT if data quality or risk conditions are unsuitable.
+
+Do not assume every period of high volatility is profitable.
+
+### Important
+
+Never dynamically change stop loss or target levels for a previously published setup solely because an automatic volatility setting changes later.
+
+Existing signals should preserve their decision-time configuration snapshot.
+
+---
+
+# 7. AUTOMATIC STRATEGY SELECTION ENGINE
+
+This is the central feature of Phase 4.
+
+Build a system that dynamically prioritizes existing trading strategies based on the confirmed market regime.
+
+Do not implement completely new strategies.
+
+Reuse Phase 1, Phase 2 and Phase 3 algorithms.
+
+## Strategy Selection Matrix
+
+### Strong Bullish Trend
+
+Prioritize:
+
+- Bullish BOS continuation.
+- Bullish Order Block retest.
+- Bullish FVG continuation.
+- Bullish momentum cascade.
+- First pullback BUY.
+- Bullish breakout retest.
+
+Allow bearish reversal candidates when independently valid.
+
+### Strong Bearish Trend
+
+Prioritize:
+
+- Bearish BOS continuation.
+- Bearish Order Block retest.
+- Bearish FVG continuation.
+- Bearish waterfall.
+- First pullback SELL.
+- Bearish breakout retest.
+
+Allow bullish reversal candidates when independently valid.
+
+### Sideways / Ranging
+
+Prioritize:
+
+- BSL/SSL sweeps.
+- Range high/low rejection.
+- Failed breakout.
+- Liquidity reversal.
+- Relevant OB/FVG reaction.
+- Confirmed local structure shifts.
+
+Reduce preference for weak trend-following continuation patterns.
+
+### Compression
+
+Prioritize:
+
+- Breakout watch.
+- Consolidation boundary tracking.
+- Volatility expansion confirmation.
+- Breakout retest.
+
+Avoid repeated signals inside a narrow range.
+
+### Confirmed Breakout Expansion
+
+Prioritize:
+
+- Momentum breakout.
+- Displacement continuation.
+- First pullback.
+- Waterfall or bullish cascade.
+- Retest continuation.
+
+### Potential Reversal
+
+Prioritize:
+
+- Liquidity sweeps.
+- CHoCH.
+- MSS.
+- Swing failure patterns.
+- Rejection.
+- Opposing displacement confirmation.
+
+### Choppy / Unclear Market
+
+Reduce weak signals and prioritize WAIT when necessary.
+
+Do not automatically disable every strategy.
+
+A high-quality isolated setup may still be eligible if the strategy supports that market condition.
+
+---
+
+# 8. SMART STRATEGY WEIGHTING
+
+Do not use simple hardcoded rules that permanently enable or disable large groups of algorithms.
+
+Implement configurable strategy eligibility and weighting.
+
+For each strategy, determine:
+
+- Whether it is enabled by the user.
+- Whether it is eligible in the detected regime.
+- Current regime suitability.
+- Existing setup quality.
+- Current timeframe compatibility.
+- Relevant volatility conditions.
+- Signal freshness.
+- Execution suitability.
+
+Use the central Phase 1 signal engine for final approval.
+
+### Example
+
+A bearish waterfall setup appears during a confirmed bearish trend.
+
+The adaptive engine may assign higher suitability to the existing waterfall strategy.
+
+However, it must not publish an independent duplicate SELL signal.
+
+Similarly, a bullish liquidity sweep during a bearish trend may remain eligible as a countertrend reversal candidate.
+
+Do not automatically reject valid opposite-direction setups.
+
+---
+
+# 9. AUTOMATIC ADAPTIVE SETTINGS ENGINE
+
+I currently have many strategy settings that are difficult to understand or configure manually.
+
+Build an intelligent settings manager.
+
+The engine must automatically adjust selected parameters based on:
+
+- Current market regime.
+- Volatility.
+- Trading style.
+- Symbol.
+- Timeframe.
+- Confirmed structural context.
+
+Do not change parameters arbitrarily.
+
+## 9.1 Settings That May Adapt
+
+Examples:
+
+- Minimum displacement ATR.
+- Signal confluence threshold within tested limits.
+- Momentum sequence sensitivity.
+- Candle body strength requirement.
+- Wick rejection sensitivity.
+- Liquidity equality tolerance.
+- Minimum meaningful sweep distance.
+- Swing detection sensitivity.
+- Breakout confirmation sensitivity.
+- Momentum exhaustion sensitivity.
+- Signal spacing.
+- Strategy suitability weights.
+- OB/FVG relevance thresholds.
+- Zone proximity tolerances.
+
+Use normalized, bounded adjustments.
+
+## 9.2 Settings That Must Remain Protected
+
+Never silently override:
+
+- Maximum risk per trade.
+- User-selected symbol.
+- User-selected trading style.
+- Hard execution safety limits.
+- Maximum allowed spread.
+- Data-quality restrictions.
+- Manual strategy exclusions.
+- Account-level risk settings.
+- Historical replay cutoff.
+- Explicitly locked user settings.
+
+Automatic adjustment should never weaken a hard user safety constraint.
+
+## 9.3 Settings Boundaries
+
+Every adaptive parameter must have:
+
+- Base value.
+- Minimum allowed value.
+- Maximum allowed value.
+- Current effective value.
+- Change reason.
+- Applicable market regime.
+- Effective timestamp.
+- Configuration version.
+
+Use tested bounds rather than unlimited self-optimization.
+
+Illustrative example:
+
+Base minimum displacement: 0.8 ATR.
+
+Low-volatility profile: 0.7 ATR.
+
+Normal profile: 0.8 ATR.
+
+Elevated-volatility profile: 1.0 ATR.
+
+These are test candidates, not proven optimal values.
+
+Only use revised values after verifying how they affect historical signal quality.
+
+---
+
+# 10. PREVENT CONSTANT SETTINGS CHANGES
+
+**Critical: Do not change all settings every time a candle closes.**
+
+Create an adaptive regime state machine.
+
+Suggested states:
+
+1. UNKNOWN.
+2. TREND_BULLISH.
+3. TREND_BEARISH.
+4. RANGE.
+5. TRANSITION.
+6. CHOPPY.
+
+Maintain volatility and momentum states separately.
+
+Implement:
+
+- Minimum regime persistence.
+- Confirmation thresholds.
+- Regime hysteresis.
+- Cooldown between major profile changes.
+- Confidence or evidence gap before switching.
+- Stable settings snapshots.
+- Explicit state transition reasons.
+
+### Example
+
+If the market is bullish for 20 candles, a single bearish candle must not instantly flip the regime to bearish.
+
+However, a clearly defined, significant structural break may justify an earlier transition.
+
+Use contextual, testable rules rather than a fixed delay for every situation.
+
+### Important
+
+A temporary pullback is not automatically a trend reversal.
+
+A large candle is not automatically a new market regime.
+
+A breakout attempt is not automatically a confirmed breakout.
+
+---
+
+# 11. AUTO, HYBRID AND MANUAL MODES
+
+Redesign the settings experience around three modes.
+
+## Mode A — AUTO
+
+Default for users who want simple operation.
+
+The system automatically selects:
+
+- Relevant strategy profiles.
+- Eligible existing detectors.
+- Adaptive thresholds.
+- Market regime sensitivity.
+- Momentum settings.
+- SMC confirmation weighting.
+- Suitable signal filtering.
+
+The user still controls instrument, trading style and hard risk limits.
+
+## Mode B — HYBRID
+
+The user controls important preferences while the engine adjusts unlocked parameters.
+
+Allow the user to lock:
+
+- Specific strategies.
+- Signal sensitivity.
+- Relevant timeframes.
+- Key thresholds.
+- Execution constraints.
+
+Auto adaptation must respect those locks.
+
+## Mode C — MANUAL
+
+Preserve current manual settings.
+
+No hidden automatic threshold changes.
+
+Maintain all existing strategy toggles and advanced parameters.
+
+### Settings precedence
+
+Implement explicit precedence:
+
+1. Hard safety and data-integrity rules.
+2. User locks and manual exclusions.
+3. Trading style profile.
+4. Market regime adaptation.
+5. Base saved settings.
+
+An automatic strategy profile must not silently re-enable a strategy the user explicitly disabled.
+
+---
+
+# 12. AUTOMATIC TRADING STYLE PROFILES
+
+Support:
+
+- Scalping.
+- Intraday.
+- Swing.
+
+Keep the selected trading style under user control.
+
+Do not silently change someone from Scalping to Swing.
+
+## 12.1 Scalping Profile
+
+Example:
+
+Entry timeframes:
+- 1m.
+- 3m.
+- 5m.
+
+HTF context:
+- 15m.
+- 1h.
+
+Prefer relevant:
+
+- Microstructure.
+- Liquidity sweeps.
+- Momentum breakout.
+- Waterfall.
+- First pullback.
+- Micro-MSS.
+- Fast continuation.
+
+Use appropriately normalized sensitivity and avoid large historical calculation overhead.
+
+## 12.2 Intraday Profile
+
+Example:
+
+Entry:
+- 5m.
+- 15m.
+
+Context:
+- 1h.
+- 4h.
+
+Prefer:
+
+- Session structure.
+- Intraday BOS/CHoCH.
+- FVG pullbacks.
+- OB retests.
+- Intraday breakouts.
+- Session liquidity.
+
+## 12.3 Swing Profile
+
+Example:
+
+Entry:
+- 15m.
+- 1h.
+
+Context:
+- 4h.
+- 1D.
+
+Prefer:
+
+- External market structure.
+- Major liquidity.
+- HTF OB/FVG.
+- Deep structural pullbacks.
+- Fibonacci confluence.
+- Trend continuation.
+
+These are starting profiles, not universal best settings.
+
+Phase 4 configures and coordinates the existing algorithms for different styles.
+
+Do not fully implement the dedicated Phase 5 scalping engine or Phase 6 swing engine yet.
+
+---
+
+# 13. SMART MULTI-TIMEFRAME MARKET CONTEXT
+
+Use independent but coordinated timeframe analysis.
+
+For example:
+
+5m entry timeframe.
+
+15m intermediate context.
+
+1h directional context.
+
+The system should report:
+
+- Entry timeframe direction.
+- Intermediate timeframe direction.
+- HTF direction.
+- Structure alignment.
+- Trend strength.
+- Conflicts.
+- Possible reversal context.
+
+Do not force every timeframe to agree.
+
+### Example
+
+1h: Bullish.
+
+15m: Bearish pullback.
+
+5m: Bullish MSS.
+
+This may represent a bullish continuation setup forming after a pullback.
+
+Do not automatically reject it just because the 15m candle direction is temporarily bearish.
+
+### Historical correctness
+
+Use only completed higher-timeframe information available at each historical decision point.
+
+Handle partial HTF candles explicitly.
+
+Never read the final high/low/close of a future-completed HTF candle during earlier replay steps.
+
+---
+
+# 14. AUTOMATIC SIGNAL QUALITY CONTROL
+
+Use adaptive regime information to improve the Phase 1 signal engine.
+
+The objective is to reduce weak signals without making signal generation excessively strict.
+
+### Balanced filtering
+
+Keep three sensitivity levels:
+
+- Light.
+- Balanced.
+- Selective.
+
+Use Balanced as the normal evaluation starting point.
+
+Within AUTO mode, select bounded strategy-specific parameters suitable for the regime.
+
+Do not reinterpret the filter preset as a guaranteed number of trades.
+
+### Important behavior
+
+- No repeated signals from one waterfall sequence.
+- No duplicate OB/FVG alerts.
+- No redundant BOS/MSS trade idea.
+- No artificial BUY/SELL balancing.
+- No automatic signal every candle.
+- No global rule requiring every SMC confirmation.
+- No suppression of independent valid countertrend opportunities.
+- No approval when risk/data-integrity constraints fail.
+
+A valid momentum setup should not necessarily require a liquidity sweep.
+
+A valid reversal should not necessarily require a trend-continuation signal.
+
+---
+
+# 15. AUTOMATIC STRATEGY EXPLANATION
+
+Every adaptive decision must be explainable.
+
+For each generated signal, record:
+
+- Market regime.
+- Volatility regime.
+- Trading style.
+- Effective strategy profile.
+- Active strategy.
+- BUY/SELL direction.
+- Confluence evidence.
+- Settings snapshot.
+- Adaptive changes applied.
+- Approval/rejection reason.
+- Signal timestamp.
+
+### Example
+
+Symbol: XAUUSD.
+
+Timeframe: 5m.
+
+Trading style: Scalping.
+
+Market regime: Strong Bearish.
+
+Volatility: Elevated.
+
+Selected strategy: Waterfall First Pullback.
+
+Adaptive decisions:
+- Bearish continuation weight increased.
+- Momentum threshold adjusted within tested bounds.
+- Exhaustion protection active.
+
+Signal: SELL candidate.
+
+Confirmation: Pending.
+
+These are illustrative explanations, not live trading recommendations.
+
+Provide the same level of explanation for rejected signals and WAIT decisions.
+
+---
+
+# 16. PROFESSIONAL MARKET REGIME DASHBOARD
+
+Improve the existing chart and settings UI without replacing them.
+
+Add a compact Market Intelligence section.
+
+Display:
+
+- Current market direction.
+- Trend strength.
+- Volatility state.
+- Momentum condition.
+- Active trading style.
+- Auto/Hybrid/Manual status.
+- Effective strategy profile.
+- Signal filtering level.
+- Last regime transition.
+- Explanation of current adaptive settings.
+
+### Suggested UI
+
+Market Intelligence
+
+Market Direction: Bearish.
+
+Trend Strength: Strong.
+
+Volatility: Elevated.
+
+Momentum: Waterfall Expansion.
+
+Trading Style: Scalping.
+
+Active Profile: Bearish Momentum.
+
+Settings Mode: AUTO.
+
+### Strategy Details
+
+Show a collapsible list of:
+
+- Preferred strategies.
+- Eligible alternatives.
+- User-disabled strategies.
+- Current adaptive parameters.
+- Settings changes.
+- Last change reason.
+
+Do not overwhelm the screen with unnecessary text.
+
+Keep chart performance, responsiveness and current theme intact.
+
+---
+
+# 17. SETTINGS UX IMPROVEMENT
+
+Update `StrategySettings.jsx` carefully.
+
+Recommended organization:
+
+### General
+
+- Trading Style.
+- Settings Mode.
+- Signal Sensitivity.
+- Show Approved Signals Only.
+
+### Auto Intelligence
+
+- Enable Market Regime Detection.
+- Enable Adaptive Settings.
+- Trend Sensitivity.
+- Volatility Sensitivity.
+- Strategy Auto Selection.
+- Adaptive Confirmation.
+- Regime Stability.
+
+### Trading Profiles
+
+- Scalping.
+- Intraday.
+- Swing.
+
+### Advanced
+
+Keep all existing Phase 1/2/3 strategy settings.
+
+Auto mode should be simple by default.
+
+Use collapsible advanced sections.
+
+Preserve existing saved settings and add versioned migration logic for new fields.
+
+Do not overwrite stored manual configurations simply because AUTO mode becomes available.
+
+---
+
+# 18. HISTORICAL DATA AND MARKET SESSION HANDLING
+
+Preserve Finage historical fetching, including the existing automatic two-day API chunking.
+
+Requirements:
+
+- UTC epoch timestamp consistency.
+- Correct chronological candle order.
+- No duplicate candles.
+- No false data gaps at chunk boundaries.
+- Correct timeframe.
+- Correct symbol.
+- Proper indicator warm-up.
+- Correct session boundaries.
+- Correct available HTF candles.
+- Correct cached historical datasets.
+
+### Session intelligence
+
+Use appropriate market/session calendars when available.
+
+Handle:
+
+- Asian session.
+- London session.
+- New York session.
+- Forex weekend closures.
+- Partial data periods.
+- Market holidays when calendar information is available.
+
+Use IANA timezones and timezone-aware conversion for London and New York daylight-saving changes.
+
+Do not use fixed GMT offsets as a substitute for exchange/session-local rules unless explicitly required by the existing strategy.
+
+Do not treat closed-market candles or missing API data as genuine low-volatility trading periods.
+
+---
+
+# 19. MARKET REGIME HISTORY AND REPLAY
+
+The adaptive engine must be replay-aware.
+
+For each completed candle, preserve:
+
+- Regime state.
+- Volatility state.
+- Active strategy profile.
+- Effective settings snapshot.
+- Regime transition time.
+- Confirmation evidence.
+- Strategy eligibility at that time.
+
+### Critical rule
+
+Historical replay must reproduce the decisions that would have been possible using information available at the time.
+
+Do not calculate current optimal settings using all future candles and then apply them backward to historical signals.
+
+### Example
+
+At October 10, 10:00:
+
+Market regime: Range.
+
+At October 10, 11:00:
+
+Market regime: Breakout Expansion.
+
+The strategy profile must change only once the transition becomes identifiable using data available at that time.
+
+Do not retroactively apply the breakout profile to 10:00.
+
+---
+
+# 20. ADAPTIVE SETTINGS SNAPSHOT SYSTEM
+
+Store effective settings with each signal.
+
+Suggested metadata:
+
+- `regimeId`
+- `regimeVersion`
+- `directionalRegime`
+- `volatilityRegime`
+- `tradingStyle`
+- `settingsMode`
+- `profileId`
+- `profileVersion`
+- `effectiveSettings`
+- `strategyWeights`
+- `decisionTimestamp`
+- `adaptationReasons`
+
+Use the existing application data contracts when possible.
+
+A historical signal must retain the parameters that were active when it was created.
+
+If the market regime changes later, existing historical entries and their original signal reasoning must not silently change.
+
+---
+
+# 21. AVOID OVERFITTING AND FAKE AUTOMATIC OPTIMIZATION
+
+**Extremely important.**
+
+Do not create a system that constantly adjusts thresholds to maximize win rate over the most recent candles.
+
+That approach can overfit historical noise.
+
+For Phase 4:
+
+- Prefer deterministic adaptive rules.
+- Use bounded parameter profiles.
+- Keep parameters versioned.
+- Validate on multiple market regimes.
+- Separate calibration data from evaluation data.
+- Use chronological train/validation/test splits.
+- Use walk-forward evaluation where practical.
+- Include realistic spread, slippage and trading costs in performance analysis.
+- Compare adaptive settings against fixed baseline settings.
+
+Do not use future trade outcomes in a historical decision unless they were already known before that decision timestamp.
+
+Never optimize against the test set and then report its results as unseen performance.
+
+AI/ML is not required for this phase.
+
+A transparent, deterministic adaptive engine is preferable to an unvalidated black-box model.
+
+---
+
+# 22. PERFORMANCE OPTIMIZATION
+
+The adaptive system must operate efficiently across large historical datasets.
+
+Implement:
+
+- Incremental ATR updates.
+- Cached trend calculations.
+- Rolling volatility measures.
+- Efficient regime-state updates.
+- Stable settings snapshots.
+- Cached multi-timeframe context.
+- Strategy selection only when relevant inputs change.
+- Minimal React rerenders.
+- Efficient chart updates.
+- Proper request cancellation.
+- No repeated calculations on unchanged data.
+
+Do not run full historical strategy analysis every time the settings drawer opens.
+
+Do not generate new settings objects unnecessarily every render.
+
+Prevent infinite `useEffect` or state-update loops.
+
+Measure before and after performance.
+
+---
+
+# 23. REQUIRED AUTOMATED TESTS
+
+Implement unit, integration and regression tests.
+
+### Test 1 — Strong Bullish Trend
+
+Expected:
+- Bullish regime identified.
+- Bullish continuation strategies preferred.
+- SELL reversal candidates still evaluated independently.
+
+### Test 2 — Strong Bearish Trend
+
+Expected:
+- Bearish regime identified.
+- Waterfall and bearish continuation strategies appropriately prioritized.
+
+### Test 3 — Sideways Market
+
+Expected:
+- Ranging regime detected.
+- Suitable reversal strategies prioritized.
+- Weak trend-continuation noise reduced.
+
+### Test 4 — Volatility Compression
+
+Expected:
+- Compression identified without generating false breakout confirmation.
+
+### Test 5 — Breakout Expansion
+
+Expected:
+- Correct transition from range/compression to confirmed expansion.
+
+### Test 6 — High-Volatility Chop
+
+Expected:
+- Elevated risk/uncertainty recognized.
+- No flood of contradictory signals.
+
+### Test 7 — Trend Pullback
+
+Expected:
+- Ordinary bearish pullback inside bullish structure does not automatically reverse the overall bullish regime.
+
+### Test 8 — Confirmed Trend Reversal
+
+Expected:
+- Regime changes when meaningful structural evidence is confirmed.
+
+### Test 9 — Regime Hysteresis
+
+Expected:
+- Repeated minor fluctuations do not cause continuous regime switching.
+
+### Test 10 — Settings Boundaries
+
+Expected:
+- Every adaptive parameter remains within its allowed range.
+
+### Test 11 — AUTO Mode
+
+Expected:
+- Strategy selection and eligible settings adapt to market conditions.
+
+### Test 12 — HYBRID Mode
+
+Expected:
+- User-locked settings remain unchanged.
+- Unlocked settings adapt.
+
+### Test 13 — MANUAL Mode
+
+Expected:
+- No hidden automatic threshold changes.
+
+### Test 14 — Scalping Profile
+
+Expected:
+- Correct lower-timeframe context and strategy priorities.
+
+### Test 15 — Swing Profile
+
+Expected:
+- Correct higher-timeframe context and appropriate strategy priorities.
+
+### Test 16 — Multi-Timeframe Synchronization
+
+Expected:
+- No future HTF candle leakage.
+
+### Test 17 — Historical Replay
+
+Expected:
+- Regime and settings history reproduced accurately.
+
+### Test 18 — Settings Snapshot
+
+Expected:
+- Historical signals preserve original decision-time settings.
+
+### Test 19 — BUY/SELL Independence
+
+Expected:
+- No unintended one-direction bias.
+
+### Test 20 — Phase 2 Waterfall
+
+Expected:
+- Existing waterfall and pullback setups remain functional with adaptive strategy weighting.
+
+### Test 21 — Phase 3 SMC
+
+Expected:
+- Existing liquidity, BOS, CHoCH, MSS, OB, FVG and Fibonacci strategies remain functional.
+
+### Test 22 — Historical Chunk Boundaries
+
+Expected:
+- Regime state continues correctly across merged two-day Finage data chunks.
+
+### Test 23 — Market Closures
+
+Expected:
+- Missing non-trading periods do not generate artificial volatility or false momentum.
+
+### Test 24 — Fixed vs Adaptive Baseline
+
+Compare identical historical datasets and realistic execution assumptions.
+
+Report:
+
+- Total signals.
+- Approved BUY signals.
+- Approved SELL signals.
+- Duplicate count.
+- Win rate for properly resolved trades.
+- Average reward-to-risk.
+- Net expectancy.
+- Profit factor.
+- Maximum drawdown.
+- Performance by market regime.
+
+Do not report a better win rate as proof of a better strategy if expectancy or drawdown deteriorates.
+
+### Test 25 — Out-of-Sample Validation
+
+Evaluate preset adaptations on unseen chronological test periods.
+
+Expected:
+- No look-ahead.
+- No leakage from future outcomes.
+- Transparent results, including underperformance.
+
+### Test 26 — Performance and Determinism
+
+Expected:
+- Stable outputs for identical inputs/settings versions.
+- No excessive memory growth.
+- No severe chart or replay slowdown.
+
+---
+
+# 24. IMPLEMENTATION ORDER
+
+Follow this exact order:
+
+1. Audit the existing Phase 1–3 architecture.
+2. Reuse or improve existing trend/ATR utilities.
+3. Build directional market regime classification.
+4. Implement volatility regime classification.
+5. Implement transition and breakout states.
+6. Build regime persistence and hysteresis.
+7. Create strategy suitability mapping.
+8. Implement bounded adaptive settings.
+9. Implement settings snapshots and versioning.
+10. Add AUTO/HYBRID/MANUAL controls.
+11. Implement scalping/intraday/swing configuration profiles.
+12. Integrate regime data with the Phase 1 signal engine.
+13. Integrate Phase 2 candle psychology and waterfall.
+14. Integrate Phase 3 SMC/ICT.
+15. Implement market regime dashboard.
+16. Validate historical replay.
+17. Implement baseline and out-of-sample comparisons.
+18. Optimize performance.
+19. Run complete regression tests.
+20. Verify existing functionality remains intact.
+
+Do not start the next phase automatically.
+
+---
+
+# 25. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rewrite the existing trading application.
+- Replace the HTML5 Canvas renderer.
+- Break Finage historical data integration.
+- Break two-day API chunk fetching.
+- Break UTC epoch candle merging.
+- Break Phase 1 BUY/SELL detection.
+- Break signal deduplication.
+- Break Phase 2 candle psychology.
+- Break waterfall momentum signals.
+- Break Phase 3 SMC calculations.
+- Remove any existing strategy.
+- Overwrite saved manual settings.
+- Force BUY and SELL counts to match.
+- Change adaptive thresholds every candle without stability controls.
+- Automatically switch user trading styles.
+- Override hard risk restrictions.
+- Use future candles to determine earlier settings.
+- Use simulated candles as genuine market evidence.
+- Artificially manufacture trade opportunities.
+- Make the strategy engine excessively strict.
+- Allow a single indicator to dictate all strategy decisions.
+- Promise 70%, 80% or 90% accuracy.
+- Introduce black-box AI without validation.
+- Start Phase 5 or later automatically.
+
+Keep the adaptive engine deterministic, explainable, performant and compatible with the existing platform.
+
+---
+
+# 26. PHASE 4 COMPLETION CRITERIA
+
+Phase 4 is complete only when:
+
+1. Market regime classification works for bullish, bearish, ranging and unclear conditions.
+2. Volatility and transition states are handled independently.
+3. Automatic strategy selection responds to confirmed regime changes.
+4. Adaptive settings stay within tested boundaries.
+5. AUTO, HYBRID and MANUAL modes work correctly.
+6. User-locked settings remain protected.
+7. Scalping, intraday and swing profiles are supported.
+8. Regime switching does not occur excessively.
+9. Existing Phase 1/2/3 strategies remain functional.
+10. Historical replay reproduces decision-time adaptations.
+11. No future-data leakage or repainting is introduced.
+12. Signal quality can be evaluated against fixed baselines.
+13. Out-of-sample results are reported transparently.
+14. Settings persistence and migrations work.
+15. Chart performance remains acceptable.
+16. Automated tests and available lint, type-check and production build commands pass, or failures are documented accurately.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+- Files created and modified.
+- Market regime classification logic.
+- Volatility classification rules.
+- Regime state machine.
+- Strategy suitability matrix.
+- Adaptive parameter rules and boundaries.
+- AUTO/HYBRID/MANUAL configuration behavior.
+- Trading style profile definitions.
+- Settings snapshot/versioning implementation.
+- Signal engine integration.
+- Chart and dashboard changes.
+- BUY/SELL signal counts before and after adaptation.
+- Signal performance comparison against fixed settings.
+- Replay/non-repainting test results.
+- Out-of-sample validation results.
+- Performance benchmarks.
+- Known limitations and remaining issues.
+
+**FINAL OBJECTIVE**
+
+Upgrade TradeZella Canvas into a professional, automatic market-adaptive signal analysis application.
+
+It must understand market direction, trend strength, volatility, ranging conditions, breakout expansion, and structural transitions.
+
+It must select appropriate existing trading strategies and adapt eligible settings for scalping, intraday and swing analysis, while maintaining BUY/SELL independence, moderate filtering, clean signals, deterministic historical replay and safe user-controlled limits.
+
+The user should be able to select a symbol, timeframe and trading style, enable AUTO mode, and understand exactly which strategies and settings the engine is using and why.
+
+**Implement Phase 4 completely. Preserve all working functionality. Do not begin Phase 5 automatically.**

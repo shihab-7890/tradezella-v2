@@ -1,0 +1,1597 @@
+# PHASE 7 — UNIFIED SIGNAL SCORING, MULTI-STRATEGY CONFLICT RESOLUTION & INTELLIGENT TRADE DECISION ENGINE
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative trading systems architect, algorithmic strategy engineer, multi-timeframe trading researcher, risk-aware signal systems developer, and expert Next.js engineer.
+
+Your task is to implement **Phase 7 — Unified Signal Scoring, Multi-Strategy Conflict Resolution & Intelligent Trade Decision Engine** into my existing TradeZella Canvas application.
+
+This is one of the most important phases of the entire project.
+
+My application already contains multiple trading strategies, but I want it to behave as one coordinated professional signal finder rather than a collection of independent indicators generating excessive BUY and SELL arrows.
+
+**Implement actual code, integration, tests, and functional UI improvements. Do not provide only a plan.**
+
+### CRITICAL REQUIREMENTS
+
+- Preserve all existing functionality.
+- Do not rewrite the application from scratch.
+- Do not remove existing strategies.
+- Do not break Finage market data fetching.
+- Do not break two-day historical API chunking.
+- Do not break historical replay.
+- Do not break AUTO/HYBRID/MANUAL settings.
+- Do not reintroduce one-direction signal bias.
+- Do not make filtering so strict that valid opportunities disappear.
+- Do not publish duplicate trade ideas.
+- Do not fabricate trading signals, confidence probabilities, or backtesting results.
+- Do not start Phase 8 automatically.
+
+---
+
+# 1. EXISTING APPLICATION ARCHITECTURE
+
+The application includes, or has been designed to include:
+
+## Phase 1 — Core Signal Engine
+
+- Bidirectional BUY/SELL detection.
+- Centralized signal approval.
+- Confluence scoring.
+- Signal deduplication.
+- Signal confirmation timing.
+- MTF synchronization.
+- Non-repainting calculations.
+- Signal explanations.
+
+## Phase 2 — Candle Psychology
+
+- Candle body and wick analysis.
+- Bullish and bearish price-action strength.
+- Rejection and exhaustion.
+- Momentum sequences.
+- Waterfall detection.
+- First-pullback continuation.
+- Compression and expansion.
+
+## Phase 3 — Advanced SMC
+
+- Internal/external structure.
+- BOS.
+- CHoCH.
+- MSS.
+- Liquidity pools.
+- BSL/SSL sweeps.
+- Order Blocks.
+- FVG/IFVG.
+- Fibonacci.
+- Premium/discount dealing ranges.
+
+## Phase 4 — Adaptive Market Intelligence
+
+- Market regime detection.
+- Trend strength.
+- Volatility classification.
+- AUTO/HYBRID/MANUAL modes.
+- Adaptive strategy weighting.
+- Scalping/intraday/swing profiles.
+- Bounded parameter adjustments.
+
+## Phase 5 — Scalping Engine
+
+- 1m/3m/5m scalping.
+- Microstructure.
+- Liquidity sweep entries.
+- Waterfall continuation.
+- Fast breakout/retest.
+- Precision entry planning.
+- Scalp-specific risk context.
+
+## Phase 6 — Intraday & Swing Engines
+
+- Intraday structure.
+- HTF market structure.
+- Major liquidity.
+- Deep Fibonacci pullbacks.
+- HTF OB/FVG.
+- Trend continuation.
+- Reversal setups.
+- Large-movement target planning.
+
+Before starting, inspect the actual repository to confirm what has been implemented.
+
+Do not assume previous phase prompts represent verified code.
+
+Reuse all stable existing functionality.
+
+---
+
+# 2. MAIN OBJECTIVE
+
+Build a professional **Unified Trading Decision Engine**.
+
+Currently, multiple strategies may recognize the same underlying market movement.
+
+For example, one bearish move may trigger:
+
+- Bearish BOS.
+- Bearish MSS.
+- Bearish FVG.
+- Bearish Order Block.
+- Waterfall continuation.
+- Momentum breakout.
+- HTF bearish alignment.
+
+The system should not automatically generate seven separate SELL trades.
+
+Instead, it should determine:
+
+1. Which observations belong to the same underlying setup?
+2. Which observations provide genuinely independent evidence?
+3. Is the setup valid?
+4. Is the direction BUY or SELL?
+5. Is the trade scalping, intraday or swing?
+6. Is it a reversal, continuation or breakout?
+7. Is the entry already confirmed?
+8. Does the setup have realistic risk/reward?
+9. Are conflicting setups present?
+10. Has this opportunity already been published?
+11. Is the setup still valid?
+12. Should the system approve, reject, watch or wait?
+
+Expected output:
+
+**One primary signal per underlying trade idea, containing all relevant supporting evidence, while preserving genuinely independent opportunities.**
+
+---
+
+# 3. COMPLETE CODE AUDIT
+
+Inspect:
+
+- `src/lib/liquidity.js`
+- Existing Phase 1 signal engine.
+- Phase 2 candle psychology modules.
+- Phase 2 waterfall modules.
+- Phase 3 SMC modules.
+- Phase 4 adaptive settings and regime modules.
+- Phase 5 scalping modules.
+- Phase 6 intraday/swing modules.
+- `src/app/page.jsx`
+- `src/services/finageService.js`
+- `src/app/api/finage/route.js`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+
+Inspect the complete existing signal pipeline.
+
+Identify:
+
+- All strategy output formats.
+- Current signal scoring systems.
+- Current approval conditions.
+- Current deduplication rules.
+- Existing candidate states.
+- Existing direction filters.
+- Existing adaptive settings.
+- Current signal lifecycle.
+- Current SL/TP integration.
+- Existing historical replay calculations.
+- Current chart signal rendering.
+- Existing trade-log synchronization.
+
+Do not create another competing signal approval system.
+
+Refactor the existing centralized signal engine into the unified decision layer where appropriate.
+
+Suggested modules only if necessary:
+
+- `src/lib/signals/unifiedSignalEngine.js`
+- `src/lib/signals/evidenceNormalizer.js`
+- `src/lib/signals/confluenceScoring.js`
+- `src/lib/signals/conflictResolver.js`
+- `src/lib/signals/setupDeduplication.js`
+- `src/lib/signals/signalLifecycle.js`
+- `src/lib/signals/tradeDecision.js`
+- `src/lib/signals/signalDiagnostics.js`
+
+Follow existing code conventions and preserve backward compatibility.
+
+---
+
+# 4. STANDARDIZED SIGNAL CANDIDATE MODEL
+
+Every strategy must communicate through one normalized candidate format.
+
+Suggested fields:
+
+- `candidateId`
+- `setupId`
+- `symbol`
+- `timeframe`
+- `tradingStyle`
+- `strategy`
+- `strategyFamily`
+- `setupType`
+- `direction`
+- `marketRegime`
+- `volatilityRegime`
+- `formationTimestamp`
+- `confirmationTimestamp`
+- `decisionTimestamp`
+- `entryType`
+- `entryReference`
+- `invalidation`
+- `targetPlan`
+- `evidence`
+- `rawQualityScore`
+- `status`
+- `settingsSnapshot`
+- `sourceEvents`
+
+Use the existing project data contracts where possible.
+
+### Important
+
+Separate:
+
+- Raw pattern observations.
+- Strategy setup candidates.
+- Approved trade ideas.
+- Simulated or actual execution records.
+
+A detected FVG is not automatically an approved trade.
+
+A confirmed MSS is not automatically a filled order.
+
+Do not mix signal detection, signal approval, and trade execution into one state.
+
+---
+
+# 5. PROFESSIONAL UNIFIED SIGNAL SCORING
+
+Build one unified and explainable quality framework.
+
+The scoring system should work across:
+
+- Scalping.
+- Intraday.
+- Swing.
+- Reversal.
+- Continuation.
+- Breakout.
+- Momentum.
+- Liquidity sweep setups.
+
+## 5.1 Scoring Categories
+
+Evaluate the following evidence groups.
+
+### A. Market Structure
+
+- BOS validity.
+- MSS/CHoCH relevance.
+- Swing confirmation.
+- Structural direction.
+- Structure freshness.
+
+### B. Liquidity
+
+- BSL/SSL relevance.
+- Confirmed sweep.
+- Liquidity reclaim.
+- Nearby opposing liquidity.
+- Level significance.
+
+### C. Candle Psychology
+
+- Displacement quality.
+- Rejection strength.
+- Candle close position.
+- Momentum continuation.
+- Exhaustion risk.
+
+### D. Zone Confluence
+
+- Valid OB.
+- Active FVG.
+- IFVG.
+- Fibonacci relationship.
+- Premium/discount relevance.
+
+### E. Multi-Timeframe Context
+
+- HTF trend.
+- Setup timeframe structure.
+- Entry timeframe alignment.
+- Trend continuation/reversal context.
+
+### F. Market Regime Suitability
+
+- Trend.
+- Range.
+- Breakout.
+- Compression.
+- Transition.
+- Volatility condition.
+
+### G. Entry & Risk Suitability
+
+- Entry freshness.
+- Stop-loss validity.
+- Remaining target distance.
+- Reward-to-risk.
+- Spread feasibility.
+- Extension/chase risk.
+
+## 5.2 Normalize Scoring
+
+Create a consistent 0–100 quality scale for the new internal scoring model.
+
+For example:
+
+- 90–100: A+.
+- 80–89: A.
+- 65–79: B.
+- 50–64: Watch.
+- Below 50: Low quality.
+
+These are illustrative classifications, not statistically validated thresholds.
+
+Preserve compatibility with the existing Phase 1 0–10 confluence settings using a versioned migration or explicit conversion layer.
+
+Do not silently reinterpret historical stored scores.
+
+## 5.3 Avoid Double-Counting
+
+Very important.
+
+BOS, MSS, displacement, OB and FVG may all be consequences of one underlying market impulse.
+
+Do not count them as five independent confirmations.
+
+Group correlated evidence.
+
+Use normalized category scores or capped evidence contributions.
+
+Document:
+
+- Which components contribute.
+- Their weights.
+- Their maximum contribution.
+- Which evidence is correlated.
+- Which components are missing.
+
+Do not penalize a valid strategy simply because an unrelated indicator does not apply.
+
+---
+
+# 6. STRATEGY-SPECIFIC QUALITY PROFILES
+
+Do not score all strategies using exactly the same evidence requirements.
+
+### Waterfall Continuation
+
+Relevant:
+
+- Directional impulse.
+- Sequential momentum.
+- Continuation structure.
+- Pullback quality.
+- Exhaustion risk.
+- Entry timing.
+
+### Liquidity Sweep Reversal
+
+Relevant:
+
+- Established liquidity.
+- Sweep confirmation.
+- Rejection.
+- Structural transition.
+- Reversal timing.
+
+### Order Block Retest
+
+Relevant:
+
+- OB validity.
+- Zone freshness.
+- Associated displacement.
+- Retest behavior.
+- Entry confirmation.
+
+### Breakout Continuation
+
+Relevant:
+
+- Range significance.
+- Breakout displacement.
+- Follow-through.
+- Retest when applicable.
+- Remaining target distance.
+
+### Swing Continuation
+
+Relevant:
+
+- Macro structure.
+- Higher-timeframe context.
+- Pullback depth.
+- Significant liquidity.
+- Structural invalidation.
+
+Allow different scoring weights while keeping the final 0–100 scale interpretable.
+
+Validate score distributions by strategy family.
+
+Do not assume scores from different strategy families imply equal win probabilities.
+
+---
+
+# 7. ADVANCED MULTI-STRATEGY CONFLUENCE
+
+Build an evidence aggregation system.
+
+Example:
+
+A single SELL setup may contain:
+
+- Bearish BOS.
+- Bearish FVG.
+- Bearish Order Block.
+- Waterfall confirmation.
+- Bearish HTF regime.
+
+Rather than publishing five signals:
+
+Create one trade idea with:
+
+Primary Strategy: Bearish Continuation.
+
+Supporting Evidence:
+- BOS.
+- FVG.
+- OB.
+- Waterfall.
+- HTF trend.
+
+Maintain references to the underlying evidence events.
+
+### Requirements
+
+1. Merge related evidence from the same underlying setup.
+2. Preserve the originating strategy.
+3. Avoid duplicate signals.
+4. Preserve meaningful confirmation history.
+5. Do not artificially raise scores by adding more correlated indicators.
+6. Update candidate evidence without changing already published historical facts.
+7. Preserve independent opportunities even when their directions match.
+
+Use deterministic, explainable evidence grouping.
+
+---
+
+# 8. ADVANCED BUY/SELL CONFLICT RESOLUTION
+
+**Critical feature.**
+
+Sometimes the system may detect both BUY and SELL opportunities near the same time.
+
+Do not simply discard one direction.
+
+Classify the conflict.
+
+## Conflict Type A — Same Setup, Opposite Direction
+
+Example:
+
+The same level appears to produce both BUY and SELL candidates.
+
+Investigate whether:
+
+- One candidate is invalid.
+- One is unconfirmed.
+- One is a breakout continuation.
+- The other is a failed-breakout reversal.
+
+Apply setup-specific structural validity and timing.
+
+If the evidence remains contradictory, classify the setup as uncertain or WAIT.
+
+Do not arbitrarily choose BUY because its score is one point higher.
+
+## Conflict Type B — Different Timeframes
+
+Example:
+
+5m: SELL reversal scalp.
+
+4h: BUY trend continuation.
+
+Both may be valid for different objectives.
+
+Keep them independently visible.
+
+Label:
+
+- Short-term countertrend.
+- Higher-timeframe continuation.
+- Different holding horizons.
+
+Do not suppress a 5m scalp simply because the 4h trend points upward.
+
+## Conflict Type C — Same Timeframe, Different Strategies
+
+Example:
+
+5m breakout BUY.
+
+5m failed-breakout SELL.
+
+Compare:
+
+- Confirmation timestamps.
+- Actual breakout/reclaim.
+- Setup invalidation.
+- Freshness.
+- Structure.
+- Entry eligibility.
+
+Resolve according to current completed-candle evidence.
+
+Do not use future outcomes to determine which earlier signal should have been approved.
+
+## Conflict Type D — Reversal vs Continuation
+
+Example:
+
+Bearish waterfall continuation.
+
+Potential bullish exhaustion reversal.
+
+Do not immediately convert exhaustion into a BUY signal.
+
+The bullish reversal requires its own confirmation.
+
+Maintain separate states until one or both independently qualify.
+
+## Conflict Type E — Independent Opposite Opportunities
+
+If two separate price structures genuinely support opposite-direction trade ideas, preserve both analytical candidates.
+
+Their real-money simultaneous execution may be restricted by a separate account-level risk policy.
+
+Do not confuse account execution constraints with signal validity.
+
+---
+
+# 9. INTELLIGENT TRADE DECISION ENGINE
+
+Build a deterministic final decision layer.
+
+Supported outcomes:
+
+- BUY APPROVED.
+- SELL APPROVED.
+- WATCH BUY.
+- WATCH SELL.
+- WAIT.
+- REJECTED.
+- EXPIRED.
+- INVALIDATED.
+
+Do not force the output to BUY or SELL.
+
+### BUY APPROVED
+
+Use when a valid bullish strategy has:
+
+- Required confirmation.
+- Valid entry conditions.
+- No hard data-quality failure.
+- Acceptable risk context.
+- Validated approval score.
+
+### SELL APPROVED
+
+Use equivalent bearish rules.
+
+### WATCH
+
+Use when a potentially valid setup is developing but not ready for entry.
+
+### WAIT
+
+Use when:
+
+- No suitable setup exists.
+- Evidence is ambiguous.
+- Market conditions are unsuitable.
+- Required confirmation is missing.
+- Risk/reward is inadequate.
+- Data quality is insufficient.
+
+### REJECTED
+
+Use when an objective eligibility rule fails.
+
+Every decision must provide reason codes.
+
+A WAIT decision is not a trading failure.
+
+---
+
+# 10. PROFESSIONAL CONFLICT PRIORITY RULES
+
+Use an explicit decision hierarchy.
+
+### Priority 1 — Data Integrity
+
+Reject decisions based on:
+
+- Invalid candles.
+- Incorrect timestamps.
+- Missing required data.
+- Stale market state.
+- Future-data leakage.
+- Unidentified simulated market data.
+
+### Priority 2 — Setup Validity
+
+Confirm:
+
+- Strategy conditions.
+- Correct direction.
+- Valid confirmation timestamp.
+- Active setup.
+- No invalidation.
+
+### Priority 3 — Execution/Risk Feasibility
+
+Check:
+
+- Valid entry.
+- Valid SL.
+- Relevant TP.
+- Spread assumptions.
+- Reward-to-risk.
+- Entry extension.
+- Setup expiration.
+
+### Priority 4 — Quality Ranking
+
+Compare valid setups using normalized scoring.
+
+### Priority 5 — Context and Conflicts
+
+Apply:
+
+- Trading style.
+- Timeframe.
+- Market regime.
+- Reversal/continuation classification.
+- Independent opportunity handling.
+
+### Priority 6 — Presentation
+
+Rank and display the best eligible opportunities.
+
+Do not apply presentation limits as destructive filters to the underlying candidate dataset.
+
+For example, showing the top three signals must not delete the others.
+
+---
+
+# 11. SCALPING, INTRADAY AND SWING COORDINATION
+
+Keep the engines independent but coordinated.
+
+### Scalping
+
+- 1m / 3m / 5m.
+- Fast entry eligibility.
+- Short setup expiry.
+- Microstructure.
+- Waterfall.
+- Fast reversals.
+
+### Intraday
+
+- 5m / 15m / 30m / 1h.
+- Session structure.
+- Larger intraday liquidity.
+- Breakout and retest.
+- Session-based opportunity horizon.
+
+### Swing
+
+- 15m / 1h / 4h / Daily.
+- Macro structure.
+- Major liquidity.
+- Deep retracement.
+- Larger targets.
+- Multi-session duration.
+
+### Critical
+
+A 5m BUY and 4h BUY may both be valid, separate opportunities.
+
+A 5m SELL scalp and 4h BUY swing may also both be analytically valid.
+
+Do not use global symbol-level deduplication that removes all but one signal.
+
+Deduplicate by underlying setup identity and relevant trading style.
+
+---
+
+# 12. SMART DUPLICATE SUPPRESSION
+
+Preserve Phase 1 duplicate handling but improve its consistency across all engines.
+
+Use setup-based identity.
+
+Possible components:
+
+- Symbol.
+- Trading style.
+- Strategy family.
+- Structural event ID.
+- Liquidity event ID.
+- OB/FVG zone ID.
+- Waterfall sequence ID.
+- Direction.
+- Confirmation event.
+
+### Important cases
+
+One waterfall sequence generating five related SELL detections:
+
+Expected: One primary trade idea.
+
+A valid first pullback occurring after the initial waterfall entry:
+
+Expected: Eligible distinct setup if independently confirmed.
+
+Two different liquidity sweeps in the same hour:
+
+Expected: Both may remain eligible.
+
+A separate swing setup on 4h:
+
+Expected: Not suppressed by an unrelated 5m scalp.
+
+### Idempotency
+
+Reprocessing the same candles with unchanged settings must not generate new duplicate signal IDs.
+
+Use deterministic stable IDs.
+
+---
+
+# 13. SIGNAL LIFECYCLE ENGINE
+
+Implement one common lifecycle with strategy-specific policies.
+
+Suggested states:
+
+1. DETECTED.
+2. CANDIDATE.
+3. CONFIRMING.
+4. APPROVED.
+5. WAITING_FOR_ENTRY.
+6. TRIGGERED.
+7. ACTIVE.
+8. PARTIALLY_CLOSED.
+9. CLOSED_TP.
+10. CLOSED_SL.
+11. EXPIRED.
+12. INVALIDATED.
+13. REJECTED.
+
+Keep actual execution records separate from analytical signal states.
+
+For example, a signal may be APPROVED but its limit entry may never be triggered.
+
+Do not count it as a winning or losing trade.
+
+Every transition must contain:
+
+- Previous state.
+- New state.
+- Timestamp.
+- Reason.
+- Relevant candle.
+- Settings version.
+
+Maintain an append-only decision/event history where practical.
+
+Historical replay must reconstruct the same state transitions.
+
+---
+
+# 14. SIGNAL STALENESS AND ENTRY READINESS
+
+A signal should not remain approved indefinitely.
+
+Implement strategy-specific freshness rules.
+
+### Scalping
+
+Shorter validity based on:
+
+- Candle count.
+- Structure.
+- Price extension.
+- Entry zone availability.
+
+### Intraday
+
+Validity based on:
+
+- Session.
+- Relevant structure.
+- Retest timing.
+- Invalidation.
+
+### Swing
+
+Longer validity based on:
+
+- HTF zone.
+- Macro structure.
+- Multi-session conditions.
+- Structural invalidation.
+
+Track:
+
+- Formation time.
+- Confirmation time.
+- Entry eligibility.
+- Current validity.
+- Expiration time or condition.
+
+Avoid allowing historical signals to trigger long after their original setup becomes irrelevant.
+
+---
+
+# 15. ADAPTIVE SCORE THRESHOLDS
+
+Integrate with Phase 4.
+
+Support:
+
+- AUTO.
+- HYBRID.
+- MANUAL.
+
+### AUTO
+
+Use bounded regime-aware quality thresholds.
+
+### HYBRID
+
+Respect locked values and strategy exclusions.
+
+### MANUAL
+
+Use exactly the selected configuration without hidden changes.
+
+Keep:
+
+- Light.
+- Balanced.
+- Selective.
+
+### Critical
+
+Do not make adaptation arbitrarily stricter.
+
+Do not continuously modify the score threshold after every losing signal.
+
+Do not retrospectively tune historical scores using future outcomes.
+
+Any adaptive threshold must have:
+
+- Base value.
+- Min/max.
+- Regime reason.
+- Effective timestamp.
+- Profile version.
+- Historical snapshot.
+
+Hard risk/data-quality guards must remain mandatory regardless of filtering mode.
+
+---
+
+# 16. SIGNAL RANKING AND OPPORTUNITY PRIORITIZATION
+
+Build a ranked opportunity list.
+
+Example categories:
+
+- Best Scalping Opportunities.
+- Best Intraday Opportunities.
+- Best Swing Opportunities.
+- Watchlist.
+- Rejected/Expired.
+
+Sort eligible opportunities using documented rules such as:
+
+1. Validity and approval state.
+2. Quality score.
+3. Entry readiness.
+4. Setup freshness.
+5. Risk/reward suitability.
+6. User-selected trading style.
+
+Do not rank purely by signal recency.
+
+A recently generated weak setup should not automatically outrank an older still-valid high-quality setup.
+
+Keep ties deterministic.
+
+Do not present ranking position as a guaranteed performance prediction.
+
+---
+
+# 17. PROFESSIONAL SIGNAL EXPLANATION ENGINE
+
+Every approved or rejected signal must explain why the decision occurred.
+
+Example:
+
+**SELL — Waterfall First Pullback**
+
+Trading style: Scalping.
+
+Market regime: Strong Bearish.
+
+Evidence:
+
+- Bearish displacement confirmed.
+- Micro BOS detected.
+- First pullback completed.
+- Bearish continuation candle confirmed.
+- HTF direction supportive.
+
+Risk:
+
+- Structural stop valid.
+- Nearby opposing liquidity evaluated.
+- Entry extension acceptable.
+
+Decision: SELL APPROVED.
+
+Example rejection:
+
+**BUY — Liquidity Reversal**
+
+Evidence:
+
+- SSL sweep detected.
+- Bullish rejection present.
+- MSS not confirmed.
+- Entry already beyond permitted extension.
+
+Decision: WATCH or REJECTED according to the relevant policy.
+
+### Requirements
+
+- Plain-language explanations.
+- Machine-readable reason codes.
+- Actual values from algorithm calculations.
+- No invented confidence.
+- No generic AI-generated explanations that contradict deterministic rules.
+- Consistent historical replay explanations.
+
+Use the existing Gemini/Genkit analyzer only as optional commentary, if enabled.
+
+AI commentary must not replace deterministic approval rules.
+
+---
+
+# 18. SCORING CALIBRATION AND PERFORMANCE VALIDATION
+
+A quality score is not the same as a success probability.
+
+Do not display:
+
+Score 90 = 90% chance to win.
+
+Instead display:
+
+Quality Score: 90/100.
+
+Grade: A+.
+
+If probability estimates are introduced in a later enhancement, require:
+
+- Sufficient historical resolved trades.
+- Independent chronological evaluation.
+- Calibration analysis.
+- Strategy/timeframe segmentation.
+- Documented uncertainty.
+- Clear data limitations.
+
+For Phase 7, focus on explainable ranking rather than unvalidated probability claims.
+
+### Score validation
+
+Evaluate whether higher-quality grades actually correspond to better historical outcomes after costs.
+
+Compare:
+
+- Score range.
+- Number of triggered trades.
+- Win rate.
+- Average R.
+- Net expectancy.
+- Profit factor.
+- Drawdown.
+
+If A+ signals do not outperform B signals under appropriate statistical evaluation, report it and investigate the scoring model.
+
+Do not artificially tune results to force expected ranking behavior.
+
+---
+
+# 19. PROFESSIONAL SIGNAL DECISION DASHBOARD
+
+Upgrade the existing trading UI without replacing the chart.
+
+Create a **Signal Intelligence Panel**.
+
+Show:
+
+- Current symbol.
+- Trading style.
+- Timeframe.
+- Market regime.
+- Active strategy profile.
+- Best BUY opportunity.
+- Best SELL opportunity.
+- Highest-ranked active setup.
+- WAIT/Watch state where appropriate.
+- Recent approved signals.
+- Current score.
+- Entry readiness.
+- Conflict warnings.
+
+### Opportunity Cards
+
+Each signal card should contain:
+
+- BUY / SELL.
+- Trading style.
+- Strategy.
+- Score.
+- Grade.
+- Entry.
+- Stop loss.
+- TP1 / TP2 / TP3.
+- Risk/reward.
+- Status.
+- Confirmation time.
+- Explanation.
+
+### Conflict Information
+
+If opposite-direction candidates exist, provide context.
+
+Example:
+
+Short-term: SELL scalp.
+
+Higher timeframe: BUY swing.
+
+Explanation:
+
+Short-term bearish correction within larger bullish structure.
+
+Do not misleadingly collapse the two into one market direction.
+
+### Signal Filters
+
+Allow users to view:
+
+- Approved.
+- Watch.
+- Triggered.
+- Expired.
+- Rejected.
+
+Preserve all underlying records.
+
+---
+
+# 20. CHART SIGNAL VISUALIZATION
+
+Preserve the HTML5 Canvas renderer.
+
+Improve:
+
+- BUY marker placement.
+- SELL marker placement.
+- Candidate versus approved markers.
+- Signal quality labels.
+- Conflict visualization.
+- Entry/SL/TP lines.
+- Active trade zones.
+- Selected signal highlighting.
+
+Avoid showing separate arrows for every piece of supporting evidence.
+
+For example:
+
+One SELL setup with BOS + FVG + Waterfall should normally display one primary trade marker.
+
+Its supporting indicators may remain visible through optional overlays.
+
+### Important
+
+Do not hide all countertrend signals.
+
+Do not overwrite swing markers with scalp markers.
+
+Do not block panning, zooming, crosshair, playback or other chart features.
+
+Optimize rendering for large historical datasets.
+
+---
+
+# 21. SETTINGS INTEGRATION
+
+Extend the existing Strategy Settings drawer.
+
+Suggested section:
+
+## Unified Signal Intelligence
+
+- Enable Unified Scoring.
+- Enable Conflict Analysis.
+- Enable Duplicate Suppression.
+- Show Approved Only.
+- Show Watch Candidates.
+- Show Conflict Warnings.
+- Enable Signal Ranking.
+- Show Score Breakdown.
+
+## Quality Settings
+
+- Light.
+- Balanced.
+- Selective.
+- Minimum Quality Score.
+- Strategy-Specific Quality Profiles.
+- Entry Readiness Rules.
+
+## Trading Styles
+
+- Scalping.
+- Intraday.
+- Swing.
+- All Styles.
+
+## Conflict Handling
+
+- Preserve Independent Timeframes.
+- Require Strategy-Specific Confirmation.
+- Show Opposite-Direction Candidates.
+- Highlight Uncertain Conditions.
+
+## Advanced
+
+- Evidence Weights.
+- Quality Thresholds.
+- Duplicate Window.
+- Setup Freshness.
+- Signal Expiry.
+- Scoring Diagnostics.
+
+Do not expose unnecessary technical settings in the default view.
+
+Preserve AUTO/HYBRID/MANUAL behavior and user-saved configurations.
+
+Every setting must affect real logic.
+
+---
+
+# 22. HISTORICAL DATA & TIMESTAMP CORRECTNESS
+
+Preserve the existing Finage pipeline.
+
+The application may load historical candles in automatic two-day API chunks.
+
+All unified decisions must work across the fully merged chronological dataset.
+
+Verify:
+
+- Correct UTC epoch normalization.
+- No duplicate candles.
+- Correct candle ordering.
+- Correct symbol/timeframe mapping.
+- Correct data provenance.
+- Sufficient warm-up data.
+- No artificial setup resets at API boundaries.
+- Correct HTF synchronization.
+
+Do not use future candle information to score an earlier trade.
+
+Do not allow a score to improve retroactively using evidence unavailable when the signal was approved.
+
+Store a decision-time score snapshot.
+
+Later evidence can create a new update event, but must not rewrite the original historical decision.
+
+---
+
+# 23. NON-REPAINTING & DETERMINISTIC REPLAY
+
+The unified engine must produce identical decisions for equivalent information cutoffs.
+
+Support:
+
+- Full historical calculation.
+- Sequential replay.
+- Incremental completed-candle processing.
+
+### Strict requirements
+
+1. No future candle access.
+2. No future HTF values.
+3. No retroactive signal confirmation.
+4. Stable signal identity.
+5. Stable formation timestamp.
+6. Stable confirmation timestamp.
+7. Deterministic scoring.
+8. Deterministic conflict rules.
+9. Correct settings snapshots.
+10. Correct lifecycle transitions.
+
+If a strategy's required confirmation occurs three candles later, the trade decision timestamp must reflect that delay.
+
+Historical charts may show earlier pattern origins, but must not pretend a confirmed trading decision existed at the origin.
+
+---
+
+# 24. REALISTIC TRADE DECISION & BACKTESTING
+
+Keep signal approval separate from simulated trade execution.
+
+For each trade idea track:
+
+- Candidate generated.
+- Signal approved.
+- Entry order eligible.
+- Entry triggered.
+- Trade opened.
+- Target/stop outcomes.
+- Trade closed.
+- Setup expired/unfilled.
+
+Backtests must account for:
+
+- Spread assumptions.
+- Slippage.
+- Fees.
+- Tick-size/price precision.
+- Limit-order fill assumptions.
+- Intrabar SL/TP ambiguity.
+- Overnight costs for applicable swing trades.
+- Gaps and session closures.
+
+Do not count approved-but-unfilled signals as completed trades.
+
+Do not assume zero-cost trades.
+
+Do not use simulated Finage fallback data as actual historical market performance.
+
+### Performance breakdown
+
+Track:
+
+- Overall.
+- BUY.
+- SELL.
+- Scalping.
+- Intraday.
+- Swing.
+- Strategy family.
+- Signal quality grade.
+- Market regime.
+- Conflict category.
+
+Measure net expectancy and drawdown, not only win rate.
+
+---
+
+# 25. PERFORMANCE OPTIMIZATION
+
+The unified engine will process many detectors and large candle datasets.
+
+Optimize:
+
+- Candidate normalization.
+- Evidence aggregation.
+- Setup indexing.
+- Duplicate detection.
+- Scoring.
+- Conflict resolution.
+- Settings snapshots.
+- Incremental state updates.
+- Historical replay.
+- React UI updates.
+- Canvas rendering.
+
+Avoid recalculating all strategies whenever the selected signal changes.
+
+Avoid duplicate strategy execution.
+
+Use stable identifiers and deterministic ordering.
+
+Cache calculations using all relevant inputs, including:
+
+- Symbol.
+- Timeframe.
+- Trading style.
+- Settings version.
+- Market data version.
+- Data source.
+- Replay cutoff.
+
+Prevent infinite React update loops and stale async updates.
+
+Benchmark before and after implementation.
+
+---
+
+# 26. REQUIRED AUTOMATED TESTS
+
+Create deterministic unit and integration tests.
+
+### Test 1 — Unified BUY Scoring
+Verify bullish candidates receive correct category scores.
+
+### Test 2 — Unified SELL Scoring
+Verify bearish scoring is directionally correct.
+
+### Test 3 — Strategy-Specific Scoring
+Verify waterfall, liquidity reversal and swing setups use appropriate evidence.
+
+### Test 4 — Correlated Evidence
+Verify BOS, MSS, displacement and OB evidence from one impulse is not repeatedly counted as independent proof.
+
+### Test 5 — Same-Setup Deduplication
+Multiple related strategy detections should form one primary trade idea.
+
+### Test 6 — Independent Setup Preservation
+Separate valid setups must remain available.
+
+### Test 7 — BUY/SELL Conflict
+Verify correct treatment of contradictory same-timeframe candidates.
+
+### Test 8 — Cross-Timeframe Conflict
+Verify 5m SELL scalp and 4h BUY swing can coexist when independently valid.
+
+### Test 9 — Reversal vs Continuation
+Verify exhaustion alone does not approve an opposite-direction trade.
+
+### Test 10 — WAIT Decision
+Verify insufficient evidence produces WAIT rather than a fabricated signal.
+
+### Test 11 — Signal Grades
+Verify score-to-grade mapping and settings compatibility.
+
+### Test 12 — Candidate Lifecycle
+Verify all valid state transitions.
+
+### Test 13 — Entry Readiness
+Verify approved signals do not automatically count as triggered trades.
+
+### Test 14 — Signal Expiry
+Verify stale setups expire correctly.
+
+### Test 15 — Waterfall Integration
+Verify Phase 2 waterfall evidence is merged without repeated SELL alerts.
+
+### Test 16 — SMC Integration
+Verify Phase 3 BOS/CHoCH/MSS/OB/FVG evidence integrates correctly.
+
+### Test 17 — Adaptive Integration
+Verify Phase 4 regimes and settings affect eligible scoring rules.
+
+### Test 18 — Scalping Integration
+Verify Phase 5 scalping signals remain functional.
+
+### Test 19 — Intraday/Swing Integration
+Verify Phase 6 signals remain independent.
+
+### Test 20 — AUTO/HYBRID/MANUAL
+Verify correct settings precedence and locked settings.
+
+### Test 21 — Historical Score Snapshot
+Verify future evidence cannot silently modify an earlier published score.
+
+### Test 22 — Non-Repainting
+Verify no future data leakage.
+
+### Test 23 — Replay Consistency
+Verify sequential replay and full-history decisions match.
+
+### Test 24 — API Chunk Boundaries
+Verify signals do not reset or duplicate across merged Finage chunks.
+
+### Test 25 — Invalid Data
+Verify malformed or incomplete candles cannot generate approved signals.
+
+### Test 26 — Signal Ranking
+Verify consistent deterministic ranking.
+
+### Test 27 — Scoring Distribution
+Compare score distributions by strategy and timeframe.
+
+### Test 28 — Quality vs Outcomes
+Evaluate whether quality grades relate to actual cost-adjusted performance on separate historical data.
+
+### Test 29 — Execution Costs
+Verify trade performance uses realistic or clearly documented assumptions.
+
+### Test 30 — Performance
+Verify acceptable speed and memory use on large datasets.
+
+Do not claim profitable performance merely because the tests pass.
+
+---
+
+# 27. IMPLEMENTATION ORDER
+
+Complete Phase 7 in the following order:
+
+1. Audit the existing Phase 1–6 implementations.
+2. Identify the current central signal system.
+3. Standardize candidate and evidence contracts.
+4. Build the unified scoring framework.
+5. Implement strategy-specific scoring profiles.
+6. Implement correlated-evidence protection.
+7. Implement multi-strategy evidence aggregation.
+8. Upgrade setup-based deduplication.
+9. Implement BUY/SELL conflict classification.
+10. Implement cross-timeframe conflict preservation.
+11. Implement the final trade decision rules.
+12. Implement consistent signal lifecycle.
+13. Implement signal ranking and freshness.
+14. Integrate Phase 4 adaptive settings.
+15. Integrate all scalping/intraday/swing engines.
+16. Add signal explanations and reason codes.
+17. Update the settings UI.
+18. Build the Signal Intelligence Dashboard.
+19. Improve chart markers and signal details.
+20. Validate historical replay and non-repainting.
+21. Verify realistic trade result accounting.
+22. Optimize performance.
+23. Run unit, integration and regression tests.
+24. Run available lint, type-check and production build commands.
+25. Report verified results, unresolved issues and limitations.
+
+Do not begin a new phase automatically.
+
+---
+
+# 28. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rewrite the complete application.
+- Remove or replace working trading strategies.
+- Break Finage integration.
+- Break historical date selection.
+- Break two-day API chunking.
+- Break UTC epoch normalization.
+- Break candle merging.
+- Replace the HTML5 Canvas renderer.
+- Break historical replay.
+- Reintroduce BUY/SELL directional bias.
+- Force equal BUY/SELL signal counts.
+- Generate multiple trade ideas from the same underlying setup.
+- Remove valid independent scalping/swing opportunities.
+- Force every strategy to meet one global SMC checklist.
+- Make filtering excessively strict.
+- Approve weak signals only to increase frequency.
+- Convert quality score directly into win probability.
+- Use future candles to improve earlier signal scores.
+- Assume all approved trades were executed.
+- Assume zero trading costs.
+- Overwrite saved manual settings.
+- Let automatic settings override hard risk restrictions.
+- Create an independent second signal-publishing engine.
+- Use AI-generated opinions as authoritative signal confirmation.
+- Promise a 70%, 80% or 90% win rate.
+- Add real-money automated execution.
+- Start Phase 8 automatically.
+
+---
+
+# 29. PHASE 7 COMPLETION CRITERIA
+
+Phase 7 is complete only when:
+
+1. Every active strategy can output standardized candidates.
+2. Unified signal scoring works consistently.
+3. Correlated evidence is not overcounted.
+4. Strategy-specific scoring remains appropriate.
+5. Related strategy detections aggregate into one trade idea.
+6. Independent setups are preserved.
+7. BUY and SELL conflicts are handled correctly.
+8. Cross-timeframe opportunities are not incorrectly suppressed.
+9. WAIT and WATCH decisions work.
+10. Signal ranking is deterministic.
+11. Entry readiness, expiry and invalidation work.
+12. Signal quality grades are explainable.
+13. AUTO/HYBRID/MANUAL modes remain functional.
+14. Scalping, intraday and swing remain functional.
+15. Phase 2 waterfall logic remains functional.
+16. Phase 3 SMC remains functional.
+17. No future-data leakage or repainting is introduced.
+18. Historical signal scores remain tied to their decision-time evidence.
+19. Sequential replay and batch analysis agree.
+20. Existing charts and trade logs remain synchronized.
+21. Performance remains acceptable.
+22. Backtesting separates signals from executed trades.
+23. Available automated tests and build checks pass, or failures are documented accurately.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+- Files created and modified.
+- Existing modules reused.
+- Unified signal data model.
+- Scoring categories and weights.
+- Strategy-specific quality profiles.
+- Correlated-evidence rules.
+- Conflict resolution decision matrix.
+- Duplicate-suppression logic.
+- Signal lifecycle implementation.
+- Entry readiness and expiry rules.
+- AUTO/HYBRID/MANUAL integration.
+- Signal dashboard changes.
+- Chart visualization changes.
+- BUY/SELL signal counts.
+- Scalping/intraday/swing counts.
+- Signals before and after deduplication.
+- Approved/rejected/WAIT statistics.
+- Score distribution by strategy.
+- Cost-adjusted historical results when available.
+- Replay and non-repainting results.
+- Performance benchmarks.
+- Remaining limitations.
+
+## FINAL OBJECTIVE
+
+Create a professional Unified Trading Decision Engine for TradeZella Canvas.
+
+The system must combine:
+
+- Candle Psychology.
+- Waterfall Momentum.
+- Liquidity Intelligence.
+- BOS/CHoCH/MSS.
+- Order Blocks.
+- FVG/IFVG.
+- Fibonacci.
+- Premium/Discount Zones.
+- Adaptive Market Regimes.
+- Scalping.
+- Intraday.
+- Swing Trading.
+
+It must independently evaluate BUY and SELL opportunities, aggregate meaningful evidence, resolve genuine conflicts, suppress duplicate trade ideas, preserve independent opportunities, rank signal quality and provide clear explanations.
+
+Use medium-light filtering while maintaining hard risk and data-quality safeguards.
+
+Do not manufacture signals or claim guaranteed accuracy.
+
+**Implement Phase 7 completely while preserving all existing functionality. Do not begin Phase 8 automatically.**

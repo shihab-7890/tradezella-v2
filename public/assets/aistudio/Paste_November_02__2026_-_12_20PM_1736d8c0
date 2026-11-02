@@ -1,0 +1,1388 @@
+# PHASE 5 — PROFESSIONAL SCALPING INTELLIGENCE, WATERFALL ENTRIES & PRECISION SIGNAL ENGINE
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative trading algorithm engineer, professional scalping strategy researcher, market microstructure analyst, financial backtesting specialist, and expert Next.js developer.
+
+Your task is to implement **Phase 5 — Professional Scalping Intelligence Engine** into my existing TradeZella Canvas application.
+
+This is a major upgrade focused on finding high-quality, timely scalping opportunities, especially on XAUUSD (Gold).
+
+**CRITICAL: Implement actual production-quality code, not just a plan or documentation.**
+
+Do not rebuild the existing application.
+
+Do not break completed functionality.
+
+Do not automatically start Phase 6 or later phases.
+
+---
+
+# 1. EXISTING PROJECT AND PREVIOUS PHASES
+
+My application already has, or has been designed to implement:
+
+### Core application
+
+- Next.js + React.
+- Finage market data.
+- Historical date-range selection.
+- Automatic maximum-two-day API chunking.
+- Correct UTC epoch timestamps.
+- Candle merging and deduplication.
+- HTML5 Canvas chart.
+- Multi-timeframe candles.
+- Historical replay.
+- Strategy settings.
+- BUY/SELL signal markers.
+- Trade logs and CSV export.
+
+### Phase 1 — Signal foundation
+
+- BUY/SELL directional fixes.
+- Centralized signal engine.
+- Duplicate suppression.
+- Signal scoring.
+- MTF synchronization.
+- Non-repainting confirmation.
+- Signal explanations.
+
+### Phase 2 — Candle psychology
+
+- Candle body/wick analysis.
+- Bullish/bearish pressure proxies.
+- Strong displacement.
+- Rejection.
+- Engulfing.
+- Momentum sequences.
+- Waterfall detection.
+- First-pullback continuation.
+- Exhaustion analysis.
+
+### Phase 3 — Advanced SMC
+
+- Internal/external structure.
+- BOS.
+- CHoCH.
+- MSS.
+- Liquidity sweeps.
+- Order Blocks.
+- FVG/IFVG.
+- Fibonacci.
+- Premium/discount zones.
+- Structure-based entries.
+
+### Phase 4 — Adaptive intelligence
+
+- Market regime detection.
+- Trend strength.
+- Volatility intelligence.
+- Adaptive strategy selection.
+- AUTO/HYBRID/MANUAL settings.
+- Scalping/intraday/swing profiles.
+- Bounded automatic parameter adjustments.
+
+Before implementation, inspect the actual code and verify what has already been implemented.
+
+Do not assume a module exists or works simply because it appeared in a previous phase specification.
+
+Reuse the existing modules and data contracts.
+
+---
+
+# 2. MAIN PHASE 5 OBJECTIVE
+
+Build a dedicated scalping engine capable of identifying:
+
+1. Early bullish momentum entries.
+2. Early bearish momentum entries.
+3. Bearish waterfall continuation.
+4. Bullish momentum cascade continuation.
+5. Fast liquidity sweep reversals.
+6. Micro BOS/CHoCH/MSS setups.
+7. First-pullback continuation.
+8. Breakout and retest entries.
+9. FVG and Order Block retests.
+10. Compression breakout entries.
+11. Failed breakout reversals.
+12. Strong rejection entries.
+13. Trend-aligned continuation.
+14. Valid countertrend reversals.
+15. Short-lived intraday trading opportunities.
+
+Prioritize:
+
+- Accurate signal timing.
+- Both BUY and SELL detection.
+- Multiple independent opportunities.
+- Low duplicate count.
+- Medium-light filtering.
+- Realistic entry and exit assumptions.
+- Clear invalidation.
+- No historical repainting.
+- Good chart and replay performance.
+
+Do not make the engine excessively strict.
+
+But do not create signals simply to increase their number.
+
+**The objective is positive validated trade expectancy, not maximum arrows or a guaranteed win rate.**
+
+---
+
+# 3. COMPLETE CODE AUDIT
+
+Inspect these existing files and relevant dependencies:
+
+- `src/lib/liquidity.js`
+- Existing Phase 1 signal engine.
+- Existing Phase 2 candle psychology engine.
+- Existing waterfall momentum engine.
+- Existing Phase 3 SMC modules.
+- Existing Phase 4 adaptive engine.
+- `src/app/page.jsx`
+- `src/services/finageService.js`
+- `src/app/api/finage/route.js`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+
+Identify existing logic for:
+
+- Scalping signals.
+- Entry timeframes.
+- Market bias.
+- Lower-timeframe structure.
+- Displacement.
+- Liquidity sweeps.
+- Breakouts.
+- Waterfall momentum.
+- Reversal detection.
+- Entry price.
+- Stop-loss.
+- Take-profit.
+- Signal expiry.
+- Duplicate prevention.
+- Trade state management.
+
+Map the signal generation process before changing it.
+
+Suggested modules only if needed:
+
+- `src/lib/scalping/scalpingEngine.js`
+- `src/lib/scalping/scalpingStrategies.js`
+- `src/lib/scalping/microstructure.js`
+- `src/lib/scalping/precisionEntry.js`
+- `src/lib/scalping/scalpingRisk.js`
+- `src/lib/scalping/scalpingSignals.js`
+- `src/lib/scalping/scalpingDiagnostics.js`
+
+Reuse existing ATR, candle psychology, liquidity, structure, regime and scoring utilities.
+
+Do not create parallel conflicting implementations.
+
+---
+
+# 4. ADVANCED MULTI-TIMEFRAME SCALPING
+
+Support these entry timeframes:
+
+- 1 minute.
+- 3 minutes.
+- 5 minutes.
+
+Use additional context from:
+
+- 15 minutes.
+- 1 hour.
+
+Allow configurable alternative mappings where existing architecture supports them.
+
+## Recommended initial timeframe mapping
+
+### Aggressive Scalping
+
+Entry: 1m.
+
+Confirmation/context: 3m or 5m.
+
+Higher timeframe: 15m.
+
+### Balanced Scalping
+
+Entry: 3m.
+
+Confirmation/context: 5m or 15m.
+
+Higher timeframe: 1h when appropriate.
+
+### Standard Scalping
+
+Entry: 5m.
+
+Intermediate: 15m.
+
+Higher timeframe: 1h.
+
+Do not require all three timeframes to be bullish before a BUY or bearish before a SELL.
+
+Instead, distinguish:
+
+- Trend continuation.
+- Pullback reversal within an existing trend.
+- Countertrend structural reversal.
+- Range-bound scalp.
+- Breakout scalp.
+
+Example:
+
+1h bullish trend.
+
+15m bearish pullback.
+
+5m bullish MSS.
+
+This can qualify as a bullish continuation opportunity if the setup has appropriate confirmation.
+
+Do not reject it simply because the 15m candle direction is temporarily bearish.
+
+Use only completed HTF values available at the decision timestamp.
+
+---
+
+# 5. MICROSTRUCTURE INTELLIGENCE ENGINE
+
+Build advanced lower-timeframe structure analysis.
+
+Detect:
+
+- Micro Swing High.
+- Micro Swing Low.
+- Micro Higher High.
+- Micro Higher Low.
+- Micro Lower High.
+- Micro Lower Low.
+- Micro BOS.
+- Micro CHoCH.
+- Micro MSS.
+- Micro Liquidity Sweep.
+- Micro Range Breakout.
+- Micro Structure Failure.
+
+Use confirmed structures and ATR-normalized significance.
+
+Avoid classifying every tiny fluctuation as a structure shift.
+
+## Bullish microstructure
+
+Look for:
+
+- Confirmed local SSL sweep.
+- Bullish displacement.
+- Break of relevant micro swing high.
+- Bullish pullback.
+- Valid continuation.
+
+## Bearish microstructure
+
+Look for:
+
+- Confirmed local BSL sweep.
+- Bearish displacement.
+- Break of relevant micro swing low.
+- Bearish pullback.
+- Valid continuation.
+
+Make bullish/bearish logic independent.
+
+A structure event must have:
+
+- Origin timestamp.
+- Confirmation timestamp.
+- Reference level.
+- Direction.
+- Invalidation rule.
+- Stable ID.
+
+Do not retroactively publish entry signals at earlier candles.
+
+---
+
+# 6. PROFESSIONAL SCALPING STRATEGY LIBRARY
+
+Implement the following setup detectors using existing Phase 1–4 modules.
+
+Each strategy must generate candidates through the existing centralized signal engine.
+
+## Strategy 1 — Liquidity Sweep Reversal Scalp
+
+### BUY
+
+- Detect established sell-side liquidity.
+- Price sweeps below the level.
+- Price reclaims or rejects the level.
+- Phase 2 candle psychology supports the reversal.
+- Optional micro-MSS confirmation.
+- Valid entry and risk conditions.
+
+### SELL
+
+- Detect established buy-side liquidity.
+- Price sweeps above the level.
+- Price rejects or reclaims below.
+- Bearish candle confirmation.
+- Optional micro-MSS.
+- Valid entry and risk conditions.
+
+Do not require all confirmations simultaneously if the selected setup variation permits an earlier valid entry.
+
+## Strategy 2 — Micro-MSS Scalp
+
+- Detect meaningful microstructure shift.
+- Validate break relative to volatility.
+- Use displacement or retest confirmation.
+- Identify structural invalidation.
+- Generate eligible directional candidate.
+
+Support BUY and SELL.
+
+## Strategy 3 — Order Block Rejection Scalp
+
+- Locate active lower-timeframe OB.
+- Track price return.
+- Evaluate candle rejection.
+- Confirm eligible setup.
+- Avoid repeated signals from identical touches.
+
+## Strategy 4 — FVG Retracement Scalp
+
+- Detect confirmed FVG.
+- Wait for valid retracement.
+- Evaluate directional response.
+- Determine entry eligibility.
+- Avoid using an FVG created by future candles.
+
+## Strategy 5 — Momentum Breakout Scalp
+
+- Detect defined consolidation/high-low level.
+- Confirm relevant breakout.
+- Measure displacement.
+- Analyze price acceptance and available follow-through.
+- Produce candidate without chasing excessively extended candles.
+
+## Strategy 6 — First Pullback Continuation
+
+- Detect directional impulse.
+- Identify first meaningful pullback.
+- Analyze pullback depth.
+- Confirm resumption.
+- Generate trade candidate.
+
+## Strategy 7 — Waterfall Continuation
+
+- Reuse Phase 2 waterfall detection.
+- Detect early momentum state.
+- Identify valid continuation opportunity.
+- Prevent repeated SELL signals for each bearish candle.
+- Support equivalent bullish cascade entries.
+
+## Strategy 8 — Compression Expansion
+
+- Recognize narrow consolidation.
+- Establish confirmed boundaries.
+- Wait for meaningful breakout.
+- Confirm appropriate continuation or retest.
+
+## Strategy 9 — Failed Breakout Scalp
+
+- Detect price moving beyond a relevant level.
+- Recognize failed acceptance.
+- Confirm reclaim.
+- Evaluate reversal risk.
+- Generate candidate in the opposite direction when justified.
+
+## Strategy 10 — Breakout Retest
+
+- Confirm breakout.
+- Record broken level.
+- Wait for eligible retest.
+- Evaluate rejection/continuation.
+- Issue candidate.
+
+Keep each setup independently configurable.
+
+Do not require all ten strategies to be enabled.
+
+Do not generate multiple trade ideas for one underlying event just because several detectors identified it.
+
+---
+
+# 7. EARLY SCALPING ENTRY INTELLIGENCE
+
+**Very important: Avoid signals arriving only after a large movement is finished.**
+
+Build an early-entry framework.
+
+Separate three entry styles.
+
+## A. Early Entry
+
+Signal becomes eligible when a meaningful completed-candle confirmation is available.
+
+May use:
+
+- Initial displacement.
+- Local breakout.
+- Rejection.
+- Microstructure confirmation.
+
+Do not require a full multi-candle continuation if the chosen strategy permits an early signal.
+
+## B. Balanced Entry
+
+Requires stronger confirmation than Early.
+
+Examples:
+
+- Breakout followed by short pullback.
+- Sweep plus rejection and microstructure.
+- First pullback after displacement.
+
+## C. Confirmed Entry
+
+Uses additional evidence appropriate to the setup.
+
+Examples:
+
+- Confirmed micro-MSS.
+- Retest confirmation.
+- Structure and momentum alignment.
+
+Provide different strategy-specific confirmation policies instead of one global strictness rule.
+
+### Important
+
+Early entry does not mean predicting the next unfinished candle.
+
+All approved historical entries must respect actual information availability.
+
+If an earlier signal is more speculative, classify it correctly rather than presenting it as proven accurate.
+
+---
+
+# 8. ADVANCED WATERFALL SCALPING
+
+Use Phase 2 waterfall analysis as a foundation.
+
+Enhance it for rapid lower-timeframe trade decisions.
+
+Support:
+
+- Bearish Waterfall Scalp.
+- Bullish Momentum Cascade Scalp.
+- Initial Impulse Setup.
+- First Pullback Setup.
+- Shallow Consolidation Breakout.
+- Momentum Retest.
+- Re-acceleration Setup.
+
+## Bearish Waterfall
+
+Evaluate:
+
+- Bearish body strength.
+- Lower lows.
+- Consecutive directional progression.
+- ATR-normalized expansion.
+- Pullback depth.
+- Repeated weak bullish candles.
+- Structure breakdown.
+- Momentum acceleration.
+- Possible exhaustion.
+
+## Bullish Cascade
+
+Evaluate equivalent upward conditions.
+
+## Entry timing
+
+Allow a candidate near the earliest valid signal confirmation.
+
+Do not wait for many additional bearish candles simply because more momentum evidence becomes available later.
+
+Do not generate repeated entries from every candle in the same sequence.
+
+## Avoid chasing
+
+Reject or defer candidates when:
+
+- Price is excessively extended relative to a defensible stop.
+- Nearby opposing liquidity significantly limits reward.
+- Momentum is weakening.
+- Available reward-to-risk is inadequate.
+- Spread or volatility makes the setup impractical.
+
+An exhaustion warning must not automatically create an opposite-direction trade.
+
+---
+
+# 9. PRECISION ENTRY PRICE ENGINE
+
+Develop a consistent scalping entry model.
+
+Each approved setup must determine:
+
+- Direction.
+- Entry type.
+- Entry reference or zone.
+- Confirmation timestamp.
+- Eligibility time.
+- Invalidation.
+- Maximum acceptable entry distance.
+- Setup expiration.
+- Expected risk/reward based on the intended execution assumptions.
+
+Support:
+
+### Market-on-confirmation
+
+An entry evaluated using the next realistically available execution price after confirmation.
+
+### Limit entry
+
+A defined price-zone entry that becomes eligible only if price reaches the level after the order could have been placed.
+
+### Stop entry
+
+A breakout entry triggered by a future eligible price crossing.
+
+### Retest entry
+
+An entry after a valid retest and confirmation.
+
+Do not assume a limit order filled simply because a historical candle touched a level without considering execution assumptions.
+
+Do not report a trade entered at the confirmation candle's earlier low/high if that price was unavailable when the signal was confirmed.
+
+Separate signal detection from simulated execution.
+
+No automatic real-money order placement in this phase.
+
+---
+
+# 10. SCALPING STOP-LOSS INTELLIGENCE
+
+Stop-loss placement must correspond to the underlying setup.
+
+Examples:
+
+### Liquidity sweep
+
+SL beyond relevant sweep extreme, with appropriate buffer.
+
+### MSS
+
+SL beyond structural invalidation.
+
+### Order Block
+
+SL beyond invalidation boundary.
+
+### FVG continuation
+
+SL beyond suitable structural/zone invalidation.
+
+### Momentum breakout
+
+SL using valid breakout structure or volatility-aware invalidation.
+
+### Waterfall pullback
+
+SL beyond meaningful pullback structure.
+
+Use ATR and instrument tick-size normalization where appropriate.
+
+For BUY:
+
+Stop loss should normally be below entry.
+
+For SELL:
+
+Stop loss should normally be above entry.
+
+Reject invalid calculations.
+
+Do not use a universal fixed-pip SL across all instruments and regimes.
+
+Account for available spread data and realistic execution costs.
+
+---
+
+# 11. TAKE-PROFIT AND SCALPING TARGET ENGINE
+
+Provide a structured target plan.
+
+Support:
+
+- TP1.
+- TP2.
+- TP3.
+- Nearest eligible opposing liquidity.
+- Local support/resistance.
+- Structural high/low.
+- ATR-based target candidates.
+- Fixed risk/reward targets where appropriate.
+
+### Example risk/reward profiles
+
+These are test configurations:
+
+- Conservative: 1:1.
+- Balanced: 1:1.5.
+- Extended: 1:2 or above where the structure supports it.
+
+Do not force a 1:3 target when nearby opposing structure makes it unrealistic.
+
+Target selection must remain consistent with the actual setup.
+
+Distinguish theoretical target prices from historical execution results.
+
+### Important for XAUUSD
+
+Do not assume all brokers and Gold symbols use the same pip convention.
+
+Use actual quote precision, price increment and provider/broker instrument metadata.
+
+Maintain separate concepts for:
+
+- Price distance.
+- Points.
+- Ticks.
+- Pips when appropriately defined.
+- Monetary risk.
+
+Never hardcode a universal XAUUSD pip conversion without instrument configuration.
+
+---
+
+# 12. AUTOMATIC SCALPING MODE
+
+Integrate with Phase 4's AUTO/HYBRID/MANUAL settings engine.
+
+## AUTO
+
+Automatically adjust eligible scalping strategy settings based on:
+
+- Trend direction.
+- Market regime.
+- Volatility.
+- Candle strength.
+- Liquidity condition.
+- Momentum expansion.
+- Timeframe.
+- Session context.
+
+## HYBRID
+
+Allow user locks for:
+
+- Specific strategies.
+- Entry sensitivity.
+- Confirmation type.
+- SL/TP preferences.
+- Signal frequency preferences.
+- Timeframe.
+- Risk limits.
+
+## MANUAL
+
+Preserve complete user-selected settings.
+
+No hidden adaptive threshold adjustments.
+
+### Adaptive example
+
+Strong bearish trend + elevated volatility:
+
+- Prioritize bearish continuation.
+- Prioritize waterfall and first-pullback setups.
+- Use volatility-normalized thresholds.
+- Apply anti-chase protection.
+- Keep independent bullish reversal detection eligible.
+
+Range market:
+
+- Prioritize sweep reversals.
+- Prioritize failed breakouts.
+- Reduce preference for weak continuation patterns.
+
+Do not continuously flip strategy settings on every candle.
+
+Reuse Phase 4 hysteresis, bounded parameter adaptation and settings snapshots.
+
+---
+
+# 13. MEDIUM-LIGHT FILTERING AND FREQUENCY MANAGEMENT
+
+I want regular scalping opportunities, but not excessive low-quality signals.
+
+Implement three presets.
+
+### Light
+
+- More exploratory candidates.
+- Earlier confirmations where strategy rules allow.
+- Still respects hard risk and data-quality safeguards.
+
+### Balanced
+
+- Default.
+- Moderate confirmation.
+- Suitable combination of opportunity availability and quality.
+
+### Selective
+
+- Stronger setup evidence.
+- Fewer approvals.
+- Higher requirements when justified.
+
+Avoid one global confirmation checklist.
+
+For example:
+
+Waterfall continuation should not require a fresh liquidity sweep plus FVG plus MSS plus OB.
+
+A sweep reversal should not require an active bearish waterfall.
+
+Each strategy needs its own valid confirmation logic.
+
+Track signal frequency as a diagnostic metric.
+
+Do not add a target number of signals per hour or day that forces the engine to manufacture trades.
+
+---
+
+# 14. PROFESSIONAL SIGNAL RANKING
+
+Use the Phase 1 central signal engine as the only final approval system.
+
+Add scalping-specific evidence for:
+
+- Setup validity.
+- Entry timing.
+- Market regime suitability.
+- Momentum quality.
+- Structure confirmation.
+- Liquidity relevance.
+- Distance to invalidation.
+- Available reward-to-risk.
+- Setup freshness.
+- Spread/execution suitability.
+- Exhaustion risk.
+
+Produce:
+
+- Raw Candidate.
+- Confirmed Candidate.
+- Approved Setup.
+- Rejected.
+- Waiting for Entry.
+- Triggered.
+- Expired.
+- Invalidated.
+
+Use meaningful ranking categories:
+
+- A+.
+- A.
+- B.
+- Rejected / Watch.
+
+Do not label a score as a mathematically calibrated win probability unless a separate statistical calibration study supports it.
+
+Avoid double-counting highly correlated SMC and momentum evidence.
+
+---
+
+# 15. DEDUPLICATION AND SIGNAL LIFECYCLE
+
+Scalping frequently generates related patterns around the same price zone.
+
+Prevent duplicates using:
+
+- Stable setup IDs.
+- Underlying liquidity event.
+- Structural break ID.
+- OB/FVG zone association.
+- Waterfall sequence ID.
+- Direction.
+- Timeframe.
+- Strategy.
+- Confirmation timestamp.
+
+### Signal state machine
+
+Suggested states:
+
+1. DETECTED.
+2. CONFIRMING.
+3. APPROVED.
+4. WAITING_FOR_ENTRY.
+5. TRIGGERED.
+6. ACTIVE.
+7. TARGET_REACHED.
+8. STOPPED.
+9. EXPIRED.
+10. INVALIDATED.
+
+Keep detection, publication, execution and outcome timestamps distinct.
+
+Do not produce a new SELL signal every candle during one waterfall sequence.
+
+Do not incorrectly suppress a new valid setup simply because another trade appeared recently.
+
+Use configurable signal spacing as a secondary noise control, not the sole definition of a duplicate.
+
+---
+
+# 16. SCALPING SESSION INTELLIGENCE
+
+Support time-sensitive strategy context.
+
+Analyze:
+
+- Asian session.
+- London session.
+- New York session.
+- London/NY overlap.
+- Session high/low.
+- Session opening range.
+- Volatility changes around sessions.
+- Session-specific breakout behavior.
+
+Use timezone-aware session definitions.
+
+Support daylight-saving transitions where appropriate.
+
+Do not assume fixed UTC hours always correspond to the same London or New York local trading times.
+
+If verified session/holiday calendars or spreads are unavailable, clearly indicate limitations.
+
+### Session-based preferences
+
+London/NY expansion may favor momentum and breakout analysis.
+
+Quieter periods may favor range or compression analysis.
+
+These must be configurable hypotheses subject to historical verification, not guarantees about session behavior.
+
+Do not force trading only during kill zones unless the user explicitly enables that filter.
+
+---
+
+# 17. SPREAD, SLIPPAGE AND EXECUTION FEASIBILITY
+
+This is especially important for 1m scalping.
+
+Check:
+
+- Available bid/ask data.
+- Spread in price units or ticks.
+- Symbol precision.
+- Likely transaction costs.
+- Historical spread availability.
+- Slippage assumptions.
+- Volatility at entry.
+- Risk distance relative to spread.
+
+Do not mistake candle OHLC prices for guaranteed executable bid/ask fills.
+
+If Finage historical candles do not provide broker-specific spread, use an explicitly configured or historical spread model and label it as an assumption.
+
+Reject or warn on setups where assumed transaction costs consume too much of expected reward.
+
+No fabricated zero-cost backtesting.
+
+---
+
+# 18. SCALPING SIGNAL DASHBOARD
+
+Improve the existing UI without replacing the Canvas chart.
+
+Create a compact **Scalping Intelligence** section.
+
+Display:
+
+- Symbol.
+- Entry timeframe.
+- Market bias.
+- Volatility.
+- Momentum condition.
+- Active scalping strategy.
+- Approved BUY/SELL setup.
+- Entry price or zone.
+- Stop loss.
+- TP1/TP2/TP3.
+- Risk/reward.
+- Signal grade.
+- Signal state.
+- Confirmation time.
+- Setup expiration.
+- Why the setup was selected.
+
+### Signal list
+
+Show:
+
+- Active opportunities.
+- Waiting for entry.
+- Recently triggered.
+- Invalidated/expired.
+- Historical signals.
+
+Use concise labels.
+
+Avoid chart clutter.
+
+When selecting a signal, highlight its actual relevant price levels and corresponding candles.
+
+Do not display decorative performance metrics or invented market signals.
+
+---
+
+# 19. SCALPING SETTINGS UX
+
+Extend the existing `StrategySettings.jsx` without breaking other styles.
+
+### General
+
+- Enable Scalping Engine.
+- Trading Style: Scalping.
+- Entry Timeframe.
+- AUTO / HYBRID / MANUAL.
+- Light / Balanced / Selective.
+
+### Strategies
+
+- Liquidity Sweep Scalp.
+- Micro-MSS Scalp.
+- OB Rejection.
+- FVG Retracement.
+- Momentum Breakout.
+- Waterfall Continuation.
+- First Pullback.
+- Compression Breakout.
+- Failed Breakout.
+- Breakout Retest.
+
+### Entry
+
+- Early Entry.
+- Balanced Entry.
+- Confirmed Entry.
+- Entry Expiry.
+- Retest Requirement where applicable.
+
+### Momentum
+
+- Waterfall Sensitivity.
+- Minimum Displacement.
+- Sequence Strength.
+- Pullback Depth.
+- Exhaustion Protection.
+
+### Risk and Targeting
+
+- Stop-Loss Method.
+- Target Method.
+- Default R:R.
+- Maximum Spread.
+- Maximum Entry Extension.
+- Show SL/TP.
+
+All settings must affect the real algorithm.
+
+Hide complex parameters under Advanced Settings.
+
+Preserve manual configuration persistence.
+
+---
+
+# 20. SCALPING BACKTESTING ENGINE
+
+Ensure new scalping strategies work with historical replay and realistic execution assumptions.
+
+### Track
+
+- Candidate detection.
+- Signal confirmation.
+- Entry eligibility.
+- Order trigger.
+- Stop-loss.
+- Take-profit.
+- Expiration.
+- Invalidated setup.
+- Spread/slippage assumptions.
+- Trade fees if applicable.
+
+### Historical intrabar ambiguity
+
+If both SL and TP fall inside the same candle, do not automatically assume TP occurred first.
+
+Use:
+
+- Verified lower-timeframe data when available.
+- Otherwise a consistent conservative or explicitly documented ambiguity policy.
+
+Do not silently select the more profitable outcome.
+
+### Historical results
+
+Measure:
+
+- Total valid setup candidates.
+- Approved signals.
+- BUY/SELL counts.
+- Triggered trades.
+- Win rate.
+- Loss rate.
+- Average win.
+- Average loss.
+- Net expectancy.
+- Profit factor.
+- Maximum drawdown.
+- Average holding time.
+- Cost per trade.
+- Results by strategy.
+- Results by timeframe.
+- Results by market regime.
+
+Use net results after realistic costs where sufficient data is available.
+
+Do not confuse approved signals with executed or closed trades.
+
+---
+
+# 21. BACKTESTING AND REAL-TIME CONSISTENCY
+
+Ensure the same setup decision logic works for:
+
+- Full historical analysis.
+- Candle-by-candle replay.
+- Incremental completed-candle updates.
+
+The following must match when evaluated using the same information cutoff:
+
+- Signal direction.
+- Setup ID.
+- Confirmation timestamp.
+- Strategy.
+- Entry eligibility.
+- SL/TP logic.
+- Adaptive settings snapshot.
+
+Do not allow future market information to influence historical entries.
+
+### Finage data requirements
+
+Preserve:
+
+- Two-day API chunk fetching.
+- Correct epoch timestamps.
+- Chronological merging.
+- Duplicate removal.
+- Historical date selection.
+- Data-source provenance.
+- Warm-up candles.
+
+The scalping engine must work seamlessly across API chunk boundaries.
+
+Never silently use simulated data as genuine market history.
+
+---
+
+# 22. PERFORMANCE OPTIMIZATION
+
+1m scalping can involve very large candle datasets.
+
+Optimize:
+
+- Incremental strategy calculations.
+- Rolling indicator updates.
+- Microstructure indexing.
+- Active zone lookups.
+- Waterfall state updates.
+- Signal candidate aggregation.
+- Stable signal IDs.
+- React state updates.
+- Canvas viewport rendering.
+- Chart marker rendering.
+- Replay performance.
+- Adaptive configuration caching.
+
+Avoid recalculating the entire historical signal set on each new candle.
+
+Use efficient state transitions and cached completed-candle calculations.
+
+Ensure changes to symbol, timeframe, date range or strategy settings invalidate appropriate caches.
+
+Measure runtime and memory before and after implementation.
+
+---
+
+# 23. REQUIRED AUTOMATED TESTS
+
+Build deterministic unit and integration tests.
+
+### Test 1 — Bullish Scalping
+
+Detect valid BUY continuation from confirmed microstructure.
+
+### Test 2 — Bearish Scalping
+
+Detect valid SELL continuation from bearish microstructure.
+
+### Test 3 — Liquidity Sweep BUY
+
+Verify SSL sweep and bullish rejection candidate.
+
+### Test 4 — Liquidity Sweep SELL
+
+Verify BSL sweep and bearish rejection candidate.
+
+### Test 5 — Micro BOS/MSS
+
+Verify bullish and bearish structural confirmation without future information.
+
+### Test 6 — Waterfall Continuation
+
+Detect an early bearish waterfall and a subsequent distinct first-pullback setup.
+
+### Test 7 — Bullish Momentum Cascade
+
+Verify equivalent upward detection.
+
+### Test 8 — No Duplicate Waterfall Alerts
+
+Ensure one momentum sequence does not create repeated identical trades.
+
+### Test 9 — First Pullback
+
+Verify correct pullback state, continuation confirmation and eligible entry timing.
+
+### Test 10 — Compression Breakout
+
+Verify breakout confirmation versus false-breakout behavior.
+
+### Test 11 — Failed Breakout
+
+Verify valid reversal and prevent premature countertrend signals.
+
+### Test 12 — Entry Timing
+
+Confirm no trade receives an impossible historical entry price.
+
+### Test 13 — Stop-Loss
+
+Validate BUY/SELL structural SL placement.
+
+### Test 14 — Take-Profit
+
+Validate correct TP levels and risk/reward calculations.
+
+### Test 15 — Spread Feasibility
+
+Verify overly costly trades are appropriately rejected or warned about.
+
+### Test 16 — AUTO Mode
+
+Verify Phase 4 market regime settings correctly influence strategy selection.
+
+### Test 17 — HYBRID Mode
+
+Verify user-locked settings remain protected.
+
+### Test 18 — MANUAL Mode
+
+Verify no hidden adaptation.
+
+### Test 19 — Scalping Timeframes
+
+Validate 1m, 3m and 5m behavior.
+
+### Test 20 — HTF Synchronization
+
+Verify no future 15m/1h candle leakage.
+
+### Test 21 — Signal Expiry
+
+Verify stale setups cannot trigger indefinitely.
+
+### Test 22 — Independent Setups
+
+Verify multiple valid nearby opportunities remain eligible.
+
+### Test 23 — Choppy Market
+
+Verify weak contradictory signals are reduced.
+
+### Test 24 — Session Handling
+
+Verify correct timezone-aware trading session calculations.
+
+### Test 25 — Backtesting
+
+Verify realistic execution costs, fills and ambiguous SL/TP outcomes.
+
+### Test 26 — Historical Data Chunking
+
+Verify uninterrupted scalping calculations across merged Finage API chunks.
+
+### Test 27 — Replay Consistency
+
+Compare batch calculations and sequential replay.
+
+### Test 28 — Fixed vs Adaptive
+
+Compare scalping performance using fixed and Phase 4 adaptive configurations.
+
+### Test 29 — Out-of-Sample Validation
+
+Evaluate on chronological data not used to tune parameters.
+
+### Test 30 — Performance
+
+Benchmark large historical datasets and replay responsiveness.
+
+Do not claim the strategy is profitable merely because a few examples pass.
+
+---
+
+# 24. IMPLEMENTATION ORDER
+
+Follow this sequence:
+
+1. Audit Phase 1–4 modules.
+2. Create scalping configuration and timeframe profiles.
+3. Build microstructure intelligence.
+4. Implement liquidity sweep scalp candidates.
+5. Implement micro-MSS/BOS entries.
+6. Add OB/FVG scalping setups.
+7. Implement momentum breakout and retest.
+8. Upgrade Phase 2 waterfall for scalping.
+9. Implement first-pullback and compression setups.
+10. Implement early/balanced/confirmed entry modes.
+11. Build precision entry calculation.
+12. Implement structural SL/TP calculations.
+13. Integrate spread and execution feasibility.
+14. Connect all candidates to the Phase 1 signal engine.
+15. Integrate Phase 4 adaptive profiles.
+16. Implement candidate lifecycle and expiry.
+17. Add scalping settings.
+18. Add compact signal dashboard and chart visualization.
+19. Implement realistic historical execution testing.
+20. Verify non-repainting and replay consistency.
+21. Optimize performance.
+22. Run regression tests and build checks.
+
+Complete these tasks in bounded steps.
+
+Do not repeatedly rewrite completed modules.
+
+---
+
+# 25. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rebuild the entire application.
+- Replace Finage.
+- Break two-day historical API chunking.
+- Break epoch timestamp normalization.
+- Break the Canvas chart.
+- Break historical playback.
+- Remove existing strategies.
+- Break Phase 1 BUY/SELL logic.
+- Reintroduce duplicate signals.
+- Break Phase 2 candle psychology.
+- Break waterfall detection.
+- Break Phase 3 SMC.
+- Break Phase 4 adaptive settings.
+- Force both signal directions to appear artificially.
+- Add a BUY/SELL signal on every candle.
+- Require all SMC indicators simultaneously.
+- Make scalping settings excessively strict.
+- Use future candle information.
+- Fake precise entries.
+- Assume every historical limit order fills.
+- Assume zero spread.
+- Hardcode XAUUSD pip conversion.
+- Invent guaranteed profitable trade setups.
+- Claim a 70–90% win rate without robust independent evidence.
+- Introduce unnecessary AI dependencies.
+- Start real-money automated trading.
+- Change the dedicated Swing Engine before Phase 6.
+- Start Phase 6 automatically.
+
+---
+
+# 26. PHASE 5 COMPLETION CRITERIA
+
+Phase 5 is complete only when:
+
+1. Dedicated scalping analysis supports 1m, 3m and 5m.
+2. Bullish and bearish microstructure works.
+3. Liquidity sweep scalping works.
+4. Micro-MSS/BOS entries work.
+5. OB/FVG scalping setups integrate properly.
+6. Waterfall and bullish cascade continuation work.
+7. Early and pullback-based entries are available.
+8. Excessive duplicate signals are prevented.
+9. Entry timing is historically valid.
+10. Stop-loss and take-profit calculations are consistent.
+11. Spread and execution assumptions are explicit.
+12. AUTO/HYBRID/MANUAL modes remain functional.
+13. Balanced filtering retains valid opportunities without forcing signals.
+14. Signal expiry and invalidation work.
+15. Full history and sequential replay agree.
+16. Existing Phases 1–4 remain operational.
+17. Backtesting results distinguish candidate signals from executed trades.
+18. Out-of-sample evaluation is completed where sufficient data is available.
+19. Chart and replay performance remain acceptable.
+20. Available tests, lint, type checks and production build pass, or failures are documented accurately.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+- Files created and modified.
+- Existing modules reused.
+- Scalping strategy descriptions.
+- Microstructure detection rules.
+- Waterfall entry logic.
+- Entry timing and invalidation rules.
+- SL/TP calculation details.
+- Adaptive settings integration.
+- Signal lifecycle implementation.
+- Duplicate-suppression results.
+- BUY/SELL signal counts.
+- Fixed-vs-adaptive comparison.
+- Strategy-by-strategy backtesting metrics.
+- Replay/non-repainting results.
+- Performance benchmarks.
+- Remaining issues and limitations.
+
+**FINAL OBJECTIVE**
+
+Create a professional and explainable scalping signal finder for TradeZella Canvas that identifies timely BUY and SELL opportunities across 1m, 3m and 5m charts.
+
+It must combine advanced candle psychology, waterfall momentum, microstructure, liquidity sweeps, SMC, market-adaptive settings, precision entry planning and realistic risk analysis.
+
+Use balanced filtering, avoid unnecessary delays, minimize duplicate signals and preserve legitimate independent trading opportunities.
+
+Never fabricate signals, future data, trading accuracy or performance.
+
+Implement Phase 5 completely without breaking existing functionality.
+
+**Do not begin Phase 6 automatically.**

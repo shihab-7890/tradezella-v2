@@ -572,6 +572,7 @@ export default function Home() {
                   classicBreakoutZones={analysisResult.classicBreakoutZones}
                   htfKeyLevels={analysisResult.htfKeyLevels}
                   htfTrend={analysisResult.htfTrend}
+                  waterfallMarkers={analysisResult.waterfallMarkers}
                   sessionSettings={sessionSettings}
                   settings={settings}
                 />

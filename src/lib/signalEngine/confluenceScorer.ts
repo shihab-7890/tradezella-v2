@@ -24,6 +24,27 @@ export const STRATEGY_BASE_SCORE: Record<string, number> = {
   londonKillZone: 2.2,
   newYorkKillZone: 2.2,
   liquiditySweep: 2.2,
+  // Phase 2 Waterfall & Candle Psychology Strategies
+  waterfallEarly: 3.0,
+  waterfallFirstPullback: 3.2,
+  waterfallBreakout: 2.8,
+  waterfallRetest: 2.8,
+  waterfallShallow: 2.6,
+  candlePsychologyReversal: 3.2,
+  candlePsychologyEngulfing: 3.0,
+  candlePsychologyRejection: 2.8,
+  candlePsychologyExpansion: 3.0,
+  candlePsychologyCompression: 2.2,
+  // Phase 3 — Advanced SMC Strategies
+  smcSweepMss: 3.5,
+  smcObFvg: 3.5,
+  smcChochRetest: 3.2,
+  smcBosContinuation: 3.0,
+  smcPremDiscOb: 3.2,
+  smcFibConfluence: 3.0,
+  smcBreakerRetest: 3.0,
+  smcSweepSfp: 3.2,
+  smcWaterfallSmc: 3.5,
 };
 
 /**

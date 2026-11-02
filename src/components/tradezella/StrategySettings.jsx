@@ -820,12 +820,274 @@ function StrategySettings({ settings, setSettings }) {
                             checked={settings.showHtfKeyLevels}
                             onCheckedChange={(checked) => handleValueChange('showHtfKeyLevels', checked)}
                         />
-                         <SettingSwitch
-                            id="show-candidates"
-                            label="Show Candidates"
-                            tooltip="Show markers for sweep candidates before confirmation."
-                            checked={settings.showCandidateOnlyMarkers}
-                            onCheckedChange={(checked) => handleValueChange('showCandidateOnlyMarkers', checked)}
+                    </SettingsSection>
+
+                    <Separator />
+
+                    <SettingsSection title="Candle Psychology & Waterfall Momentum (Phase 2)">
+                        <SettingSwitch
+                            id="enable-candle-psychology"
+                            label="Enable Candle Engine"
+                            tooltip="Activates standardized OHLC body/wick metrics and directional pressure analysis."
+                            checked={settings.enableCandlePsychology !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableCandlePsychology', checked)}
+                        />
+                        <SettingSelect
+                            id="candle-preset"
+                            label="Filtering Preset"
+                            tooltip="Controls candidate strictness: Light (more signals), Balanced (default), Selective (higher confirmation)."
+                            value={settings.candlePreset || 'Balanced'}
+                            onValueChange={(val) => handleValueChange('candlePreset', val)}
+                            items={[
+                                { value: 'Light', label: 'Light' },
+                                { value: 'Balanced', label: 'Balanced' },
+                                { value: 'Selective', label: 'Selective' },
+                            ]}
+                        />
+                        <SettingSwitch
+                            id="enable-waterfall"
+                            label="Waterfall Momentum"
+                            tooltip="Enables state machine for Bearish Waterfalls and Bullish Cascades."
+                            checked={settings.enableWaterfall !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableWaterfall', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-bearish-waterfall"
+                            label="Bearish Waterfalls"
+                            tooltip="Detects rapid downward momentum and setup continuations."
+                            checked={settings.enableBearishWaterfall !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableBearishWaterfall', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-bullish-cascade"
+                            label="Bullish Cascades"
+                            tooltip="Detects rapid upward momentum and setup continuations."
+                            checked={settings.enableBullishCascade !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableBullishCascade', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-pattern-rec"
+                            label="Multi-Bar Patterns"
+                            tooltip="Detects engulfing, pin bars, and 3-candle expansion sequences."
+                            checked={settings.enablePatternRecognition !== false}
+                            onCheckedChange={(checked) => handleValueChange('enablePatternRecognition', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-exhaustion-reversal"
+                            label="Exhaustion Reversals"
+                            tooltip="Detects structural exhaustion + sweep + rejection for counter-trend entries."
+                            checked={settings.enableExhaustionReversal !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableExhaustionReversal', checked)}
+                        />
+                        <SettingInput
+                            id="min-body-ratio"
+                            label="Min Body Ratio"
+                            tooltip="Minimum body percentage of range for strong displacement bars (e.g., 0.65)."
+                            value={settings.minBodyRatio || 0.65}
+                            onChange={(e) => handleValueChange('minBodyRatio', e.target.value, true)}
+                            step="0.05"
+                            min="0.4"
+                        />
+                        <SettingInput
+                            id="rejection-wick-ratio"
+                            label="Rejection Wick Ratio"
+                            tooltip="Minimum wick percentage of range to qualify as rejection (e.g., 0.45)."
+                            value={settings.rejectionWickRatio || 0.45}
+                            onChange={(e) => handleValueChange('rejectionWickRatio', e.target.value, true)}
+                            step="0.05"
+                            min="0.3"
+                        />
+                        <SettingSwitch
+                            id="show-candle-markers"
+                            label="Show Waterfall Markers"
+                            tooltip="Render lightweight visual markers for Waterfall setups on the chart."
+                            checked={settings.showCandlePsychologyMarkers !== false}
+                            onCheckedChange={(checked) => handleValueChange('showCandlePsychologyMarkers', checked)}
+                        />
+                    </SettingsSection>
+
+                    <Separator />
+
+                    <SettingsSection title="Advanced Smart Money Concepts & Liquidity (Phase 3)">
+                        <SettingSwitch
+                            id="enable-smc-engine"
+                            label="Enable SMC Engine"
+                            tooltip="Activates internal/external structure, BOS/CHoCH, BSL/SSL pools, OBs, FVGs, and Auto Fibonacci."
+                            checked={settings.enableSmcEngine !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableSmcEngine', checked)}
+                        />
+                        <SettingSelect
+                            id="smc-preset"
+                            label="SMC Filter Preset"
+                            tooltip="Filtering preset: Light (more candidate setups), Balanced (default), Selective (higher confluence)."
+                            value={settings.smcPreset || 'Balanced'}
+                            onValueChange={(val) => handleValueChange('smcPreset', val)}
+                            items={[
+                                { value: 'Light', label: 'Light' },
+                                { value: 'Balanced', label: 'Balanced' },
+                                { value: 'Selective', label: 'Selective' },
+                            ]}
+                        />
+                        <SettingSwitch
+                            id="enable-bos-choch"
+                            label="BOS & CHoCH"
+                            tooltip="Tracks Break of Structure and Change of Character events."
+                            checked={settings.enableBosChoch !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableBosChoch', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-liquidity-intel"
+                            label="Liquidity Pools (BSL/SSL)"
+                            tooltip="Maps Buy-Side & Sell-Side liquidity pools and detects sweeps vs genuine breakouts."
+                            checked={settings.enableLiquidityIntelligence !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableLiquidityIntelligence', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-adv-ob"
+                            label="Advanced Order Blocks"
+                            tooltip="Tracks Bullish/Bearish Order Blocks, Breaker Blocks, and Mitigation lifecycle."
+                            checked={settings.enableAdvancedOrderBlocks !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableAdvancedOrderBlocks', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-adv-fvg"
+                            label="Advanced FVG & IFVG"
+                            tooltip="Tracks 3-candle Fair Value Gaps, Inverse FVGs, and midpoint reactions."
+                            checked={settings.enableAdvancedFvg !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableAdvancedFvg', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-auto-fib"
+                            label="Auto Fibonacci & OTE"
+                            tooltip="Automatically anchors Fibonacci retracements on confirmed swing high/low points."
+                            checked={settings.enableAutoFibonacci !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableAutoFibonacci', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-dealing-range"
+                            label="Dealing Range (P/D)"
+                            tooltip="Calculates Premium, Equilibrium, and Discount zones for structural dealing ranges."
+                            checked={settings.enableDealingRange !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableDealingRange', checked)}
+                        />
+                        <SettingSwitch
+                            id="show-smc-overlays"
+                            label="Show SMC Overlays"
+                            tooltip="Renders BOS/CHoCH lines, BSL/SSL pools, OB/FVG zones, and Fib levels on the chart."
+                            checked={settings.showSmcOverlays !== false}
+                            onCheckedChange={(checked) => handleValueChange('showSmcOverlays', checked)}
+                        />
+                    </SettingsSection>
+
+                    <Separator />
+
+                    <SettingsSection title="Auto Intelligence & Adaptive Engine (Phase 4)">
+                        <SettingSelect
+                            id="settings-mode"
+                            label="Settings Mode"
+                            tooltip="AUTO (fully automated strategy & threshold adaptation), HYBRID (adapts unlocked settings), MANUAL (manual control)."
+                            value={settings.settingsMode || 'AUTO'}
+                            onValueChange={(val) => handleValueChange('settingsMode', val)}
+                            items={[
+                                { value: 'AUTO', label: 'AUTO (Smart Adaptation)' },
+                                { value: 'HYBRID', label: 'HYBRID (User Locks Active)' },
+                                { value: 'MANUAL', label: 'MANUAL (Full Control)' },
+                            ]}
+                        />
+                        <SettingSelect
+                            id="trading-style"
+                            label="Trading Style Profile"
+                            tooltip="Scalping (1m-5m focus), Intraday (5m-15m focus), Swing (15m-1D focus)."
+                            value={settings.tradingStyle || 'Intraday'}
+                            onValueChange={(val) => handleValueChange('tradingStyle', val)}
+                            items={[
+                                { value: 'Scalping', label: 'Scalping (Fast Microstructure)' },
+                                { value: 'Intraday', label: 'Intraday (Session Structure)' },
+                                { value: 'Swing', label: 'Swing (HTF Macro Structure)' },
+                            ]}
+                        />
+                        <SettingSwitch
+                            id="enable-market-regime"
+                            label="Regime Detection"
+                            tooltip="Continuously classifies market direction (Bullish, Bearish, Range) and volatility."
+                            checked={settings.enableMarketRegimeEngine !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableMarketRegimeEngine', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-adaptive-settings"
+                            label="Adaptive Thresholds"
+                            tooltip="Dynamically adjusts displacement ATR and confluence score thresholds to market conditions."
+                            checked={settings.enableAdaptiveSettings !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableAdaptiveSettings', checked)}
+                        />
+                        <SettingSwitch
+                            id="show-regime-dashboard"
+                            label="Show Regime Dashboard"
+                            tooltip="Displays a sleek Market Intelligence HUD on top of the chart canvas."
+                            checked={settings.showRegimeDashboard !== false}
+                            onCheckedChange={(checked) => handleValueChange('showRegimeDashboard', checked)}
+                        />
+                    </SettingsSection>
+
+                    <Separator />
+
+                    <SettingsSection title="Professional Scalping Intelligence (Phase 5)">
+                        <SettingSwitch
+                            id="enable-scalping-engine"
+                            label="Enable Scalping Engine"
+                            tooltip="Activates dedicated 1m/3m/5m lower-timeframe micro-structure, waterfall, and sweep scalping."
+                            checked={settings.enableScalpingEngine !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableScalpingEngine', checked)}
+                        />
+                        <SettingSelect
+                            id="scalping-mode"
+                            label="Scalping Preset"
+                            tooltip="Light (more candidates), Balanced (default confirmation), Selective (high confluence)."
+                            value={settings.scalpingMode || 'Balanced'}
+                            onValueChange={(val) => handleValueChange('scalpingMode', val)}
+                            items={[
+                                { value: 'Light', label: 'Light (Frequent Opportunities)' },
+                                { value: 'Balanced', label: 'Balanced (Standard Quality)' },
+                                { value: 'Selective', label: 'Selective (Strict Confirmation)' },
+                            ]}
+                        />
+                        <SettingSelect
+                            id="scalping-entry-style"
+                            label="Precision Entry Style"
+                            tooltip="Early (Immediate on close), Balanced (Limit at 50% candle), Confirmed (Stop breakout)."
+                            value={settings.scalpingEntryStyle || 'Balanced'}
+                            onValueChange={(val) => handleValueChange('scalpingEntryStyle', val)}
+                            items={[
+                                { value: 'Early', label: 'Early (Market on Confirmation)' },
+                                { value: 'Balanced', label: 'Balanced (Limit in Mid-Zone)' },
+                                { value: 'Confirmed', label: 'Confirmed (Stop Breakout Trigger)' },
+                            ]}
+                        />
+                        <SettingSwitch
+                            id="enable-spread-filter"
+                            label="Spread Feasibility Filter"
+                            tooltip="Rejects setups where spread cost exceeds 25% of stop-loss risk distance."
+                            checked={settings.enableSpreadFilter === true}
+                            onCheckedChange={(checked) => handleValueChange('enableSpreadFilter', checked)}
+                        />
+                    </SettingsSection>
+
+                    <Separator />
+
+                    <SettingsSection title="Advanced Intraday & Swing Intelligence (Phase 6)">
+                        <SettingSwitch
+                            id="enable-intraday-engine"
+                            label="Enable Intraday Engine"
+                            tooltip="Activates session high/low sweeps, intraday BOS/CHoCH/MSS & 15m/1h session setups."
+                            checked={settings.enableIntradayEngine !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableIntradayEngine', checked)}
+                        />
+                        <SettingSwitch
+                            id="enable-swing-engine"
+                            label="Enable Swing Engine"
+                            tooltip="Activates macro trend continuation, deep Fibonacci (OTE 61.8%-70.5%), major OB/FVG & 200-300 pip target setups."
+                            checked={settings.enableSwingEngine !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableSwingEngine', checked)}
                         />
                     </SettingsSection>
                 </div>

@@ -64,6 +64,7 @@ export const CandleStickChart = memo(function CandleStickChart({
   classicBreakoutZones,
   htfKeyLevels,
   htfTrend,
+  waterfallMarkers = [],
   sessionSettings,
   settings,
 }) {
@@ -487,14 +488,11 @@ export const CandleStickChart = memo(function CandleStickChart({
       ctx.fillRect(x + 1, volumeBaseY - barHeight, Math.max(1, candleWidth - 2), barHeight);
     }
 
-    // 7. Candlesticks (High-Contrast Professional Rendering)
-    const gap = Math.max(1, Math.floor(candleWidth * 0.22));
-    const bodyWidth = Math.max(2, Math.floor(candleWidth - gap));
-
+    // 7. Candlesticks (High-Contrast Professional TradingView Style)
     for (let i = startIndex; i < endIndex; i++) {
       const c = candles[i];
       const x = (i - viewState.candleOffset) * candleWidth;
-      const candleCenter = Math.floor(x + candleWidth / 2) + 0.5;
+      const xCenter = Math.floor(x + candleWidth / 2) + 0.5; // Half-pixel offset for 1px line crispness
 
       const yOpen = priceToY(c.open);
       const yClose = priceToY(c.close);
@@ -504,29 +502,31 @@ export const CandleStickChart = memo(function CandleStickChart({
       const isUp = c.close >= c.open;
       const bodyTop = Math.floor(Math.min(yOpen, yClose));
       const rawBodyHeight = Math.abs(yClose - yOpen);
-      // ENFORCE MINIMUM 3px body height so dojis and tiny price moves are clearly solid!
-      const bodyHeight = Math.max(3, Math.floor(rawBodyHeight));
-      const bodyX = Math.floor(x + gap / 2);
+      const bodyHeight = Math.max(2.5, Math.floor(rawBodyHeight));
+
+      const bWidth = Math.max(1, candleWidth <= 4 ? candleWidth - 0.5 : Math.floor(candleWidth - Math.max(1, candleWidth * 0.22)));
+      const bodyX = Math.floor(xCenter - bWidth / 2);
 
       const color = isUp ? themeColors.bull : themeColors.bear;
       const borderColor = isUp ? themeColors.bullBorder : themeColors.bearBorder;
 
       // Draw Wick
       ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = candleWidth > 14 ? 1.5 : 1.0;
       ctx.beginPath();
-      ctx.moveTo(candleCenter, yHigh);
-      ctx.lineTo(candleCenter, yLow);
+      ctx.moveTo(xCenter, Math.floor(yHigh));
+      ctx.lineTo(xCenter, Math.floor(yLow));
       ctx.stroke();
 
       // Draw Body Rectangle
       ctx.fillStyle = color;
-      ctx.fillRect(bodyX, bodyTop, bodyWidth, bodyHeight);
+      ctx.fillRect(bodyX, bodyTop, bWidth, bodyHeight);
 
-      // Draw Body Border for high-definition outline
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(bodyX, bodyTop, bodyWidth, bodyHeight);
+      if (candleWidth >= 6) {
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(bodyX, bodyTop, bWidth, bodyHeight);
+      }
     }
 
     // 8. Latest Price Horizontal Line & Tag
@@ -613,6 +613,43 @@ export const CandleStickChart = memo(function CandleStickChart({
             ctx.fillStyle = themeColors.textMuted;
             ctx.fillText(`${m.qualityTier || ''} ${m.score.toFixed(1)}`, x, arrowY - size - 22);
           }
+        }
+      });
+    }
+
+    // 9.5 Waterfall & Candle Psychology Markers
+    if (settings.showCandlePsychologyMarkers !== false && waterfallMarkers && waterfallMarkers.length > 0) {
+      waterfallMarkers.forEach(wm => {
+        if (wm.index >= startIndex && wm.index < endIndex) {
+          const c = candles[wm.index];
+          const x = (wm.index - viewState.candleOffset) * candleWidth + candleWidth / 2;
+          const isSell = wm.type === 'SELL';
+          const y = isSell ? priceToY(c.high) - 36 : priceToY(c.low) + 36;
+
+          ctx.save();
+          ctx.fillStyle = isSell ? 'rgba(239, 83, 80, 0.9)' : 'rgba(38, 166, 154, 0.9)';
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+
+          // Draw small rounded badge badge
+          const label = wm.label || 'WATERFALL';
+          ctx.font = 'bold 9px Inter';
+          const textWidth = ctx.measureText(label).width;
+          const px = x - textWidth / 2 - 4;
+          const py = y - 7;
+          const pw = textWidth + 8;
+          const ph = 14;
+
+          ctx.beginPath();
+          ctx.roundRect(px, py, pw, ph, 4);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, x, y);
+          ctx.restore();
         }
       });
     }
@@ -936,6 +973,27 @@ export const CandleStickChart = memo(function CandleStickChart({
             </div>
           )}
         </div>
+
+        {/* Middle: Phase 4 Adaptive Market Regime HUD */}
+        {settings?.showRegimeDashboard !== false && (
+          <div className="hidden md:flex items-center gap-2 pointer-events-auto bg-[#111827]/90 backdrop-blur-md border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white shadow-lg">
+            <span className="flex items-center gap-1.5 font-semibold text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{settings?.activeRegime || htfTrend?.direction || 'Bullish Regime'}</span>
+            </span>
+            <span className="text-gray-400">·</span>
+            <span className="text-gray-300">
+              Trend: <strong className="text-amber-400 font-mono">{settings?.trendStrength || htfTrend?.confidence || 75}/100</strong>
+            </span>
+            <span className="text-gray-400">·</span>
+            <span className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-medium">
+              Mode: {settings?.mode || 'AUTO'}
+            </span>
+            <span className="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium">
+              Profile: {settings?.profileStyle || 'Intraday'}
+            </span>
+          </div>
+        )}
 
         {/* Right: Fullscreen, Theme & Navigation Toolbar */}
         <div className="flex items-center gap-1 pointer-events-auto bg-[#111827]/90 backdrop-blur-md border border-white/10 rounded-xl p-1 shadow-lg">

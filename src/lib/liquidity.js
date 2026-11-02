@@ -6,14 +6,45 @@ import {
     calculateSignalRiskManagement,
     DiagnosticsCollector,
 } from '@/lib/signalEngine';
+import { calculateCandleMetrics, classifyCandle } from '@/lib/candlePsychology';
+import { detectMultiCandlePatterns } from '@/lib/candlePatterns';
+import { runWaterfallEngine } from '@/lib/waterfallMomentum';
+import { detectReversalSetups } from '@/lib/momentumExhaustion';
+import { analyzeMarketStructure } from '@/lib/smc/marketStructure';
+import { mapLiquidityPools, detectLiquiditySweepsAndBreakouts } from '@/lib/smc/liquidityIntelligence';
+import { detectOrderBlocks } from '@/lib/smc/orderBlocks';
+import { detectFairValueGaps } from '@/lib/smc/fairValueGaps';
+import { calculateAutoFibonacci } from '@/lib/smc/fibonacci';
+import { calculateDealingRange } from '@/lib/smc/premiumDiscount';
+import { detectSmcSetups } from '@/lib/smc/smcSetups';
+import { classifyMarketRegime } from '@/lib/adaptive/marketRegime';
+import { computeEffectiveSettings } from '@/lib/adaptive/adaptiveSettings';
+import { attachAdaptiveSnapshot } from '@/lib/adaptive/adaptiveDiagnostics';
+import { getStrategySuitabilityWeight } from '@/lib/adaptive/strategySelector';
+import { runScalpingEngine } from '@/lib/scalping/scalpingEngine';
+import { runIntradayEngine } from '@/lib/intraday/intradayEngine';
+import { runSwingEngine } from '@/lib/swing/swingEngine';
 
 const STRATEGY_PRIORITY = {
+    smcSweepMss: 10,
+    smcObFvg: 10,
+    smcWaterfallSmc: 10,
+    smcChochRetest: 9,
+    smcPremDiscOb: 9,
+    waterfallFirstPullback: 10,
+    waterfallEarly: 9,
+    candlePsychologyReversal: 9,
     sweepObFvgConfluence: 10,
     powerOfThree: 10,
     qualifiedSweep: 8,
     obMss: 8,
     continuationObMss: 8,
     momentumSpike: 8,
+    candlePsychologyEngulfing: 7,
+    candlePsychologyRejection: 7,
+    waterfallBreakout: 7,
+    waterfallRetest: 7,
+    waterfallShallow: 6,
     fvgImbalance: 5,
     mitigationBlock: 5,
     liquidityVoid: 5,
@@ -73,7 +104,23 @@ export const DEFAULT_STRATEGY_SETTINGS = {
         londonBreakout: false,
         classicBreakout: false,
         momentumSpike: true,
+        scalping: true,
+        intraday: true,
+        swing: true,
     },
+    // Phase 5 Scalping Engine Settings
+    enableScalpingEngine: true,
+    scalpingMode: 'Balanced', // Light, Balanced, Selective
+    scalpingTimeframe: '5m', // 1m, 3m, 5m
+    scalpingEntryStyle: 'Balanced', // Early, Balanced, Confirmed
+    enableSpreadFilter: false,
+    assumedSpread: 0.0002,
+    setupExpiryCandles: 5,
+    // Phase 6 Intraday & Swing Engine Settings
+    enableIntradayEngine: true,
+    intradayMode: 'Balanced',
+    enableSwingEngine: true,
+    swingMode: 'Balanced',
     lookback: 20,
     minWickRatio: 0.5,
     equalTolerance: 0.002,
@@ -123,6 +170,40 @@ export const DEFAULT_STRATEGY_SETTINGS = {
     classicBreakoutLookback: 15,
     classicBreakoutVolumeSpike: true,
     classicBreakoutEnableRetest: false,
+
+    // Phase 2 — Candle Psychology & Waterfall Settings
+    enableCandlePsychology: true,
+    enablePatternRecognition: true,
+    enableWaterfall: true,
+    enableBearishWaterfall: true,
+    enableBullishCascade: true,
+    enableExhaustionReversal: true,
+    candlePreset: 'Balanced', // 'Light' | 'Balanced' | 'Selective'
+    minBodyRatio: 0.65,
+    rejectionWickRatio: 0.45,
+    impulseAtr: 0.8,
+    rangeExpansionAtr: 1.3,
+    waterfallMaxCandles: 12,
+    showCandlePsychologyMarkers: true,
+
+    // Phase 3 — Advanced SMC Settings
+    enableSmcEngine: true,
+    enableBosChoch: true,
+    enableLiquidityIntelligence: true,
+    enableAdvancedOrderBlocks: true,
+    enableAdvancedFvg: true,
+    enableAutoFibonacci: true,
+    enableDealingRange: true,
+    smcPreset: 'Balanced', // 'Light' | 'Balanced' | 'Selective'
+    showSmcOverlays: true,
+
+    // Phase 4 — Automatic Market Intelligence & Adaptive Engine
+    settingsMode: 'AUTO', // 'AUTO' | 'HYBRID' | 'MANUAL'
+    tradingStyle: 'Intraday', // 'Scalping' | 'Intraday' | 'Swing'
+    enableMarketRegimeEngine: true,
+    enableAdaptiveSettings: true,
+    showRegimeDashboard: true,
+    userLocks: {},
 };
 
 /**
@@ -164,7 +245,10 @@ export async function runConfluenceEngine(candles, settings = {}, config = {}) {
     const timeframe = config?.timeframe || '15m';
     const diagnostics = new DiagnosticsCollector(symbol, timeframe, candles.length);
     const candleTimeIndex = buildCandleTimeIndexMap(candles);
-    const qualityContext = createQualityContext(candles, activeSettings);
+    const atrList = calculateATR(candles, activeSettings.atrPeriod || 20);
+    const regimeInfo = classifyMarketRegime(candles, atrList, activeSettings);
+    const effectiveSettings = computeEffectiveSettings(activeSettings, regimeInfo);
+    const qualityContext = createQualityContext(candles, effectiveSettings);
 
     let analysisResult = {
         liquidityData: { equalHighs: [], equalLows: [] },
@@ -180,6 +264,8 @@ export async function runConfluenceEngine(candles, settings = {}, config = {}) {
         classicBreakoutZones: [],
         htfKeyLevels: [],
         htfTrend: { direction: 'Ranging', confidence: 0 },
+        marketRegime: regimeInfo,
+        effectiveSettings,
         diagnostics: null,
     };
 
@@ -264,7 +350,7 @@ export async function runConfluenceEngine(candles, settings = {}, config = {}) {
 
         const signalId = `${symbol}-${timeframe}-${direction}-${normalized.time}-${strategy}`;
 
-        evaluatedSignals.push({
+        const baseSignalObj = {
             ...normalized,
             id: signalId,
             symbol,
@@ -276,7 +362,10 @@ export async function runConfluenceEngine(candles, settings = {}, config = {}) {
             reasons,
             notes: `${normalized.notes || strategy} | ${reasons.join(', ')}`,
             ...riskParams,
-        });
+        };
+
+        const finalSignalWithSnapshot = attachAdaptiveSnapshot(baseSignalObj, regimeInfo, effectiveSettings);
+        evaluatedSignals.push(finalSignalWithSnapshot);
     }
 
     // 3. Centralized deduplication and direction-aware spacing
@@ -406,9 +495,14 @@ function normalizeSignal(signal) {
 }
 
 function inferSignalStrategy(signal) {
+    if (signal.strategy) return signal.strategy;
     const notes = signal.notes || '';
     const type = signal.type || '';
 
+    if (notes.includes('Waterfall') || notes.includes('Cascade')) return 'waterfallEarly';
+    if (notes.includes('Engulfing')) return 'candlePsychologyEngulfing';
+    if (notes.includes('Rejection') || notes.includes('Pin Bar')) return 'candlePsychologyRejection';
+    if (notes.includes('Reversal')) return 'candlePsychologyReversal';
     if (notes.includes('Sweep+OB+FVG')) return 'sweepObFvgConfluence';
     if (notes.includes('Power of Three') || notes.includes('P3')) return 'powerOfThree';
     if (notes.includes('Qualified Sweep') || type.includes('QUALIFIED')) return 'qualifiedSweep';
@@ -810,6 +904,125 @@ function runAllStrategies(candles, settings, config, analysisResult = null) {
     if (settings.strategy.momentumSpike) {
         const result = detectMomentumSpikes(candles, settings);
         potentialSignals.push(...result.signals);
+    }
+
+    // Phase 2 — Candle Psychology & Waterfall Momentum Engines
+    if (settings.enableCandlePsychology !== false) {
+        const atrPeriod = settings.atrPeriod || 20;
+        const atrList = calculateATR(candles, atrPeriod);
+        const volumeMA = calculateEMA(candles.map(c => c.volume || 0), 20);
+
+        const metricsList = candles.map((c, idx) =>
+            calculateCandleMetrics(c, idx > 0 ? candles[idx - 1] : null, atrList[idx], volumeMA[idx])
+        );
+
+        // 1. Multi-candle pattern recognition
+        if (settings.enablePatternRecognition !== false) {
+            for (let i = 1; i < candles.length; i++) {
+                const patterns = detectMultiCandlePatterns(candles, i, metricsList, settings);
+                potentialSignals.push(...patterns);
+            }
+        }
+
+        // 2. Waterfall Momentum Engine & Waterfall Markers
+        if (settings.enableWaterfall !== false) {
+            const waterfallResult = runWaterfallEngine(candles, metricsList, atrList, settings);
+            potentialSignals.push(...waterfallResult.candidates);
+            visualData.waterfallMarkers = waterfallResult.markers;
+        }
+
+        // 3. Reversal & Candle Exhaustion Engine
+        if (settings.enableExhaustionReversal !== false) {
+            const reversalCandidates = detectReversalSetups(candles, metricsList, atrList, settings);
+            potentialSignals.push(...reversalCandidates);
+        }
+    }
+
+    // Phase 3 — Advanced Smart Money Concepts Engine
+    if (settings.enableSmcEngine !== false) {
+        const atrList = calculateATR(candles, settings.atrPeriod || 20);
+
+        // A. Market Structure (Swings, BOS, CHoCH, MSS)
+        const structureData = analyzeMarketStructure(candles, settings);
+        visualData.structureEvents = structureData.structureEvents;
+        visualData.internalSwings = structureData.internalSwings;
+        visualData.externalSwings = structureData.externalSwings;
+
+        // B. Liquidity Intelligence (BSL, SSL, Sweeps, Breakouts)
+        const liquidityPools = mapLiquidityPools(candles, structureData.internalSwings, structureData.externalSwings);
+        const liquidityResults = detectLiquiditySweepsAndBreakouts(candles, liquidityPools.bslPools, liquidityPools.sslPools, settings);
+        visualData.bslPools = liquidityPools.bslPools;
+        visualData.sslPools = liquidityPools.sslPools;
+        visualData.smcSweeps = liquidityResults.sweeps;
+
+        // C. Order Blocks & Breakers
+        const obResults = detectOrderBlocks(candles, structureData.structureEvents, atrList, settings);
+        visualData.advancedOrderBlocks = obResults.orderBlocks;
+        visualData.advancedBreakerBlocks = obResults.breakerBlocks;
+
+        // D. Fair Value Gaps & IFVGs
+        const fvgResults = detectFairValueGaps(candles, settings);
+        visualData.advancedFvgs = fvgResults.fvgs;
+        visualData.advancedIfvgs = fvgResults.ifvgs;
+
+        // E. Auto Fibonacci & OTE
+        const fibData = calculateAutoFibonacci(candles, structureData.externalSwings, structureData.trendState.internal);
+        visualData.autoFibonacci = fibData;
+
+        // F. Premium / Discount Dealing Range
+        const rangeData = calculateDealingRange(candles, structureData.externalSwings);
+        visualData.smcDealingRange = rangeData;
+
+        // G. SMC Setups (A - I)
+        const smcCandidates = detectSmcSetups(
+            candles,
+            structureData,
+            liquidityResults,
+            obResults,
+            fvgResults,
+            fibData,
+            rangeData,
+            settings
+        );
+        potentialSignals.push(...smcCandidates);
+    }
+
+    // Phase 5 — Professional Scalping Intelligence Engine
+    if (settings.enableScalpingEngine !== false) {
+        const scalpResult = runScalpingEngine(candles, settings, analysisResult.marketRegime);
+        for (const s of scalpResult.scalpingSignals) {
+            potentialSignals.push({
+                ...s,
+                type: s.type || `${s.direction}_SCALP_CONFIRMED`,
+                notes: s.notes || s.reasons?.join(' | ') || `Phase 5 ${s.strategy}`,
+            });
+        }
+        visualData.scalpDiagnostics = scalpResult.diagnostics;
+    }
+
+    // Phase 6 — Professional Intraday & Swing Intelligence Engines
+    if (settings.enableIntradayEngine !== false) {
+        const intradayResult = runIntradayEngine(candles, settings, analysisResult.marketRegime);
+        for (const s of intradayResult.intradaySignals) {
+            potentialSignals.push({
+                ...s,
+                type: s.type || `${s.direction}_INTRADAY_CONFIRMED`,
+                notes: s.notes || s.reasons?.join(' | ') || `Phase 6 ${s.strategy}`,
+            });
+        }
+        visualData.intradayDiagnostics = intradayResult.diagnostics;
+    }
+
+    if (settings.enableSwingEngine !== false) {
+        const swingResult = runSwingEngine(candles, settings, analysisResult.marketRegime);
+        for (const s of swingResult.swingSignals) {
+            potentialSignals.push({
+                ...s,
+                type: s.type || `${s.direction}_SWING_CONFIRMED`,
+                notes: s.notes || s.reasons?.join(' | ') || `Phase 6 ${s.strategy}`,
+            });
+        }
+        visualData.swingDiagnostics = swingResult.diagnostics;
     }
 
     return { potentialSignals, visualData };

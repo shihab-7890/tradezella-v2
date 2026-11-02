@@ -1,0 +1,1100 @@
+# PHASE 2 — ADVANCED CANDLE PSYCHOLOGY, WATERFALL MOMENTUM & PRICE ACTION INTELLIGENCE ENGINE
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative trading algorithm developer, professional price-action analyst, market microstructure researcher, and Next.js performance engineer.
+
+Your task is to implement Phase 2 into my EXISTING TradeZella Canvas trading application.
+
+**Implement production-quality code, not just documentation or suggestions.**
+
+My application already includes:
+
+- Finage historical market data fetching.
+- Automatic historical date-range chunking and candle merging.
+- Multi-timeframe candlestick charts.
+- HTML5 Canvas chart renderer.
+- Historical market replay.
+- Existing ICT/SMC algorithms.
+- Liquidity sweeps, MSS, BOS, Order Blocks and FVG.
+- Momentum and breakout detection.
+- BUY/SELL signal detection.
+- Central signal scoring and deduplication from Phase 1.
+- SL/TP calculations.
+- Strategy settings.
+- Trade logs and CSV export.
+
+Phase 1 should already have repaired directional bias, duplicate signals, signal confirmation timing and non-repainting behavior.
+
+**Do not break, remove, rewrite or weaken any completed Phase 1 functionality.**
+
+---
+
+# 1. MAIN OBJECTIVE
+
+Build a modular Candle Psychology and Momentum Intelligence Engine that analyzes every completed candle and the relationship between consecutive candles.
+
+The engine should understand observable price-action characteristics such as:
+
+1. Strong bullish displacement.
+2. Strong bearish displacement.
+3. Bullish and bearish momentum continuation.
+4. Rejection and failed breakout behavior.
+5. Wick pressure and closing strength.
+6. Engulfing and outside candles.
+7. Compression and expansion.
+8. Exhaustion and potential reversal.
+9. Sequential directional candle behavior.
+10. Waterfall bearish momentum.
+11. Bullish momentum cascades.
+12. Pullback quality.
+13. Candle structure around liquidity, Order Blocks and FVG zones.
+14. Momentum continuation versus reversal conditions.
+15. Scalping versus swing timeframe context.
+
+The objective is not to generate a trade from every pattern.
+
+The objective is to use candle behavior to identify stronger opportunities, improve signal timing, and distinguish meaningful momentum from ordinary price noise.
+
+Do not claim that OHLC candles reveal actual institutional orders, buyer/seller identity or executed order flow. Candle psychology represents measurable proxies based on price behavior.
+
+---
+
+# 2. AUDIT THE EXISTING IMPLEMENTATION
+
+Before implementation, inspect:
+
+- `src/lib/liquidity.js`
+- `src/app/page.jsx`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+- `src/services/finageService.js`
+
+Also inspect existing:
+
+- Candle normalization.
+- ATR calculations.
+- Momentum spike algorithms.
+- Breakout algorithms.
+- MSS and BOS logic.
+- Liquidity analysis.
+- FVG and OB calculations.
+- Signal scoring.
+- Signal deduplication.
+- Multi-timeframe alignment.
+- Replay processing.
+- Configuration persistence.
+- SL/TP generation.
+
+Reuse existing calculations whenever appropriate.
+
+Avoid creating conflicting implementations of ATR, candle normalization or momentum detection.
+
+Organize new logic into small reusable modules, following the current project structure.
+
+Suggested modules, only if compatible:
+
+- `src/lib/candlePsychology.js`
+- `src/lib/candlePatterns.js`
+- `src/lib/waterfallMomentum.js`
+- `src/lib/momentumContinuation.js`
+- `src/lib/momentumExhaustion.js`
+
+Avoid unnecessary architecture changes.
+
+---
+
+# 3. DEEP CANDLE PSYCHOLOGY ENGINE
+
+For every completed candle, calculate a standardized set of characteristics.
+
+### 3.1 Candle measurements
+
+Calculate:
+
+- Total candle range.
+- Real body size.
+- Upper wick size.
+- Lower wick size.
+- Body-to-range percentage.
+- Upper wick percentage.
+- Lower wick percentage.
+- Close location within candle range.
+- Body size relative to ATR.
+- Total range relative to ATR.
+- Gap from previous candle close.
+- Current candle overlap with previous candles.
+- Candle direction.
+- Consecutive candle direction count.
+- Rolling volatility.
+- Available volume relative to a rolling average.
+
+Use consistent normalization so these measurements work across XAUUSD, Forex pairs and other supported symbols.
+
+Handle zero-range candles and invalid OHLC values safely.
+
+### 3.2 Candle classification
+
+Classify candles into meaningful categories, such as:
+
+- Strong Bullish.
+- Strong Bearish.
+- Weak Bullish.
+- Weak Bearish.
+- Bullish Rejection.
+- Bearish Rejection.
+- Bullish Engulfing.
+- Bearish Engulfing.
+- Indecision / Doji.
+- Inside Bar.
+- Outside Bar.
+- High-Volatility Impulse.
+- Low-Volatility Compression.
+- Possible Exhaustion.
+- Failed Breakout / Reclaim.
+- Neutral.
+
+A candle may have multiple compatible attributes.
+
+Do not force every candle into exactly one exclusive pattern.
+
+### 3.3 Initial threshold examples
+
+Use configurable, testable starting thresholds:
+
+- Strong body: approximately 65–70% of candle range.
+- Significant rejection wick: approximately 45–55% of total range.
+- Meaningful impulse body: approximately 0.8–1.2 ATR.
+- Strong range expansion: approximately 1.3–1.8 ATR.
+- Doji/indecision body: approximately 10–15% of range.
+
+These are experimental starting values, not universally proven settings.
+
+Do not make all conditions mandatory.
+
+Keep thresholds moderately permissive and validate their effects using historical datasets.
+
+---
+
+# 4. BUYER AND SELLER PRESSURE ANALYSIS
+
+Implement a bidirectional candle pressure model using available OHLC information.
+
+### Bullish pressure characteristics
+
+- Candle closes near its high.
+- Body occupies a significant percentage of range.
+- Limited upper wick.
+- Bullish closes above recent reference levels.
+- Consecutive bullish progress.
+- Bullish follow-through.
+- Reduced bearish pullback depth.
+
+### Bearish pressure characteristics
+
+- Candle closes near its low.
+- Body occupies a significant percentage of range.
+- Limited lower wick.
+- Bearish closes below recent reference levels.
+- Consecutive bearish progress.
+- Bearish follow-through.
+- Reduced bullish pullback depth.
+
+### Pressure output
+
+Produce:
+
+- Bullish price-action strength score.
+- Bearish price-action strength score.
+- Net directional pressure proxy.
+- Momentum acceleration/deceleration.
+- Rejection strength.
+- Continuation strength.
+- Exhaustion warning.
+
+These are **price-action scores, not actual buy/sell volume or order-flow measurements**.
+
+If the Finage feed does not provide genuine directional trade volume, do not invent it.
+
+Use available volume only when its semantics and quality are validated.
+
+Make the scores explainable and deterministic.
+
+---
+
+# 5. ADVANCED MULTI-CANDLE PATTERN RECOGNITION
+
+Do not analyze candles in isolation.
+
+Build a rolling sequence analyzer that recognizes behavior across multiple completed candles.
+
+Support:
+
+### Bullish patterns
+
+- Bullish Engulfing.
+- Bullish Pin Bar.
+- Bullish Rejection.
+- Bullish Momentum Continuation.
+- Bullish Three-Candle Expansion.
+- Bullish Breakout Follow-Through.
+- Bullish Failed Breakdown.
+- Bullish Pullback Continuation.
+
+### Bearish patterns
+
+- Bearish Engulfing.
+- Bearish Pin Bar.
+- Bearish Rejection.
+- Bearish Momentum Continuation.
+- Bearish Three-Candle Expansion.
+- Bearish Breakout Follow-Through.
+- Bearish Failed Breakout.
+- Bearish Pullback Continuation.
+
+### Neutral and transitional patterns
+
+- Inside-Bar Compression.
+- Range Compression.
+- Alternating Candle Chop.
+- Momentum Deceleration.
+- Repeated Failed Breakouts.
+- Volatility Contraction.
+- Indecision Near Important Levels.
+
+Each recognized pattern should contain:
+
+- Pattern ID.
+- Direction.
+- Start candle timestamp.
+- Confirmation timestamp.
+- Pattern score.
+- Relevant candle measurements.
+- Invalidation conditions.
+- Human-readable explanation.
+
+Never detect or confirm a multi-candle pattern before its required candles exist.
+
+---
+
+# 6. WATERFALL MOMENTUM DETECTION ENGINE
+
+**This is one of the most important parts of Phase 2.**
+
+Build a dedicated Waterfall Momentum Engine.
+
+The system should recognize strong directional expansion and identify possible continuation entries without repeatedly chasing extended moves.
+
+Support both:
+
+- Bearish Waterfall (rapid downward movement).
+- Bullish Momentum Cascade (rapid upward movement).
+
+## 6.1 Bearish Waterfall Detection
+
+Analyze combinations of:
+
+1. Multiple consecutive bearish candles.
+2. Strong bearish candle bodies.
+3. Closes near candle lows.
+4. Consecutively lower lows.
+5. Progressive price displacement.
+6. Limited upward pullbacks.
+7. ATR-relative expansion.
+8. Breakdown below recent market structure.
+9. Momentum acceleration.
+10. Weak bullish counter-candles.
+11. Failed bullish recoveries.
+12. Bearish continuation after temporary consolidation.
+
+Example:
+
+Candle 1: Strong bearish impulse.
+
+Candle 2: Bearish continuation with new low.
+
+Candle 3: Small bullish retracement or consolidation.
+
+Candle 4: Bearish breakdown and continuation.
+
+The engine should recognize that these candles form one potential momentum sequence.
+
+Do not generate four unrelated SELL signals.
+
+## 6.2 Bullish Momentum Cascade
+
+Implement equivalent logic for upward momentum:
+
+- Strong bullish impulse.
+- Repeated higher closes.
+- Higher highs.
+- Shallow bearish retracements.
+- Bullish expansion.
+- Continuation after compression.
+- Break above local structure.
+
+The logic must be symmetric where appropriate, without assuming bullish and bearish market behavior are statistically identical.
+
+## 6.3 Momentum Sequence Scoring
+
+Build a sequence score using:
+
+- Directional consistency.
+- Average body strength.
+- Net price displacement.
+- ATR-adjusted movement.
+- Pullback depth.
+- Overlapping candles.
+- Breakout confirmation.
+- Follow-through quality.
+- Structure alignment.
+- Momentum acceleration.
+
+Avoid awarding excessive score simply because many correlated candles appear in the same sequence.
+
+---
+
+# 7. WATERFALL ENTRY STRATEGIES
+
+Do not enter automatically after every large candle.
+
+Implement distinct setup types.
+
+## Setup A — Early Momentum Confirmation
+
+Detect the initial meaningful displacement and breakout.
+
+Requirements may include:
+
+- Strong directional impulse.
+- Relevant structure break.
+- Close near candle extreme.
+- Sufficient room before nearby opposing structure.
+- Acceptable risk/reward based on available prices.
+
+Issue a candidate at the initial impulse and confirm only when its required conditions are satisfied.
+
+Avoid waiting for five or six candles when an earlier objectively valid setup already exists.
+
+## Setup B — First Pullback Entry
+
+After strong directional momentum:
+
+- Detect first meaningful counter-direction retracement.
+- Evaluate pullback depth.
+- Identify nearby FVG, OB or breakout level if available.
+- Detect continuation confirmation.
+- Generate a new entry candidate at the appropriate time.
+
+This should be one of the preferred waterfall continuation setup types.
+
+## Setup C — Compression Breakout
+
+After strong momentum:
+
+- Detect temporary consolidation.
+- Identify compression range.
+- Recognize renewed directional breakout.
+- Confirm the breakout without future information.
+- Generate a continuation setup.
+
+## Setup D — Momentum Retest
+
+When a strong impulse breaks a relevant level:
+
+- Mark the broken level.
+- Observe a retest.
+- Analyze rejection or continuation behavior.
+- Generate an eligible setup when confirmed.
+
+## Setup E — Shallow Continuation
+
+Some strong momentum trends provide little retracement.
+
+Allow a carefully defined continuation entry based on a new completed-candle confirmation and appropriate risk conditions.
+
+Do not require an FVG, liquidity sweep, Order Block and MSS simultaneously.
+
+Use different validation rules for different setup types.
+
+---
+
+# 8. WATERFALL EXHAUSTION AND ANTI-CHASE PROTECTION
+
+A large number of consecutive bearish candles does not automatically mean another SELL entry is good.
+
+Implement exhaustion analysis.
+
+Look for:
+
+- Declining candle body strength.
+- Decreasing directional progress.
+- Larger counter-direction wicks.
+- Sharp volatility expansion after an extended move.
+- Repeated failures to extend highs/lows.
+- Strong rejection at relevant structure.
+- Potential failed-breakdown or failed-breakout patterns.
+- Risk/reward deterioration.
+- Excessive distance from the last valid structural invalidation level.
+
+Create a configurable extension or chase-risk metric.
+
+Possible outputs:
+
+- Momentum Healthy.
+- Momentum Extending.
+- Momentum Overextended.
+- Pullback Expected / Watch.
+- Exhaustion Warning.
+- Continuation Invalidated.
+
+These are analytical classifications, not predictions guaranteed to occur.
+
+An overextended state should not automatically create an opposite-direction trade.
+
+It should prevent weak late entries or require suitable new confirmation.
+
+---
+
+# 9. REVERSAL AND CANDLE EXHAUSTION INTELLIGENCE
+
+Build a separate reversal-analysis component.
+
+Detect potential reversals using combinations of:
+
+- Liquidity sweep.
+- Strong rejection wick.
+- Failed breakout.
+- Failed breakdown.
+- Momentum loss.
+- Engulfing behavior.
+- Opposing displacement.
+- MSS confirmation when relevant.
+- Important support/resistance.
+- HTF structure context.
+
+### Bullish reversal
+
+Look for bearish exhaustion followed by credible bullish behavior.
+
+### Bearish reversal
+
+Look for bullish exhaustion followed by credible bearish behavior.
+
+Do not issue opposite-direction entries merely because momentum looks extended.
+
+Classify reversal candidates independently from confirmed reversal entries.
+
+Keep reversal and continuation logic separate to avoid contradictory signals.
+
+---
+
+# 10. SCALPING AND SWING CONTEXT
+
+The Candle Psychology Engine must support multiple timeframes and trade styles.
+
+### Scalping context
+
+Primary entry timeframes:
+
+- 1m.
+- 3m.
+- 5m.
+
+Use price-action sequence analysis that reacts to:
+
+- Fast displacement.
+- Local liquidity sweeps.
+- Short momentum bursts.
+- Microstructure breaks.
+- Shallow pullbacks.
+- Early waterfall continuation.
+- Rapid failed breakouts.
+
+### Intraday context
+
+Primary entry timeframes:
+
+- 5m.
+- 15m.
+
+Analyze:
+
+- Session momentum.
+- Intraday structure.
+- Strong displacement.
+- Breakout continuation.
+- Local support/resistance rejection.
+
+### Swing context
+
+Primary entry timeframes:
+
+- 15m.
+- 1h.
+- 4h.
+
+Analyze:
+
+- Higher-timeframe impulse candles.
+- Strong trend continuation.
+- Multi-candle structural movement.
+- Larger reversal formations.
+- Pullbacks into significant zones.
+
+Do not reuse identical raw numeric candle thresholds across all instruments and timeframes when ATR-relative or instrument-specific normalization is more appropriate.
+
+Do not implement the complete separate scalping and swing strategy engines in this phase. Those are planned for later phases.
+
+Phase 2 must provide reusable candle intelligence that those engines can consume.
+
+---
+
+# 11. INTEGRATE WITH EXISTING ICT/SMC STRATEGIES
+
+Connect the new Candle Psychology Engine with the existing Phase 1 strategies.
+
+Examples:
+
+### Liquidity Sweep + Candle Rejection
+
+If price sweeps a liquidity level and closes back inside with strong rejection, provide additional evidence to the existing liquidity-sweep strategy.
+
+### MSS + Displacement
+
+If an MSS is accompanied by meaningful displacement, improve its quality evaluation.
+
+### Order Block + Rejection
+
+When price revisits an Order Block, evaluate the rejection behavior as additional evidence.
+
+### FVG + Continuation
+
+When price retraces into an FVG, analyze whether subsequent candle behavior supports continuation.
+
+### Breakout + Momentum
+
+Verify whether a breakout has convincing displacement or resembles a weak/failed breakout.
+
+### Waterfall + Market Structure
+
+A confirmed directional structure break with waterfall behavior may form a stronger continuation setup.
+
+**Important:**
+
+Do not make all ICT/SMC features mandatory.
+
+A valid waterfall continuation may exist without a fresh liquidity sweep or Order Block.
+
+A valid liquidity reversal may exist without a waterfall sequence.
+
+Use candle psychology to support existing strategies while preserving their independent detection logic.
+
+---
+
+# 12. CENTRAL SIGNAL ENGINE INTEGRATION
+
+Integrate Phase 2 into the existing Phase 1 signal decision engine.
+
+Do not create a second, independent trade publication system.
+
+The new engine should output structured candle events and trade setup candidates.
+
+The Phase 1 engine should remain responsible for:
+
+- Signal approval.
+- Directional validation.
+- Conflict resolution.
+- Deduplication.
+- Signal scoring.
+- Trade entry eligibility.
+- SL/TP coordination.
+- Chart and trade-log publication.
+
+### Example structured output
+
+Provide fields such as:
+
+- `id`
+- `strategy`
+- `direction`
+- `setupType`
+- `startTimestamp`
+- `confirmationTimestamp`
+- `status`
+- `score`
+- `evidence`
+- `invalidation`
+- `sourceTimeframe`
+
+Use the existing timestamp and signal model conventions.
+
+### Avoid duplicate waterfall signals
+
+If four candles belong to the same underlying waterfall sequence, retain one sequence ID.
+
+Additional candles should update the sequence evidence and state.
+
+A genuinely new pullback-and-continuation event may create a distinct setup ID.
+
+Do not suppress valid independent opportunities unnecessarily.
+
+---
+
+# 13. MEDIUM-LIGHT SIGNAL FILTERING
+
+**Critical requirement: Do not make the new engine excessively strict.**
+
+I want regular opportunities, especially for scalping, but not hundreds of low-quality repeated signals.
+
+Implement strategy-specific validation.
+
+For example:
+
+Waterfall continuation:
+- Directional momentum.
+- Valid continuation structure.
+- Acceptable entry risk.
+
+Liquidity reversal:
+- Sweep or failed break.
+- Rejection behavior.
+- Appropriate confirmation.
+
+Momentum breakout:
+- Relevant level break.
+- Meaningful displacement.
+- Acceptable continuation context.
+
+These are examples, not fixed global requirements.
+
+Provide three filtering presets for the new candle engine:
+
+- Light — exploratory and more candidate signals.
+- Balanced — default; moderate confirmation.
+- Selective — stronger confirmation.
+
+Do not automatically change existing Phase 1 settings or overwrite saved configurations.
+
+Do not introduce automatic market-adaptive setting changes yet. That is Phase 4.
+
+---
+
+# 14. RECOMMENDED CANDLE ENGINE SETTINGS
+
+Add a dedicated Candle Psychology section to the existing `StrategySettings.jsx`.
+
+Suggested controls:
+
+### General
+
+- Enable Candle Psychology.
+- Pattern Recognition.
+- Candle Strength Analysis.
+- Rejection Detection.
+- Engulfing Detection.
+- Momentum Sequence Detection.
+- Exhaustion Detection.
+
+### Waterfall
+
+- Enable Bearish Waterfall.
+- Enable Bullish Momentum Cascade.
+- Early Momentum Setup.
+- First Pullback Setup.
+- Compression Breakout Setup.
+- Retest Continuation Setup.
+- Exhaustion Protection.
+
+### Advanced
+
+- Minimum Body Ratio.
+- Minimum Displacement ATR.
+- Sequence Length.
+- Maximum Pullback Depth.
+- Momentum Strength Threshold.
+- Exhaustion Sensitivity.
+- Signal Filtering Preset.
+
+Provide sensible defaults and bounded inputs.
+
+Hide complex settings under an Advanced section.
+
+Maintain existing config persistence and avoid key collisions with Phase 1 settings.
+
+The default experience should remain simple.
+
+---
+
+# 15. CANDLE PSYCHOLOGY VISUALIZATION
+
+Enhance the existing HTML5 Canvas chart without redesigning it.
+
+Provide optional lightweight visualizations:
+
+- Strong bullish impulse marker.
+- Strong bearish impulse marker.
+- Bullish rejection indicator.
+- Bearish rejection indicator.
+- Waterfall sequence range.
+- Pullback zone.
+- Momentum continuation marker.
+- Exhaustion warning.
+- Confirmed candle psychology setup.
+
+Avoid clutter.
+
+Use one primary visual marker for a complete sequence rather than marking every candle.
+
+When clicking or hovering over a signal, show:
+
+- Pattern type.
+- Candle strength.
+- Momentum direction.
+- Confirmation.
+- Setup explanation.
+- Confluence evidence.
+- Why the entry was approved or rejected.
+
+Ensure the chart remains smooth during zooming, panning and playback.
+
+---
+
+# 16. NON-REPAINTING AND REPLAY ACCURACY
+
+Every candle psychology calculation must be compatible with historical replay.
+
+Rules:
+
+1. Use only completed candle data for confirmed setups.
+2. Do not access future candles.
+3. Do not move an already published signal backward after additional candles arrive.
+4. Separate initial candidate detection from later confirmation.
+5. Preserve the original formation timestamp.
+6. Use the correct confirmation timestamp.
+7. Keep signal identity stable during replay.
+8. Recalculate correctly when historical replay seeks backward.
+9. Ensure timeframe changes invalidate stale analysis.
+10. Ensure newly selected historical data does not retain old momentum sequences.
+
+The same candle sequence, settings and historical information cutoff must produce the same outputs in batch calculation and sequential replay.
+
+---
+
+# 17. WATERFALL STATE MACHINE
+
+Implement an explicit state machine rather than using uncontrolled signal conditions.
+
+Suggested states:
+
+1. IDLE — No relevant directional sequence.
+2. IMPULSE_DETECTED — Initial meaningful impulse observed.
+3. MOMENTUM_CONFIRMED — Continuation conditions met.
+4. PULLBACK_WATCH — Waiting for suitable retracement.
+5. ENTRY_CANDIDATE — Setup conditions developing.
+6. ENTRY_CONFIRMED — Required confirmation complete.
+7. EXHAUSTION_WATCH — Extension or loss of momentum detected.
+8. INVALIDATED — Underlying setup no longer valid.
+9. EXPIRED — Setup exceeded its eligibility window.
+
+Transitions must use completed-candle information and explicit rules.
+
+Do not force every setup to pass through every state.
+
+Some early momentum setups may become confirmed without a pullback.
+
+Use the state machine to prevent repeated alerts and explain the current setup status.
+
+---
+
+# 18. SIGNAL SCORING AND EXPLANATIONS
+
+Produce separate, explainable analytical scores for:
+
+- Candle Strength.
+- Momentum Strength.
+- Rejection Strength.
+- Continuation Quality.
+- Exhaustion Risk.
+- Setup Quality.
+
+Use normalized scores with documented components.
+
+Do not simply sum correlated factors repeatedly.
+
+Do not claim a score of 90 means a 90% chance of winning.
+
+Send relevant evidence into the existing Phase 1 confluence engine, rather than stacking an unrelated second approval threshold on every trade.
+
+Every accepted or rejected candidate should have meaningful reason codes.
+
+Example:
+
+**SELL — Waterfall First Pullback**
+
+Evidence:
+- Strong bearish impulse.
+- Lower-low sequence.
+- Shallow pullback.
+- Bearish continuation confirmation.
+- Valid structure break.
+
+Status: Approved.
+
+Or:
+
+**SELL — Late Momentum Candidate**
+
+Evidence:
+- Strong bearish displacement.
+- Several consecutive bearish candles.
+- Entry too extended relative to structural invalidation.
+- Poor available reward-to-risk.
+
+Status: Rejected / Waiting for pullback.
+
+These are example explanations, not live market signals.
+
+---
+
+# 19. PERFORMANCE OPTIMIZATION
+
+Historical datasets may contain thousands of candles.
+
+Avoid recalculating the entire Candle Psychology Engine every time a candle changes.
+
+Use:
+
+- Efficient rolling calculations.
+- Reusable ATR values.
+- Incremental sequence-state updates.
+- Stable candle indices.
+- Memoized historical results where appropriate.
+- Efficient timestamp-based lookups.
+- Minimal React state updates.
+- No unnecessary strategy recalculations during chart rerenders.
+
+The new calculation engine should remain independent from Canvas rendering.
+
+Do not introduce infinite loops or unbounded memory growth.
+
+Benchmark large datasets and replay responsiveness.
+
+---
+
+# 20. REQUIRED AUTOMATED TESTS
+
+Build deterministic unit and integration tests.
+
+### Test 1 — Strong Bullish Candle
+
+Expected: Correct body, wick, ATR and closing-strength calculations.
+
+### Test 2 — Strong Bearish Candle
+
+Expected: Correct bearish classification and price-action pressure score.
+
+### Test 3 — Bullish Engulfing
+
+Expected: Correct completed-candle pattern recognition.
+
+### Test 4 — Bearish Engulfing
+
+Expected: Correct bearish recognition.
+
+### Test 5 — Rejection Candles
+
+Expected: Correct upper/lower wick rejection classification.
+
+### Test 6 — Bearish Waterfall
+
+Use a constructed bearish momentum sequence.
+
+Expected:
+- Correct waterfall detection.
+- Stable sequence ID.
+- One underlying momentum event.
+- No repeated duplicate SELL alerts.
+
+### Test 7 — Bullish Momentum Cascade
+
+Expected: Equivalent upward sequence detection.
+
+### Test 8 — First Pullback
+
+Construct a strong bearish impulse followed by a shallow retracement and continuation.
+
+Expected: Correct setup candidate and confirmation timing.
+
+### Test 9 — False Momentum
+
+Use large candles without valid continuation structure.
+
+Expected: The engine does not automatically approve a trade.
+
+### Test 10 — Exhaustion
+
+Provide an extended momentum sequence with decreasing follow-through.
+
+Expected: Exhaustion warning without automatically forcing an opposite-direction signal.
+
+### Test 11 — Chop Market
+
+Use alternating overlapping bullish and bearish candles.
+
+Expected: No excessive waterfall detections.
+
+### Test 12 — Reversal
+
+Provide a liquidity sweep, rejection and subsequent confirmed reversal.
+
+Expected: Correct candidate and confirmation sequence.
+
+### Test 13 — No Repainting
+
+Calculate signals candle by candle.
+
+Expected: No signal depends on unavailable future candles.
+
+### Test 14 — Existing Strategy Integration
+
+Expected: Existing liquidity, MSS, OB, FVG and breakout detection still works.
+
+### Test 15 — Duplicate Suppression
+
+Expected: Multiple related candle-pattern confirmations do not generate repeated trade ideas.
+
+### Test 16 — Scalping and Swing Timeframes
+
+Test 1m, 5m, 15m, 1h and 4h data.
+
+Expected: Valid normalized measurements and timeframe-appropriate behavior.
+
+### Test 17 — Long Historical Date Range
+
+Use data merged from multiple Finage API requests.
+
+Expected: Candle psychology state continues correctly across API chunk boundaries.
+
+### Test 18 — Deterministic Replay
+
+Run the same data with the same settings twice.
+
+Expected: Identical pattern events, sequence IDs and signal decisions.
+
+### Test 19 — Data Integrity
+
+Test zero-range candles, duplicate timestamps, missing volume, missing trading intervals and invalid OHLC values.
+
+Expected: Safe deterministic handling without fabricated volume or candle data.
+
+### Test 20 — Performance
+
+Benchmark large historical datasets and sequential replay.
+
+Expected: No severe performance regression or excessive rerendering.
+
+---
+
+# 21. IMPLEMENTATION ORDER
+
+Follow this sequence:
+
+1. Audit the existing Phase 1 implementation.
+2. Create reusable candle measurement utilities.
+3. Implement candle classification.
+4. Build multi-candle pattern recognition.
+5. Implement directional pressure proxies.
+6. Build bullish and bearish momentum sequence tracking.
+7. Implement the Waterfall Momentum Engine.
+8. Add early momentum and first-pullback setup detection.
+9. Add compression breakout and retest continuation.
+10. Add exhaustion and reversal analysis.
+11. Integrate results with existing ICT/SMC strategies.
+12. Connect candidates to Phase 1 central scoring and deduplication.
+13. Add Candle Psychology settings.
+14. Add lightweight chart visualization.
+15. Validate historical replay and non-repainting behavior.
+16. Optimize performance.
+17. Run automated regression and historical tests.
+
+Complete each step without rebuilding unrelated components.
+
+---
+
+# 22. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Break Phase 1 signal engine functionality.
+- Reintroduce one-direction signal bugs.
+- Remove existing trading strategies.
+- Replace the existing chart.
+- Change Finage providers.
+- Break historical two-day API chunk fetching.
+- Break candle merging.
+- Break market replay.
+- Break signal logs.
+- Disable existing SL/TP logic.
+- Generate BUY/SELL signals from incomplete candles without clearly labeling provisional status.
+- Use future candles to create earlier signals.
+- Generate repeated waterfall signals from every candle.
+- Force an opposite-direction signal from exhaustion alone.
+- Make every strategy require the same strict confirmations.
+- Claim that OHLC patterns reveal genuine institutional order flow.
+- Fabricate volume information.
+- Promise a 70%, 80% or 90% win rate.
+- Add unnecessary AI dependencies.
+- Start full automatic market-adaptive strategy tuning in this phase.
+- Start Phase 3 or later phases automatically.
+
+---
+
+# 23. PHASE 2 COMPLETION CRITERIA
+
+Phase 2 is complete only when:
+
+1. Candle calculations are correct and normalized.
+2. Both bullish and bearish patterns work.
+3. Bearish waterfalls are detected reliably according to defined rules.
+4. Bullish momentum cascades are detected.
+5. Early momentum and first-pullback setups work.
+6. Momentum continuation and exhaustion are distinct.
+7. Reversal candidates require meaningful confirmation.
+8. Existing SMC/ICT algorithms remain functional.
+9. The Phase 1 signal engine remains the single approval and publishing system.
+10. Duplicate momentum signals are suppressed.
+11. No repainting or look-ahead bias is introduced.
+12. Settings remain understandable and configurable.
+13. Chart rendering remains responsive.
+14. Replay remains deterministic.
+15. Available test, lint, type-check and production build commands pass, with any failures reported accurately.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+- Files created and modified.
+- Candle psychology algorithm summary.
+- Waterfall detection rules.
+- Early momentum entry rules.
+- First-pullback entry rules.
+- Exhaustion and invalidation logic.
+- Signal engine integration details.
+- New settings and defaults.
+- Before/after signal counts on identical historical datasets.
+- Separate bullish/bearish candidate and approval counts.
+- Duplicate suppression results.
+- Repainting and replay test results.
+- Performance benchmarks.
+- Remaining limitations.
+
+**FINAL TARGET:**
+
+Build a professional, fast and explainable Candle Psychology and Waterfall Momentum Engine that can detect strong price movements, distinguish momentum from exhaustion, find early and pullback-based BUY/SELL setups, and improve scalping and swing signal quality without excessive filtering, future-data leakage or unnecessary duplicate signals.
+
+Implement Phase 2 completely and preserve all existing functionality.
+
+Do not proceed to Phase 3 automatically.
