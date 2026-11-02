@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { TopBar } from '@/components/tradezella/TopBar';
 import StrategySettings from '@/components/tradezella/StrategySettings';
 import { CandleStickChart } from '@/components/tradezella/CandleStickChart';
-import { PlaybackControls } from '@/components/tradezella/PlaybackControls';
 import { TradeLog } from '@/components/tradezella/TradeLog';
+import { SignalDiagnosticsPanel } from '@/components/tradezella/SignalDiagnosticsPanel';
 import { useToast } from '@/hooks/use-toast';
 import { runConfluenceEngine } from '@/lib/liquidity';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, ChevronsUpDown, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronsUpDown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const createInitialAnalysisResult = () => ({
@@ -36,7 +36,6 @@ const STORAGE_KEYS = {
   config: 'tradezella:config:v1',
   session: 'sessionOverlayPrefs:v1',
   view: 'tradezella:view:v1',
-  playback: 'tradezella:playback:v1',
 };
 
 function getDefaultConfig() {
@@ -115,19 +114,6 @@ function mergeViewState(defaults, saved) {
   return {
     zoom: Number.isFinite(zoom) ? Math.max(2, Math.min(100, zoom)) : defaults.zoom,
     candleOffset: Number.isFinite(candleOffset) ? Math.max(0, candleOffset) : defaults.candleOffset,
-  };
-}
-
-function mergePlaybackState(defaults, saved) {
-  if (!saved || typeof saved !== 'object') return defaults;
-
-  const speed = Number(saved.speed);
-  const currentIndex = Number(saved.currentIndex);
-  return {
-    ...defaults,
-    speed: Number.isFinite(speed) ? Math.max(0.5, Math.min(10, speed)) : defaults.speed,
-    currentIndex: Number.isFinite(currentIndex) ? Math.max(0, currentIndex) : defaults.currentIndex,
-    playing: false,
   };
 }
 
@@ -262,14 +248,12 @@ export default function Home() {
   const [sessionSettings, setSessionSettings] = useState(initialSessionSettings);
   
   const [candles, setCandles] = useState([]);
+  const [telemetry, setTelemetry] = useState(null);
+  const [isSimulated, setIsSimulated] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState('');
   const [analysisResult, setAnalysisResult] = useState(createInitialAnalysisResult);
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [playbackState, setPlaybackState] = useState({
-    playing: false,
-    speed: 1, // candles per second
-    currentIndex: 0,
-  });
   const [viewState, setViewState] = useState({
     zoom: 10, // candle width in pixels
     candleOffset: 0,
@@ -288,13 +272,11 @@ export default function Home() {
       ...readStorageValue(STORAGE_KEYS.session, null),
     };
     const nextViewState = mergeViewState({ zoom: 10, candleOffset: 0 }, readStorageValue(STORAGE_KEYS.view, null));
-    const savedPlayback = readStorageValue(STORAGE_KEYS.playback, null);
 
     setSettings(nextSettings);
     setConfig(nextConfig);
     setSessionSettings(nextSessionSettings);
     setViewState(nextViewState);
-    setPlaybackState(prev => mergePlaybackState(prev, savedPlayback));
     hasHydratedPrefsRef.current = true;
     setHasHydratedPrefs(true);
   }, []);
@@ -319,14 +301,6 @@ export default function Home() {
     writeStorageValue(STORAGE_KEYS.view, viewState);
   }, [viewState]);
 
-  useEffect(() => {
-    if (!hasHydratedPrefsRef.current) return;
-    writeStorageValue(STORAGE_KEYS.playback, {
-      speed: playbackState.speed,
-      currentIndex: playbackState.currentIndex,
-    });
-  }, [playbackState.speed, playbackState.currentIndex]);
-
   const handleFetchData = useCallback(async () => {
     const runId = fetchRunIdRef.current + 1;
     fetchRunIdRef.current = runId;
@@ -336,7 +310,7 @@ export default function Home() {
     analysisRunIdRef.current += 1;
 
     setIsLoading(true);
-    setPlaybackState(prev => ({ ...prev, playing: false, currentIndex: 0 }));
+    setLoadingStatus('Initializing 2-day chunked market data fetch...');
     setAnalysisResult(createInitialAnalysisResult());
     
     try {
@@ -344,13 +318,17 @@ export default function Home() {
       if (!dateRange.from || !dateRange.to) {
         toast({ title: 'Error', description: 'Please select a valid date range.', variant: 'destructive' });
         setIsLoading(false);
+        setLoadingStatus('');
         return;
       }
-      const apiUrl = `/api/finage?symbol=${symbol}&timeframe=${timeframe}&start=${dateRange.from.toISOString().split('T')[0]}&end=${dateRange.to.toISOString().split('T')[0]}`;
+      const startStr = dateRange.from.toISOString().split('T')[0];
+      const endStr = dateRange.to.toISOString().split('T')[0];
+      const apiUrl = `/api/finage?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&start=${startStr}&end=${endStr}&inclusive=true`;
       
+      setLoadingStatus(`Fetching historical ${symbol} (${timeframe}) across 48h chunks...`);
       const response = await fetch(apiUrl, { signal: controller.signal });
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Failed to fetch data: ${response.statusText}`);
       }
       
@@ -360,19 +338,40 @@ export default function Home() {
       if (!data.candles || data.candles.length === 0) {
         toast({ title: 'No Data', description: 'No candle data found for the selected range.', variant: 'destructive' });
         setCandles([]);
+        setTelemetry(null);
         return;
       }
       
       setCandles(data.candles);
-      setPlaybackState(prev => ({...prev, currentIndex: data.candles.length > 0 ? data.candles.length -1 : 0}))
-      toast({ title: 'Success', description: `Loaded ${data.candles.length} candles for ${symbol}.` });
+      setTelemetry(data.telemetry || null);
+      setIsSimulated(data.isSimulated || false);
+      setViewState(prev => {
+        const zoom = prev.zoom || 10;
+        const canvasWidth = containerRef.current?.getBoundingClientRect().width || 1000;
+        const rightPadding = 85;
+        const candlesOnScreen = Math.floor((canvasWidth - rightPadding) / zoom);
+        const newOffset = Math.max(0, data.candles.length - candlesOnScreen);
+        return { ...prev, candleOffset: newOffset };
+      });
+
+      const totalChunks = data.telemetry?.totalChunks || 1;
+      const loadedMsg = data.isSimulated 
+        ? `[Demo Mode] Loaded ${data.candles.length.toLocaleString()} simulated candles across ${totalChunks} chunks.`
+        : `Loaded ${data.candles.length.toLocaleString()} real candles across ${totalChunks} chunks (${totalChunks * 2} days covered).`;
+      
+      toast({
+        title: data.isSimulated ? 'Demo Mode Active' : 'Market Data Loaded',
+        description: loadedMsg,
+      });
     } catch (error) {
       if (error.name === 'AbortError') return;
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
       setCandles([]);
+      setTelemetry(null);
     } finally {
       if (runId === fetchRunIdRef.current) {
         setIsLoading(false);
+        setLoadingStatus('');
       }
     }
   }, [config, toast]);
@@ -457,51 +456,13 @@ export default function Home() {
   const displayedTradeLog = useMemo(() => {
     return (analysisResult.tradeLog || [])
       .filter(log => {
-        const candleIndex = candleIndexByTime.get(log.time);
-        if (candleIndex === undefined || candleIndex > playbackState.currentIndex) return false;
         if (settings.enableMtfEngine && !log.isApproved) return false;
         if (settings.showOnlyHighQuality && (log.score || 0) < 5) return false;
-        if (!settings.showCandidateOnlyMarkers && log.type.includes('candidate')) return false;
+        if (!settings.showCandidateOnlyMarkers && log.type?.includes('candidate')) return false;
         return true;
       })
       .sort((a, b) => b.time - a.time);
-  }, [analysisResult.tradeLog, candleIndexByTime, playbackState.currentIndex, settings.enableMtfEngine, settings.showOnlyHighQuality, settings.showCandidateOnlyMarkers]);
-
-  const handleZoom = (factor) => {
-    setViewState(prev => ({ ...prev, zoom: Math.max(2, Math.min(100, prev.zoom * factor)) }));
-  };
-
-  const handleJumpTo = (position) => {
-    if (!containerRef.current || candles.length === 0) return;
-    
-    if (position === 'start') {
-      setViewState(prev => ({ ...prev, candleOffset: 0 }));
-    } else if (position === 'end') {
-      const canvasWidth = containerRef.current.getBoundingClientRect().width;
-      const rightPadding = 80;
-      const candlesOnScreen = Math.floor((canvasWidth - rightPadding) / viewState.zoom);
-      const newOffset = Math.max(0, candles.length - candlesOnScreen);
-      setViewState(prev => ({ ...prev, candleOffset: newOffset }));
-    }
-  };
-  
-  // Auto-pan logic
-  useEffect(() => {
-    if (playbackState.playing && !isDragging) {
-        const canvasWidth = containerRef.current?.getBoundingClientRect().width || 0;
-        const rightPadding = 80;
-        const candlesOnScreen = Math.floor((canvasWidth - rightPadding) / viewState.zoom);
-        const playbackX = (playbackState.currentIndex - viewState.candleOffset) * viewState.zoom;
-
-        // If playback cursor is near the right edge, pan the view
-        if (playbackX > canvasWidth - rightPadding - viewState.zoom * 10) {
-            const targetOffset = Math.max(0, playbackState.currentIndex - candlesOnScreen + 10);
-            if (viewState.candleOffset !== targetOffset) {
-                setViewState(prev => ({ ...prev, candleOffset: targetOffset }));
-            }
-        }
-    }
-  }, [playbackState.currentIndex, playbackState.playing, viewState.zoom, viewState.candleOffset, isDragging]);
+  }, [analysisResult.tradeLog, settings.enableMtfEngine, settings.showOnlyHighQuality, settings.showCandidateOnlyMarkers]);
 
   const CollapsibleTriggerButton = ({ sectionName }) => (
     <CollapsibleTrigger asChild>
@@ -541,9 +502,47 @@ export default function Home() {
           </CollapsibleContent>
         </Collapsible>
 
+        {telemetry && (
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl border bg-card/80 text-xs shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${isSimulated ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
+                {isSimulated ? '● Demo Mode (Simulated)' : '● Finage Real Feed'}
+              </span>
+              <span className="text-muted-foreground">
+                Chunks: <strong className="text-foreground">{telemetry.completedChunks || telemetry.totalChunks}/{telemetry.totalChunks}</strong> (48h / chunk)
+              </span>
+              <span className="text-muted-foreground">
+                Duplicates Filtered: <strong className="text-foreground">{telemetry.duplicatesRemoved}</strong>
+              </span>
+              {telemetry.conflictsResolved > 0 && (
+                <span className="text-muted-foreground">
+                  Conflicts Resolved: <strong className="text-foreground">{telemetry.conflictsResolved}</strong>
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <span>
+                Weekend Closure: <strong className="text-foreground">{telemetry.weekendClosureMinutes}m</strong>
+              </span>
+              <span>
+                Intraday Gaps: <strong className="text-foreground">{telemetry.intradayMissingMinutes}m</strong>
+              </span>
+              <span>
+                Candles: <strong className="text-foreground">{telemetry.validCandles.toLocaleString()}</strong>
+              </span>
+            </div>
+          </div>
+        )}
+
+        {isLoading && loadingStatus && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-lg border border-primary/20 bg-primary/5 text-xs text-primary animate-pulse">
+            <span>{loadingStatus}</span>
+          </div>
+        )}
+
         <div className="flex-1 flex flex-col gap-2 overflow-hidden">
-          <Card ref={containerRef} className="flex-1 overflow-hidden shadow-lg rounded-2xl relative">
-            <CardContent className="h-full p-0">
+          <Card ref={containerRef} className="flex-1 overflow-hidden shadow-xl rounded-2xl relative border-border/60 bg-[#0c1017]">
+            <CardContent className="h-full p-0 bg-[#0c1017]">
               {isLoading && candles.length === 0 ? (
                 <div className="h-full w-full flex items-center justify-center">
                   <div className="w-1/2 space-y-4">
@@ -556,8 +555,7 @@ export default function Home() {
                 <CandleStickChart
                   candles={candles}
                   markers={markers}
-                  playbackIndex={playbackState.currentIndex}
-                  isPlaying={playbackState.playing}
+                  config={config}
                   viewState={viewState}
                   setViewState={setViewState}
                   setIsDragging={setIsDragging}
@@ -583,36 +581,18 @@ export default function Home() {
                 </div>
               )}
             </CardContent>
-             <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
-               <Button variant="outline" size="icon" onClick={() => handleJumpTo('start')} disabled={candles.length === 0} aria-label="Jump to Start">
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => handleZoom(0.9)} aria-label="Zoom Out">
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => handleZoom(1.1)} aria-label="Zoom In">
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => handleJumpTo('end')} disabled={candles.length === 0} aria-label="Jump to End">
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-            </div>
-            {candles.length > 0 && (
-              <div className="absolute left-2 top-2 z-10 rounded border bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-sm">
-                {candles.length.toLocaleString()} candles loaded
-              </div>
-            )}
           </Card>
-          {/* <PlaybackControls 
-              playbackState={playbackState} 
-              setPlaybackState={setPlaybackState} 
-              maxIndex={candles.length - 1} 
-              disabled={candles.length === 0}
-          /> */}
           <Collapsible className="rounded-2xl border bg-card shadow-md">
             <CollapsibleTriggerButton sectionName="Trade Log" />
             <CollapsibleContent>
               <TradeLog tradeLog={displayedTradeLog} />
+            </CollapsibleContent>
+          </Collapsible>
+
+          <Collapsible className="rounded-2xl border bg-card shadow-md">
+            <CollapsibleTriggerButton sectionName="Signal Diagnostics" />
+            <CollapsibleContent>
+              <SignalDiagnosticsPanel diagnostics={analysisResult.diagnostics} />
             </CollapsibleContent>
           </Collapsible>
         </div>

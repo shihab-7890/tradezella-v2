@@ -1,4 +1,11 @@
 import { getHistoricalData } from '@/services/finageService';
+import {
+    HtfSynchronizer,
+    scoreSignal,
+    deduplicateAndFilterSignals,
+    calculateSignalRiskManagement,
+    DiagnosticsCollector,
+} from '@/lib/signalEngine';
 
 const STRATEGY_PRIORITY = {
     sweepObFvgConfluence: 10,
@@ -48,21 +55,117 @@ function createQualityContext(candles, settings) {
     };
 }
 
+export const DEFAULT_STRATEGY_SETTINGS = {
+    strategy: {
+        liquiditySweep: true,
+        obMss: true,
+        breakerBlocks: false,
+        mitigationBlock: false,
+        institutionalRange: false,
+        asianRange: false,
+        fvgImbalance: true,
+        liquidityVoid: false,
+        obFvgConfluence: true,
+        cobMss: false,
+        londonKillzone: false,
+        newYorkKillzone: false,
+        powerOfThree: false,
+        londonBreakout: false,
+        classicBreakout: false,
+        momentumSpike: true,
+    },
+    lookback: 20,
+    minWickRatio: 0.5,
+    equalTolerance: 0.002,
+    filterTinySweepsThreshold: 0.0,
+    mssConfirmationRequired: true,
+    showCandidateOnlyMarkers: false,
+    showOnlyHighQuality: false,
+    enableAiTradeSignalAnalyzer: false,
+    showLiquidityPools: true,
+    showSweepWick: true,
+    showMss: true,
+    showOrderBlocks: true,
+    showBreakerBlocks: true,
+    showMitigationBlocks: true,
+    showFvgs: true,
+    showAsianRange: true,
+    showSLTP: false,
+
+    // MTF Engine Settings
+    enableMtfEngine: true,
+    showHtfTrends: true,
+    showHtfKeyLevels: true,
+    htfTimeframe: '4h',
+    confluenceScoreThreshold: 4,
+    keyLevelProximity: 0.004,
+    defaultRiskRewardRatio: 1.5,
+    volumeConfirmationGlobal: false,
+    minimumDisplacementAtr: 0.8,
+    minCandlesBetweenSignals: 5,
+
+    // Qualified Sweep Settings
+    enableQualifiedSweepFilters: false,
+    minQualifiedWickSize: 0.6,
+    requireVolumeConfirmation: true,
+    volumeMaPeriod: 20,
+
+    // Momentum Spikes
+    minRangeMultiplier: 1.5,
+    volumeSurgeFactor: 1.5,
+    bodyPercentageThreshold: 0.6,
+    atrPeriod: 20,
+    momentumVolumeMaPeriod: 20,
+    requireMomentumBreakout: false,
+    momentumEntryType: 'Close of Spike',
+
+    // Classic Breakout
+    classicBreakoutLookback: 15,
+    classicBreakoutVolumeSpike: true,
+    classicBreakoutEnableRetest: false,
+};
+
 /**
  * =================================================================================
  * Main Confluence Engine Orchestrator
  * =================================================================================
  */
-export async function runConfluenceEngine(candles, settings, config) {
-    // If MTF engine is off, run legacy analysis and return
-    if (!settings.enableMtfEngine) {
-        return runLegacyAnalysis(candles, settings, config);
+export async function runConfluenceEngine(candles, settings = {}, config = {}) {
+    if (!candles || candles.length === 0) {
+        return {
+            liquidityData: { equalHighs: [], equalLows: [] },
+            breakerBlocks: [],
+            mitigationBlocks: [],
+            orderBlocks: [],
+            continuationOrderBlocks: [],
+            fvgs: [],
+            imbalanceZones: [],
+            dealingRange: null,
+            asianRanges: [],
+            powerOfThreeZones: [],
+            classicBreakoutZones: [],
+            htfKeyLevels: [],
+            htfTrend: { direction: 'Ranging', confidence: 0 },
+            tradeLog: [],
+            diagnostics: null,
+        };
     }
 
+    const activeSettings = {
+        ...DEFAULT_STRATEGY_SETTINGS,
+        ...settings,
+        strategy: {
+            ...DEFAULT_STRATEGY_SETTINGS.strategy,
+            ...(settings?.strategy || {}),
+        },
+    };
+
+    const symbol = config?.symbol || 'UNKNOWN';
+    const timeframe = config?.timeframe || '15m';
+    const diagnostics = new DiagnosticsCollector(symbol, timeframe, candles.length);
     const candleTimeIndex = buildCandleTimeIndexMap(candles);
-    const qualityContext = createQualityContext(candles, settings);
-    
-    // --- MTF Engine is ON ---
+    const qualityContext = createQualityContext(candles, activeSettings);
+
     let analysisResult = {
         liquidityData: { equalHighs: [], equalLows: [] },
         breakerBlocks: [],
@@ -76,83 +179,131 @@ export async function runConfluenceEngine(candles, settings, config) {
         powerOfThreeZones: [],
         classicBreakoutZones: [],
         htfKeyLevels: [],
-        htfTrend: { direction: 'Ranging', confidence: 0 }
+        htfTrend: { direction: 'Ranging', confidence: 0 },
+        diagnostics: null,
     };
-    
-    // 1. Fetch HTF Data
-    const htfDateRange = { from: candles[0].time, to: candles[candles.length - 1].time };
-    const htfCandles = await getHistoricalData(config.symbol, settings.htfTimeframe, htfDateRange.from, htfDateRange.to);
 
-    if (!htfCandles || htfCandles.length === 0) {
-        console.warn("Could not fetch HTF data. Running analysis without MTF confluence.");
-        return runLegacyAnalysis(candles, settings, config);
+    let htfSync = null;
+
+    if (activeSettings.enableMtfEngine) {
+        try {
+            const htfDateRange = { from: candles[0].time, to: candles[candles.length - 1].time };
+            const htfCandles = await getHistoricalData(symbol, activeSettings.htfTimeframe || '4h', htfDateRange.from, htfDateRange.to);
+
+            if (htfCandles && htfCandles.length > 0) {
+                htfSync = new HtfSynchronizer(htfCandles, 20);
+                const htfSummary = htfSync.getFullSeriesSummary();
+                analysisResult.htfTrend = htfSummary.htfTrend;
+                analysisResult.htfKeyLevels = htfSummary.htfKeyLevels;
+            } else {
+                console.warn("Could not fetch HTF data. Running analysis with dynamic point-in-time defaults.");
+            }
+        } catch (err) {
+            console.warn("HTF data fetch error:", err?.message);
+        }
     }
-    
-    // 2. Analyze HTF
-    analysisResult.htfTrend = analyzeHtfTrend(htfCandles);
-    analysisResult.htfKeyLevels = identifyHtfKeyLevels(htfCandles);
 
-    // 3. Run all strategies to get potential signals and visual data
-    const { potentialSignals, visualData } = runAllStrategies(candles, settings, config, analysisResult);
-    
-    // Assign visual data to analysisResult
+    // 1. Run all strategies to get potential signals and visual overlays
+    const { potentialSignals, visualData } = runAllStrategies(candles, activeSettings, config, analysisResult);
     analysisResult = { ...analysisResult, ...visualData };
 
-    // 4. Score and filter signals based on confluence
-    const scoredSignals = [];
-    for (const signal of potentialSignals) {
-        const normalizedSignal = normalizeSignal(signal);
+    // 2. Score and qualify signals with point-in-time synchronization
+    const evaluatedSignals = [];
+
+    for (const rawSignal of potentialSignals) {
+        const normalized = normalizeSignal(rawSignal);
 
         // Skip adding entry signals if they are disabled for P3
-        if (normalizedSignal.type.includes('confirmed') && normalizedSignal.notes.includes('Power of Three') && !settings.enableDistributionEntries) {
+        if (normalized.type?.includes('confirmed') && normalized.notes?.includes('Power of Three') && !activeSettings.enableDistributionEntries) {
             continue;
         }
 
-        const { score, reasons } = calculateConfluenceScore(normalizedSignal, analysisResult, settings);
-        
-        const qualityPassed = passesGlobalQualityFilters(normalizedSignal, candles, settings, candleTimeIndex, qualityContext);
-        const isApproved = qualityPassed && score >= settings.confluenceScoreThreshold;
+        const isBuy = normalized.type?.includes('BUY') || normalized.type?.includes('SSL');
+        const direction = isBuy ? 'BUY' : 'SELL';
+        const strategy = normalized.strategy || inferSignalStrategy(normalized);
 
-        if (isApproved) {
-            const riskParams = calculateRiskManagement(normalizedSignal, candles, settings, candleTimeIndex);
-            scoredSignals.push({
-                ...normalizedSignal,
-                isApproved: true,
-                score: score,
-                qualityTier: getQualityTier(score),
-                notes: `${normalizedSignal.notes} | ${reasons.join(', ')}`,
-                ...riskParams
-            });
-        } else {
-             scoredSignals.push({
-                ...normalizedSignal,
-                isApproved: false,
-                score: score,
-                qualityTier: 'Suppressed',
-                notes: `${normalizedSignal.notes} | Suppressed (${qualityPassed ? `Score: ${score.toFixed(1)}` : 'Quality filters'})`
-            });
+        diagnostics.recordRawCandidate(direction, strategy);
+
+        const signalIndex = getSignalIndex(normalized, candles, candleTimeIndex);
+        if (signalIndex === -1) continue;
+
+        // Point-in-time HTF trend and active key levels at the signal's timestamp
+        const htfTrendAtTime = htfSync ? htfSync.getTrendAtTime(normalized.time) : { direction: 'Ranging', confidence: 0 };
+        const htfLevelsAtTime = htfSync ? htfSync.getKeyLevelsAtTime(normalized.time) : [];
+        diagnostics.recordHtfBar(htfTrendAtTime.direction);
+
+        const { score, qualityTier, reasons } = scoreSignal(
+            { ...normalized, direction },
+            htfTrendAtTime,
+            htfLevelsAtTime,
+            activeSettings
+        );
+
+        const isConfirmedPattern = normalized.type?.includes('confirmed') || normalized.type?.includes('QUALIFIED');
+        if (isConfirmedPattern) {
+            diagnostics.recordConfirmedSetup(direction);
         }
+
+        const qualityPassed = passesGlobalQualityFilters(normalized, candles, activeSettings, candleTimeIndex, qualityContext);
+        const threshold = activeSettings.confluenceScoreThreshold !== undefined ? activeSettings.confluenceScoreThreshold : 3.5;
+        const meetsThreshold = score >= threshold;
+        const isApproved = isConfirmedPattern && qualityPassed && meetsThreshold;
+
+        if (!qualityPassed) {
+            diagnostics.recordRejection('Global Quality Filter (Volume/Displacement)', false);
+        } else if (!meetsThreshold && isConfirmedPattern) {
+            diagnostics.recordRejection(`Score below threshold (${score.toFixed(1)} < ${threshold})`, true);
+        }
+
+        const riskParams = calculateSignalRiskManagement(
+            { ...normalized, direction },
+            candles,
+            signalIndex,
+            activeSettings
+        );
+
+        const signalId = `${symbol}-${timeframe}-${direction}-${normalized.time}-${strategy}`;
+
+        evaluatedSignals.push({
+            ...normalized,
+            id: signalId,
+            symbol,
+            timeframe,
+            direction,
+            isApproved,
+            score,
+            qualityTier: isApproved ? qualityTier : 'Suppressed',
+            reasons,
+            notes: `${normalized.notes || strategy} | ${reasons.join(', ')}`,
+            ...riskParams,
+        });
     }
 
-    const approvedSignals = filterSignalClustering(
-        prioritizeOverlappingSignals(
-            scoredSignals.filter(signal => signal.isApproved),
-            candles,
-            settings,
-            candleTimeIndex
-        ),
-        candles,
-        settings.minCandlesBetweenSignals || 0,
-        candleTimeIndex
+    // 3. Centralized deduplication and direction-aware spacing
+    const approvedCandidates = evaluatedSignals.filter(s => s.isApproved);
+    const { approvedSignals, duplicatesSuppressed } = deduplicateAndFilterSignals(
+        approvedCandidates,
+        candleTimeIndex,
+        {
+            minCandlesBetweenSignals: activeSettings.minCandlesBetweenSignals !== undefined ? activeSettings.minCandlesBetweenSignals : 5,
+            timeToleranceCandles: 4,
+            priceTolerancePct: activeSettings.keyLevelProximity || 0.003,
+        }
     );
 
-    const suppressedSignals = scoredSignals
-        .filter(signal => !signal.isApproved)
-        .map(signal => ({ ...signal, hiddenByQualityFilter: true }));
+    diagnostics.recordDuplicatesSuppressed(duplicatesSuppressed);
+    for (const appSignal of approvedSignals) {
+        diagnostics.recordApprovedSignal(appSignal);
+    }
 
-    const finalSignals = [...approvedSignals, ...suppressedSignals];
-    
-    analysisResult.tradeLog = finalSignals.sort((a, b) => a.time - b.time);
+    const approvedIds = new Set(approvedSignals.map(s => s.id));
+    const suppressedSignals = evaluatedSignals
+        .filter(s => !approvedIds.has(s.id))
+        .map(s => ({ ...s, isApproved: false, hiddenByQualityFilter: true }));
+
+    const finalTradeLog = [...approvedSignals, ...suppressedSignals].sort((a, b) => a.time - b.time);
+    analysisResult.tradeLog = finalTradeLog;
+    analysisResult.diagnostics = diagnostics.getSummary();
 
     return analysisResult;
 }
@@ -465,16 +616,96 @@ function calculateATR(candles, period) {
  */
 
 // Legacy runner for when MTF is off
-function runLegacyAnalysis(candles, settings, config) {
-    const { potentialSignals, visualData } = runAllStrategies(candles, settings, config, null);
-
-    const result = {
-      ...visualData,
-      tradeLog: potentialSignals.sort((a,b) => a.time - b.time),
-      htfKeyLevels: [],
-      htfTrend: { direction: 'Ranging', confidence: 0 }
+function runLegacyAnalysis(candles, settings = {}, config = {}) {
+    const activeSettings = {
+        ...DEFAULT_STRATEGY_SETTINGS,
+        ...settings,
+        strategy: {
+            ...DEFAULT_STRATEGY_SETTINGS.strategy,
+            ...(settings?.strategy || {}),
+        },
     };
-    return result;
+
+    const symbol = config?.symbol || 'UNKNOWN';
+    const timeframe = config?.timeframe || '15m';
+    const candleTimeIndex = buildCandleTimeIndexMap(candles);
+    const qualityContext = createQualityContext(candles, activeSettings);
+
+    const { potentialSignals, visualData } = runAllStrategies(candles, activeSettings, config, null);
+
+    const neutralTrend = { direction: 'Ranging', confidence: 0 };
+    const evaluatedSignals = [];
+
+    for (const raw of potentialSignals) {
+        const normalized = normalizeSignal(raw);
+        const isBuy = normalized.type?.includes('BUY') || normalized.type?.includes('SSL');
+        const direction = isBuy ? 'BUY' : 'SELL';
+        const strategy = normalized.strategy || inferSignalStrategy(normalized);
+
+        const signalIndex = getSignalIndex(normalized, candles, candleTimeIndex);
+        if (signalIndex === -1) continue;
+
+        const { score, qualityTier, reasons } = scoreSignal(
+            { ...normalized, direction },
+            neutralTrend,
+            [],
+            activeSettings
+        );
+
+        const isConfirmedPattern = normalized.type?.includes('confirmed') || normalized.type?.includes('QUALIFIED');
+        const qualityPassed = passesGlobalQualityFilters(normalized, candles, activeSettings, candleTimeIndex, qualityContext);
+        const threshold = activeSettings.confluenceScoreThreshold !== undefined ? activeSettings.confluenceScoreThreshold : 3.5;
+        const isApproved = isConfirmedPattern && qualityPassed && score >= threshold;
+
+        const riskParams = calculateSignalRiskManagement(
+            { ...normalized, direction },
+            candles,
+            signalIndex,
+            activeSettings
+        );
+
+        const signalId = `${symbol}-${timeframe}-${direction}-${normalized.time}-${strategy}`;
+
+        evaluatedSignals.push({
+            ...normalized,
+            id: signalId,
+            symbol,
+            timeframe,
+            direction,
+            isApproved,
+            score,
+            qualityTier: isApproved ? qualityTier : 'Suppressed',
+            reasons,
+            notes: `${normalized.notes || strategy} | ${reasons.join(', ')}`,
+            ...riskParams,
+        });
+    }
+
+    const approvedCandidates = evaluatedSignals.filter(s => s.isApproved);
+    const { approvedSignals } = deduplicateAndFilterSignals(
+        approvedCandidates,
+        candleTimeIndex,
+        {
+            minCandlesBetweenSignals: activeSettings.minCandlesBetweenSignals !== undefined ? activeSettings.minCandlesBetweenSignals : 5,
+            timeToleranceCandles: 4,
+            priceTolerancePct: activeSettings.keyLevelProximity || 0.003,
+        }
+    );
+
+    const approvedIds = new Set(approvedSignals.map(s => s.id));
+    const suppressedSignals = evaluatedSignals
+        .filter(s => !approvedIds.has(s.id))
+        .map(s => ({ ...s, isApproved: false, hiddenByQualityFilter: true }));
+
+    const finalTradeLog = [...approvedSignals, ...suppressedSignals].sort((a, b) => a.time - b.time);
+
+    return {
+        ...visualData,
+        tradeLog: finalTradeLog,
+        htfKeyLevels: [],
+        htfTrend: { direction: 'Ranging', confidence: 0 },
+        diagnostics: null,
+    };
 }
 
 // Universal function to run all strategies and collect signals
@@ -744,13 +975,35 @@ export function detectLiquidityAndSweeps(candles, settings) {
         const { confirmed, mssIndex } = isMssConfirmed(candles, i, 'bearish', settings);
         if (isQualifiedSweep && enableQualifiedSweepFilters) {
             signals.push({ time: currentCandle.time, type: 'QUALIFIED_SELL_SWEEP', price: currentCandle.high, timeframe: timeframe, notes: notes.join('+') });
-             if (confirmed) {
-                signals.push({ time: currentCandle.time, type: 'SELL confirmed', price: currentCandle.close, timeframe: timeframe, notes: 'Qualified Sweep + MSS', mssIndex });
+            if (confirmed) {
+                const confIndex = (mssIndex > -1 && mssIndex < candles.length) ? mssIndex : i;
+                const confCandle = candles[confIndex];
+                signals.push({
+                    time: confCandle.time,
+                    price: confCandle.close,
+                    setupTime: currentCandle.time,
+                    confirmationTime: confCandle.time,
+                    type: 'SELL confirmed',
+                    timeframe: timeframe,
+                    notes: 'Qualified Sweep + MSS',
+                    mssIndex,
+                });
             }
         } else if (isQualifiedSweep) {
             signals.push({ time: currentCandle.time, type: 'BSL candidate', price: currentCandle.high, timeframe: timeframe, notes: 'Sweep' });
             if (confirmed) {
-                signals.push({ time: currentCandle.time, type: 'SELL confirmed', price: currentCandle.close, timeframe: timeframe, notes: 'Sweep + MSS', mssIndex });
+                const confIndex = (mssIndex > -1 && mssIndex < candles.length) ? mssIndex : i;
+                const confCandle = candles[confIndex];
+                signals.push({
+                    time: confCandle.time,
+                    price: confCandle.close,
+                    setupTime: currentCandle.time,
+                    confirmationTime: confCandle.time,
+                    type: 'SELL confirmed',
+                    timeframe: timeframe,
+                    notes: 'Sweep + MSS',
+                    mssIndex,
+                });
             }
         }
     }
@@ -778,12 +1031,34 @@ export function detectLiquidityAndSweeps(candles, settings) {
         if (isQualifiedSweep && enableQualifiedSweepFilters) {
              signals.push({ time: currentCandle.time, type: 'QUALIFIED_BUY_SWEEP', price: currentCandle.low, timeframe: timeframe, notes: notes.join('+') });
              if (confirmed) {
-                signals.push({ time: currentCandle.time, type: 'BUY confirmed', price: currentCandle.close, timeframe: timeframe, notes: 'Qualified Sweep + MSS', mssIndex });
+                const confIndex = (mssIndex > -1 && mssIndex < candles.length) ? mssIndex : i;
+                const confCandle = candles[confIndex];
+                signals.push({
+                    time: confCandle.time,
+                    price: confCandle.close,
+                    setupTime: currentCandle.time,
+                    confirmationTime: confCandle.time,
+                    type: 'BUY confirmed',
+                    timeframe: timeframe,
+                    notes: 'Qualified Sweep + MSS',
+                    mssIndex,
+                });
             }
         } else if (isQualifiedSweep) {
             signals.push({ time: currentCandle.time, type: 'SSL candidate', price: currentCandle.low, timeframe: timeframe, notes: 'Sweep' });
             if (confirmed) {
-                signals.push({ time: currentCandle.time, type: 'BUY confirmed', price: currentCandle.close, timeframe: timeframe, notes: 'Sweep + MSS', mssIndex });
+                const confIndex = (mssIndex > -1 && mssIndex < candles.length) ? mssIndex : i;
+                const confCandle = candles[confIndex];
+                signals.push({
+                    time: confCandle.time,
+                    price: confCandle.close,
+                    setupTime: currentCandle.time,
+                    confirmationTime: confCandle.time,
+                    type: 'BUY confirmed',
+                    timeframe: timeframe,
+                    notes: 'Sweep + MSS',
+                    mssIndex,
+                });
             }
         }
     }
@@ -833,6 +1108,11 @@ function isMssConfirmed(candles, sweepIndex, direction, settings) {
                 break;
             }
         }
+        // Fallback: if no 3-bar swing point is found, use the highest high in the lookback window
+        if (swingPoint === null && lookbackCandles.length > 2) {
+            const priorCandles = lookbackCandles.slice(0, lookbackCandles.length - 1);
+            swingPoint = Math.max(...priorCandles.map(c => c.high));
+        }
     } 
     // For a bearish confirmation (after BSL), we need to break a swing LOW
     else {
@@ -843,6 +1123,11 @@ function isMssConfirmed(candles, sweepIndex, direction, settings) {
                 swingPointIndex = lookbackStart + i;
                 break;
             }
+        }
+        // Fallback: if no 3-bar swing point is found, use the lowest low in the lookback window
+        if (swingPoint === null && lookbackCandles.length > 2) {
+            const priorCandles = lookbackCandles.slice(0, lookbackCandles.length - 1);
+            swingPoint = Math.min(...priorCandles.map(c => c.low));
         }
     }
 
@@ -1306,10 +1591,6 @@ export function detectFvgImbalance(candles, settings, analysisResult) {
     const zonesToTest = settings.detectInstitutionalImbalanceZones ? imbalanceZones : fvgs;
     
     for (const zone of zonesToTest) {
-        // --- Trend Alignment Check ---
-        if (trend === 'BULLISH' && zone.type !== 'bullish') continue;
-        if (trend === 'BEARISH' && zone.type !== 'bearish') continue;
-
         const endIndex = zone.endIndex || zone.index; // Handle both single FVGs and zones
         for (let i = endIndex + 1; i < candles.length && i < endIndex + 10; i++) {
             const candle = candles[i];
@@ -1319,19 +1600,38 @@ export function detectFvgImbalance(candles, settings, analysisResult) {
             const { confirmed: bullishMss, mssIndex: bullishMssIndex } = isMssConfirmed(candles, i, 'bullish', mssSettings);
             const { confirmed: bearishMss, mssIndex: bearishMssIndex } = isMssConfirmed(candles, i, 'bearish', mssSettings);
 
-
             if (retraceBullish) {
                 // Check for MSS confirmation for a higher probability entry
                 if (bullishMss) {
-                    buySignals.push({ time: candle.time, price: candle.close, type: 'BUY confirmed', notes: `FVG/ILV Retest`, mssIndex: bullishMssIndex });
-                    break; // Move to the next zone after a signal is found
+                    const confTime = (bullishMssIndex > -1 && bullishMssIndex < candles.length) ? candles[bullishMssIndex].time : candle.time;
+                    const confPrice = (bullishMssIndex > -1 && bullishMssIndex < candles.length) ? candles[bullishMssIndex].close : candle.close;
+                    buySignals.push({
+                        time: confTime,
+                        price: confPrice,
+                        setupTime: candle.time,
+                        confirmationTime: confTime,
+                        type: 'BUY confirmed',
+                        notes: `FVG/ILV Retest`,
+                        mssIndex: bullishMssIndex,
+                    });
+                    break; // Move to next zone
                 }
             }
             
             if (retraceBearish) {
                 if (bearishMss) {
-                    sellSignals.push({ time: candle.time, price: candle.close, type: 'SELL confirmed', notes: 'FVG/ILV Retest', mssIndex: bearishMssIndex });
-                    break; // Move to the next zone after a signal is found
+                    const confTime = (bearishMssIndex > -1 && bearishMssIndex < candles.length) ? candles[bearishMssIndex].time : candle.time;
+                    const confPrice = (bearishMssIndex > -1 && bearishMssIndex < candles.length) ? candles[bearishMssIndex].close : candle.close;
+                    sellSignals.push({
+                        time: confTime,
+                        price: confPrice,
+                        setupTime: candle.time,
+                        confirmationTime: confTime,
+                        type: 'SELL confirmed',
+                        notes: 'FVG/ILV Retest',
+                        mssIndex: bearishMssIndex,
+                    });
+                    break; // Move to next zone
                 }
             }
         }

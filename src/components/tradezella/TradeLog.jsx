@@ -86,8 +86,8 @@ export const TradeLog = memo(function TradeLog({ tradeLog }) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  No trades logged yet. Start playback to see signals.
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
+                  No trades logged for current filters.
                 </TableCell>
               </TableRow>
             )}
