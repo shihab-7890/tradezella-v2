@@ -20,7 +20,7 @@ export async function GET(request) {
   const symbol = searchParams.get('symbol') || 'XAU/USD';
   const timeframe = searchParams.get('timeframe') || '15m';
 
-  const apiKey = process.env.FINAGE_API_KEY;
+  const apiKey = process.env.FINAGE_API_KEY || 'API_KEY95YTO81R66DCOZUANVVX135GBVHXQ5CK';
   const cleanSymbol = symbol.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   // If live API key is configured, attempt real-time quote fetch from Finage

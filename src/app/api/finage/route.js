@@ -40,7 +40,7 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Missing required query parameters' }, { status: 400 });
   }
 
-  const apiKey = process.env.FINAGE_API_KEY || 'API_KEY614U7ET6JJOW4D1RUZNJKJWDV0ET0Q5W';
+  const apiKey = process.env.FINAGE_API_KEY || 'API_KEY95YTO81R66DCOZUANVVX135GBVHXQ5CK';
   const formattedSymbol = symbol.replace(/\//g, '').toLowerCase();
   const cacheKey = `${formattedSymbol}|${timeframe}|${start}|${end}|${inclusive}`;
 

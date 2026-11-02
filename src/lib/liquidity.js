@@ -24,6 +24,8 @@ import { getStrategySuitabilityWeight } from '@/lib/adaptive/strategySelector';
 import { runScalpingEngine } from '@/lib/scalping/scalpingEngine';
 import { runIntradayEngine } from '@/lib/intraday/intradayEngine';
 import { runSwingEngine } from '@/lib/swing/swingEngine';
+import { runUnifiedSignalEngine } from '@/lib/signals/unifiedSignalEngine';
+import { runRiskManagementEngine } from '@/lib/risk';
 
 const STRATEGY_PRIORITY = {
     smcSweepMss: 10,
@@ -204,6 +206,40 @@ export const DEFAULT_STRATEGY_SETTINGS = {
     enableAdaptiveSettings: true,
     showRegimeDashboard: true,
     userLocks: {},
+
+    // Phase 7 — Unified Signal Scoring & Decision Engine Settings
+    enableUnifiedSignalEngine: true,
+    enableConflictAnalysis: true,
+    enableDuplicateSuppression: true,
+    qualityPreset: 'Balanced', // 'Light' | 'Balanced' | 'Selective'
+    unifiedScoreThreshold: 65, // 0 - 100 scale
+    duplicateWindowCandles: 4,
+    showScoreBreakdown: true,
+    showConflictWarnings: true,
+    preserveIndependentStyles: true,
+
+    // Phase 8 — Professional Dynamic Risk Management & Trade Management
+    enableRiskEngine: true,
+    simulatedAccountBalance: 10000,
+    riskPerTradePct: 1.0,
+    riskProfile: 'Balanced', // 'Conservative' | 'Balanced' | 'Aggressive' | 'Dynamic'
+    capitalBasis: 'Balance', // 'Balance' | 'Equity'
+    stopLossMethod: 'HYBRID', // 'STRUCTURE' | 'ATR' | 'LIQUIDITY' | 'ORDER_BLOCK' | 'FIXED' | 'HYBRID'
+    takeProfitMethod: 'HYBRID', // 'FIXED_RR' | 'LIQUIDITY_TARGET' | 'STRUCTURE_TARGET' | 'HYBRID'
+    atrMultiplierSl: 1.5,
+    enableBreakEven: true,
+    breakEvenTriggerR: 1.0,
+    breakEvenBufferPips: 2,
+    enableTrailingStop: true,
+    trailingMethod: 'ATR', // 'ATR' | 'STRUCTURAL' | 'CANDLE' | 'MOMENTUM' | 'HYBRID'
+    trailingAtrMultiplier: 1.5,
+    maxDailyLossPct: 3.0,
+    maxWeeklyLossPct: 6.0,
+    maxDrawdownLimitPct: 10.0,
+    maxConcurrentPositions: 3,
+    maxOpenRiskPct: 5.0,
+    intrabarAmbiguityPolicy: 'CONSERVATIVE',
+    showRiskOverlay: true,
 };
 
 /**
@@ -293,106 +329,141 @@ export async function runConfluenceEngine(candles, settings = {}, config = {}) {
     const { potentialSignals, visualData } = runAllStrategies(candles, activeSettings, config, analysisResult);
     analysisResult = { ...analysisResult, ...visualData };
 
-    // 2. Score and qualify signals with point-in-time synchronization
-    const evaluatedSignals = [];
-
-    for (const rawSignal of potentialSignals) {
-        const normalized = normalizeSignal(rawSignal);
-
-        // Skip adding entry signals if they are disabled for P3
-        if (normalized.type?.includes('confirmed') && normalized.notes?.includes('Power of Three') && !activeSettings.enableDistributionEntries) {
-            continue;
-        }
-
-        const isBuy = normalized.type?.includes('BUY') || normalized.type?.includes('SSL');
-        const direction = isBuy ? 'BUY' : 'SELL';
-        const strategy = normalized.strategy || inferSignalStrategy(normalized);
-
-        diagnostics.recordRawCandidate(direction, strategy);
-
-        const signalIndex = getSignalIndex(normalized, candles, candleTimeIndex);
-        if (signalIndex === -1) continue;
-
-        // Point-in-time HTF trend and active key levels at the signal's timestamp
-        const htfTrendAtTime = htfSync ? htfSync.getTrendAtTime(normalized.time) : { direction: 'Ranging', confidence: 0 };
-        const htfLevelsAtTime = htfSync ? htfSync.getKeyLevelsAtTime(normalized.time) : [];
-        diagnostics.recordHtfBar(htfTrendAtTime.direction);
-
-        const { score, qualityTier, reasons } = scoreSignal(
-            { ...normalized, direction },
-            htfTrendAtTime,
-            htfLevelsAtTime,
-            activeSettings
-        );
-
-        const isConfirmedPattern = normalized.type?.includes('confirmed') || normalized.type?.includes('QUALIFIED');
-        if (isConfirmedPattern) {
-            diagnostics.recordConfirmedSetup(direction);
-        }
-
-        const qualityPassed = passesGlobalQualityFilters(normalized, candles, activeSettings, candleTimeIndex, qualityContext);
-        const threshold = activeSettings.confluenceScoreThreshold !== undefined ? activeSettings.confluenceScoreThreshold : 3.5;
-        const meetsThreshold = score >= threshold;
-        const isApproved = isConfirmedPattern && qualityPassed && meetsThreshold;
-
-        if (!qualityPassed) {
-            diagnostics.recordRejection('Global Quality Filter (Volume/Displacement)', false);
-        } else if (!meetsThreshold && isConfirmedPattern) {
-            diagnostics.recordRejection(`Score below threshold (${score.toFixed(1)} < ${threshold})`, true);
-        }
-
-        const riskParams = calculateSignalRiskManagement(
-            { ...normalized, direction },
+    // Phase 7 — Unified Signal Scoring, Multi-Strategy Conflict Resolution & Decision Engine
+    if (activeSettings.enableUnifiedSignalEngine !== false) {
+        const unifiedResult = runUnifiedSignalEngine({
             candles,
-            signalIndex,
-            activeSettings
+            potentialSignals,
+            activeSettings,
+            config,
+            htfSync,
+            candleTimeIndex,
+            regimeInfo,
+        });
+
+        analysisResult.tradeLog = unifiedResult.tradeLog;
+        analysisResult.diagnostics = unifiedResult.diagnostics;
+        analysisResult.rankedOpportunities = unifiedResult.rankedOpportunities;
+        analysisResult.conflictsDetected = unifiedResult.conflictsDetected;
+    } else {
+        // 2. Score and qualify signals with point-in-time synchronization (Legacy Fallback)
+        const evaluatedSignals = [];
+
+        for (const rawSignal of potentialSignals) {
+            const normalized = normalizeSignal(rawSignal);
+
+            // Skip adding entry signals if they are disabled for P3
+            if (normalized.type?.includes('confirmed') && normalized.notes?.includes('Power of Three') && !activeSettings.enableDistributionEntries) {
+                continue;
+            }
+
+            const isBuy = normalized.type?.includes('BUY') || normalized.type?.includes('SSL');
+            const direction = isBuy ? 'BUY' : 'SELL';
+            const strategy = normalized.strategy || inferSignalStrategy(normalized);
+
+            diagnostics.recordRawCandidate(direction, strategy);
+
+            const signalIndex = getSignalIndex(normalized, candles, candleTimeIndex);
+            if (signalIndex === -1) continue;
+
+            // Point-in-time HTF trend and active key levels at the signal's timestamp
+            const htfTrendAtTime = htfSync ? htfSync.getTrendAtTime(normalized.time) : { direction: 'Ranging', confidence: 0 };
+            const htfLevelsAtTime = htfSync ? htfSync.getKeyLevelsAtTime(normalized.time) : [];
+            diagnostics.recordHtfBar(htfTrendAtTime.direction);
+
+            const { score, qualityTier, reasons } = scoreSignal(
+                { ...normalized, direction },
+                htfTrendAtTime,
+                htfLevelsAtTime,
+                activeSettings
+            );
+
+            const isConfirmedPattern = normalized.type?.includes('confirmed') || normalized.type?.includes('QUALIFIED');
+            if (isConfirmedPattern) {
+                diagnostics.recordConfirmedSetup(direction);
+            }
+
+            const qualityPassed = passesGlobalQualityFilters(normalized, candles, activeSettings, candleTimeIndex, qualityContext);
+            const threshold = activeSettings.confluenceScoreThreshold !== undefined ? activeSettings.confluenceScoreThreshold : 3.5;
+            const meetsThreshold = score >= threshold;
+            const isApproved = isConfirmedPattern && qualityPassed && meetsThreshold;
+
+            if (!qualityPassed) {
+                diagnostics.recordRejection('Global Quality Filter (Volume/Displacement)', false);
+            } else if (!meetsThreshold && isConfirmedPattern) {
+                diagnostics.recordRejection(`Score below threshold (${score.toFixed(1)} < ${threshold})`, true);
+            }
+
+            const riskParams = calculateSignalRiskManagement(
+                { ...normalized, direction },
+                candles,
+                signalIndex,
+                activeSettings
+            );
+
+            const signalId = `${symbol}-${timeframe}-${direction}-${normalized.time}-${strategy}`;
+
+            const baseSignalObj = {
+                ...normalized,
+                id: signalId,
+                symbol,
+                timeframe,
+                direction,
+                isApproved,
+                score,
+                qualityTier: isApproved ? qualityTier : 'Suppressed',
+                reasons,
+                notes: `${normalized.notes || strategy} | ${reasons.join(', ')}`,
+                ...riskParams,
+            };
+
+            const finalSignalWithSnapshot = attachAdaptiveSnapshot(baseSignalObj, regimeInfo, effectiveSettings);
+            evaluatedSignals.push(finalSignalWithSnapshot);
+        }
+
+        // 3. Centralized deduplication and direction-aware spacing
+        const approvedCandidates = evaluatedSignals.filter(s => s.isApproved);
+        const { approvedSignals, duplicatesSuppressed } = deduplicateAndFilterSignals(
+            approvedCandidates,
+            candleTimeIndex,
+            {
+                minCandlesBetweenSignals: activeSettings.minCandlesBetweenSignals !== undefined ? activeSettings.minCandlesBetweenSignals : 5,
+                timeToleranceCandles: 4,
+                priceTolerancePct: activeSettings.keyLevelProximity || 0.003,
+            }
         );
 
-        const signalId = `${symbol}-${timeframe}-${direction}-${normalized.time}-${strategy}`;
-
-        const baseSignalObj = {
-            ...normalized,
-            id: signalId,
-            symbol,
-            timeframe,
-            direction,
-            isApproved,
-            score,
-            qualityTier: isApproved ? qualityTier : 'Suppressed',
-            reasons,
-            notes: `${normalized.notes || strategy} | ${reasons.join(', ')}`,
-            ...riskParams,
-        };
-
-        const finalSignalWithSnapshot = attachAdaptiveSnapshot(baseSignalObj, regimeInfo, effectiveSettings);
-        evaluatedSignals.push(finalSignalWithSnapshot);
-    }
-
-    // 3. Centralized deduplication and direction-aware spacing
-    const approvedCandidates = evaluatedSignals.filter(s => s.isApproved);
-    const { approvedSignals, duplicatesSuppressed } = deduplicateAndFilterSignals(
-        approvedCandidates,
-        candleTimeIndex,
-        {
-            minCandlesBetweenSignals: activeSettings.minCandlesBetweenSignals !== undefined ? activeSettings.minCandlesBetweenSignals : 5,
-            timeToleranceCandles: 4,
-            priceTolerancePct: activeSettings.keyLevelProximity || 0.003,
+        diagnostics.recordDuplicatesSuppressed(duplicatesSuppressed);
+        for (const appSignal of approvedSignals) {
+            diagnostics.recordApprovedSignal(appSignal);
         }
-    );
 
-    diagnostics.recordDuplicatesSuppressed(duplicatesSuppressed);
-    for (const appSignal of approvedSignals) {
-        diagnostics.recordApprovedSignal(appSignal);
+        const approvedIds = new Set(approvedSignals.map(s => s.id));
+        const suppressedSignals = evaluatedSignals
+            .filter(s => !approvedIds.has(s.id))
+            .map(s => ({ ...s, isApproved: false, hiddenByQualityFilter: true }));
+
+        const finalTradeLog = [...approvedSignals, ...suppressedSignals].sort((a, b) => a.time - b.time);
+        analysisResult.tradeLog = finalTradeLog;
+        analysisResult.diagnostics = diagnostics.getSummary();
     }
 
-    const approvedIds = new Set(approvedSignals.map(s => s.id));
-    const suppressedSignals = evaluatedSignals
-        .filter(s => !approvedIds.has(s.id))
-        .map(s => ({ ...s, isApproved: false, hiddenByQualityFilter: true }));
+    // Phase 8 — Professional Dynamic Risk Management, Position Sizing & Trade Execution Engine
+    if (activeSettings.enableRiskEngine !== false && analysisResult.tradeLog && analysisResult.tradeLog.length > 0) {
+        const riskResult = runRiskManagementEngine({
+            candidates: analysisResult.tradeLog,
+            candles,
+            symbol: config?.symbol || 'XAUUSD',
+            candleTimeIndex,
+            activeSettings,
+            regimeInfo,
+        });
 
-    const finalTradeLog = [...approvedSignals, ...suppressedSignals].sort((a, b) => a.time - b.time);
-    analysisResult.tradeLog = finalTradeLog;
-    analysisResult.diagnostics = diagnostics.getSummary();
+        analysisResult.tradeLog = riskResult.tradePlans;
+        analysisResult.simulatedAccount = riskResult.simulatedAccount;
+        analysisResult.riskDiagnostics = riskResult.riskDiagnostics;
+        analysisResult.tradePlans = riskResult.tradePlans;
+    }
 
     return analysisResult;
 }

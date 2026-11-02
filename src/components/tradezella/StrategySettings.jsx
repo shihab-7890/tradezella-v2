@@ -1090,6 +1090,206 @@ function StrategySettings({ settings, setSettings }) {
                             onCheckedChange={(checked) => handleValueChange('enableSwingEngine', checked)}
                         />
                     </SettingsSection>
+
+                    <Separator />
+
+                    <SettingsSection title="Unified Signal Intelligence & Decision Engine (Phase 7)">
+                        <SettingSwitch
+                            id="enable-unified-engine"
+                            label="Unified Decision Engine"
+                            tooltip="Coalesces all strategy detections into unified physical setups with explainable 0-100 scoring."
+                            checked={settings.enableUnifiedSignalEngine !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableUnifiedSignalEngine', checked)}
+                        />
+                        <SettingSelect
+                            id="quality-preset"
+                            label="Quality Filter Preset"
+                            tooltip="Light (Score >= 50), Balanced (Score >= 60), Selective (Score >= 75 / High Confluence)."
+                            value={settings.qualityPreset || 'Balanced'}
+                            onValueChange={(val) => handleValueChange('qualityPreset', val)}
+                            items={[
+                                { value: 'Light', label: 'Light (Score ≥ 50 / More Setups)' },
+                                { value: 'Balanced', label: 'Balanced (Score ≥ 60 / Standard)' },
+                                { value: 'Selective', label: 'Selective (Score ≥ 75 / Grade A/A+)' },
+                            ]}
+                        />
+                        <SettingInput
+                            id="unified-score-threshold"
+                            label="Unified Score Threshold (0–100)"
+                            tooltip="Minimum 0–100 quality score required for trade approval when in MANUAL mode."
+                            value={settings.unifiedScoreThreshold !== undefined ? settings.unifiedScoreThreshold : 60}
+                            onChange={(e) => handleValueChange('unifiedScoreThreshold', parseFloat(e.target.value))}
+                            step="5"
+                            min="10"
+                        />
+                        <SettingSwitch
+                            id="enable-conflict-resolution"
+                            label="Multi-Strategy Conflict Resolution"
+                            tooltip="Resolves contradictory BUY vs SELL setups at same price zones and manages cross-timeframe trades."
+                            checked={settings.enableConflictAnalysis !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableConflictAnalysis', checked)}
+                        />
+                        <SettingSwitch
+                            id="preserve-independent-styles"
+                            label="Preserve Independent Styles"
+                            tooltip="Allows concurrent Scalp SELL and Swing BUY if risk parameters and horizons are decoupled."
+                            checked={settings.preserveIndependentStyles !== false}
+                            onCheckedChange={(checked) => handleValueChange('preserveIndependentStyles', checked)}
+                        />
+                        <SettingInput
+                            id="duplicate-window"
+                            label="Deduplication Window (Candles)"
+                            tooltip="Number of candles within which detections of the same physical move are clustered."
+                            value={settings.duplicateWindowCandles || 4}
+                            onChange={(e) => handleValueChange('duplicateWindowCandles', parseInt(e.target.value, 10))}
+                            step="1"
+                            min="1"
+                        />
+                    </SettingsSection>
+
+                    <Separator />
+
+                    <SettingsSection title="Dynamic Risk Management & Position Sizing (Phase 8)">
+                        <SettingSwitch
+                            id="enable-risk-engine"
+                            label="Enable Dynamic Risk Engine"
+                            tooltip="Activates instrument-aware lot sizing, precision multi-target exits, break-even ratchets and portfolio circuit breakers."
+                            checked={settings.enableRiskEngine !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableRiskEngine', checked)}
+                        />
+                        <SettingInput
+                            id="account-balance"
+                            label="Simulated Account Capital ($)"
+                            tooltip="Starting balance used for precise monetary risk budgeting and position sizing."
+                            value={settings.simulatedAccountBalance || 10000}
+                            onChange={(e) => handleValueChange('simulatedAccountBalance', parseFloat(e.target.value))}
+                            step="500"
+                            min="100"
+                        />
+                        <SettingSelect
+                            id="risk-profile"
+                            label="Risk Profile Preset"
+                            tooltip="Conservative (0.5%), Balanced (1.0%), Aggressive (2.0%), or Dynamic (regime-adapted)."
+                            value={settings.riskProfile || 'Balanced'}
+                            onValueChange={(val) => handleValueChange('riskProfile', val)}
+                            items={[
+                                { value: 'Conservative', label: 'Conservative (0.5% / trade)' },
+                                { value: 'Balanced', label: 'Balanced (1.0% / trade)' },
+                                { value: 'Aggressive', label: 'Aggressive (2.0% / trade)' },
+                                { value: 'Dynamic', label: 'Dynamic (Regime-Adapted)' },
+                            ]}
+                        />
+                        <SettingInput
+                            id="risk-per-trade-pct"
+                            label="Risk Per Trade (%)"
+                            tooltip="Percentage of account capital risked per position (hard capped at user limit)."
+                            value={settings.riskPerTradePct !== undefined ? settings.riskPerTradePct : 1.0}
+                            onChange={(e) => handleValueChange('riskPerTradePct', parseFloat(e.target.value))}
+                            step="0.1"
+                            min="0.1"
+                        />
+                        <SettingSelect
+                            id="capital-basis"
+                            label="Capital Sizing Basis"
+                            tooltip="Balance basis ignores unrealized floating swings; Equity basis dynamically adjusts to floating equity."
+                            value={settings.capitalBasis || 'Balance'}
+                            onValueChange={(val) => handleValueChange('capitalBasis', val)}
+                            items={[
+                                { value: 'Balance', label: 'Balance Basis (Stable)' },
+                                { value: 'Equity', label: 'Equity Basis (Compounding)' },
+                            ]}
+                        />
+                        <SettingSelect
+                            id="sl-method"
+                            label="Stop Loss Calculation Method"
+                            tooltip="Method used to establish invalidation price with directional boundary validation."
+                            value={settings.stopLossMethod || 'HYBRID'}
+                            onValueChange={(val) => handleValueChange('stopLossMethod', val)}
+                            items={[
+                                { value: 'HYBRID', label: 'Hybrid (Structure + Volatility Buffer)' },
+                                { value: 'STRUCTURE', label: 'Market Structure (Recent Swing H/L)' },
+                                { value: 'ATR', label: 'ATR Volatility Multiple' },
+                                { value: 'LIQUIDITY', label: 'Liquidity Pool Invalidation' },
+                                { value: 'ORDER_BLOCK', label: 'Order Block Boundary' },
+                                { value: 'FIXED', label: 'Fixed Pips / Points' },
+                            ]}
+                        />
+                        <SettingSelect
+                            id="tp-method"
+                            label="Take Profit Target Method"
+                            tooltip="Method used to establish multi-stage profit targets (TP1 40%, TP2 35%, TP3 25%)."
+                            value={settings.takeProfitMethod || 'HYBRID'}
+                            onValueChange={(val) => handleValueChange('takeProfitMethod', val)}
+                            items={[
+                                { value: 'HYBRID', label: 'Hybrid (Multi-Stage R:R + Structural)' },
+                                { value: 'FIXED_RR', label: 'Fixed Risk-to-Reward Multiple' },
+                                { value: 'LIQUIDITY_TARGET', label: 'Opposing Liquidity Pool' },
+                                { value: 'STRUCTURE_TARGET', label: 'Key HTF Structural Level' },
+                            ]}
+                        />
+                        <SettingSwitch
+                            id="enable-break-even"
+                            label="Dynamic Break-Even Ratchet"
+                            tooltip="Automatically moves stop loss to entry + cost buffer once +1R or TP1 is reached."
+                            checked={settings.enableBreakEven !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableBreakEven', checked)}
+                        />
+                        <SettingInput
+                            id="be-trigger-r"
+                            label="Break-Even Trigger (R-Multiple)"
+                            tooltip="Minimum favorable move in R-multiples before stop loss ratchets to cost-buffered entry."
+                            value={settings.breakEvenTriggerR !== undefined ? settings.breakEvenTriggerR : 1.0}
+                            onChange={(e) => handleValueChange('breakEvenTriggerR', parseFloat(e.target.value))}
+                            step="0.25"
+                            min="0.5"
+                        />
+                        <SettingSwitch
+                            id="enable-trailing-stop"
+                            label="Active Trailing Stop Engine"
+                            tooltip="Enables dynamic trailing stop loss on runner portion of position with strict ratchet lock."
+                            checked={settings.enableTrailingStop !== false}
+                            onCheckedChange={(checked) => handleValueChange('enableTrailingStop', checked)}
+                        />
+                        <SettingSelect
+                            id="trailing-method"
+                            label="Trailing Stop Method"
+                            tooltip="Dynamic trailing algorithm: ATR multiple, Swing structure, Candle extrema, or Hybrid."
+                            value={settings.trailingMethod || 'ATR'}
+                            onValueChange={(val) => handleValueChange('trailingMethod', val)}
+                            items={[
+                                { value: 'ATR', label: 'ATR Volatility Trailing' },
+                                { value: 'STRUCTURAL', label: 'Structural Swing Pivot Stepping' },
+                                { value: 'CANDLE', label: 'Previous Candle Extrema' },
+                                { value: 'MOMENTUM', label: 'Exhaustion Momentum Tightening' },
+                                { value: 'HYBRID', label: 'Hybrid Adaptive Trailing' },
+                            ]}
+                        />
+                        <SettingInput
+                            id="max-daily-loss"
+                            label="Daily Loss Circuit Breaker (%)"
+                            tooltip="Maximum permitted daily realized loss percentage before new trades are halted (Default 3%)."
+                            value={settings.maxDailyLossPct || 3.0}
+                            onChange={(e) => handleValueChange('maxDailyLossPct', parseFloat(e.target.value))}
+                            step="0.5"
+                            min="1.0"
+                        />
+                        <SettingInput
+                            id="max-drawdown-limit"
+                            label="Max Drawdown Safeguard (%)"
+                            tooltip="Peak-to-trough account drawdown cap before risk engine pauses (Default 10%)."
+                            value={settings.maxDrawdownLimitPct || 10.0}
+                            onChange={(e) => handleValueChange('maxDrawdownLimitPct', parseFloat(e.target.value))}
+                            step="1.0"
+                            min="2.0"
+                        />
+                        <SettingSwitch
+                            id="show-risk-overlay"
+                            label="Show Chart Risk Overlay (SL / TP / BE)"
+                            tooltip="Draws interactive Entry, Stop Loss, Break-Even, and Multi-Target Take Profit lines on the chart."
+                            checked={settings.showRiskOverlay !== false}
+                            onCheckedChange={(checked) => handleValueChange('showRiskOverlay', checked)}
+                        />
+                    </SettingsSection>
                 </div>
             </ScrollArea>
         </CardContent>

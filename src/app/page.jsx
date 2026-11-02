@@ -6,6 +6,7 @@ import StrategySettings from '@/components/tradezella/StrategySettings';
 import { CandleStickChart } from '@/components/tradezella/CandleStickChart';
 import { TradeLog } from '@/components/tradezella/TradeLog';
 import { SignalDiagnosticsPanel } from '@/components/tradezella/SignalDiagnosticsPanel';
+import { RiskManagementPanel } from '@/components/tradezella/RiskManagementPanel';
 import { useToast } from '@/hooks/use-toast';
 import { runConfluenceEngine } from '@/lib/liquidity';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,6 +30,9 @@ const createInitialAnalysisResult = () => ({
   classicBreakoutZones: [],
   htfKeyLevels: [],
   htfTrend: { direction: 'Ranging', confidence: 0 },
+  simulatedAccount: null,
+  riskDiagnostics: null,
+  tradePlans: [],
 });
 
 const STORAGE_KEYS = {
@@ -36,6 +40,16 @@ const STORAGE_KEYS = {
   config: 'tradezella:config:v1',
   session: 'sessionOverlayPrefs:v1',
   view: 'tradezella:view:v1',
+  tradeLevels: 'tradezella:tradeLevels:v1',
+};
+
+const defaultTradeLevelVisibility = {
+  showTradeLevels: false,
+  showEntry: false,
+  showStopLoss: false,
+  showTakeProfit: false,
+  showLabels: false,
+  showSelectedTradeLevels: true,
 };
 
 function getDefaultConfig() {
@@ -229,6 +243,37 @@ const initialSettings = {
   momentumEntryType: 'Close of Spike',
 
   slBufferPercent: 0.002, // 0.2%
+  
+  // Phase 7 — Unified Signal Scoring & Decision Engine
+  enableUnifiedSignalEngine: true,
+  qualityPreset: 'Balanced', // Light, Balanced, Selective
+  unifiedScoreThreshold: 60,
+  enableConflictAnalysis: true,
+  preserveIndependentStyles: true,
+  duplicateWindowCandles: 4,
+
+  // Phase 8 — Professional Dynamic Risk Management & Trade Management
+  enableRiskEngine: true,
+  simulatedAccountBalance: 10000,
+  riskPerTradePct: 1.0,
+  riskProfile: 'Balanced',
+  capitalBasis: 'Balance',
+  stopLossMethod: 'HYBRID',
+  takeProfitMethod: 'HYBRID',
+  atrMultiplierSl: 1.5,
+  enableBreakEven: true,
+  breakEvenTriggerR: 1.0,
+  breakEvenBufferPips: 2,
+  enableTrailingStop: true,
+  trailingMethod: 'ATR',
+  trailingAtrMultiplier: 1.5,
+  maxDailyLossPct: 3.0,
+  maxWeeklyLossPct: 6.0,
+  maxDrawdownLimitPct: 10.0,
+  maxConcurrentPositions: 3,
+  maxOpenRiskPct: 5.0,
+  intrabarAmbiguityPolicy: 'CONSERVATIVE',
+  showRiskOverlay: true,
 };
 
 const initialSessionSettings = {
@@ -246,6 +291,8 @@ export default function Home() {
   const [settings, setSettings] = useState(initialSettings);
   const [config, setConfig] = useState(getDefaultConfig);
   const [sessionSettings, setSessionSettings] = useState(initialSessionSettings);
+  const [tradeLevelVisibility, setTradeLevelVisibility] = useState(defaultTradeLevelVisibility);
+  const [selectedTrade, setSelectedTrade] = useState(null);
   
   const [candles, setCandles] = useState([]);
   const [telemetry, setTelemetry] = useState(null);
@@ -272,11 +319,16 @@ export default function Home() {
       ...readStorageValue(STORAGE_KEYS.session, null),
     };
     const nextViewState = mergeViewState({ zoom: 10, candleOffset: 0 }, readStorageValue(STORAGE_KEYS.view, null));
+    const nextTradeLevels = {
+      ...defaultTradeLevelVisibility,
+      ...readStorageValue(STORAGE_KEYS.tradeLevels, null),
+    };
 
     setSettings(nextSettings);
     setConfig(nextConfig);
     setSessionSettings(nextSessionSettings);
     setViewState(nextViewState);
+    setTradeLevelVisibility(nextTradeLevels);
     hasHydratedPrefsRef.current = true;
     setHasHydratedPrefs(true);
   }, []);
@@ -300,6 +352,11 @@ export default function Home() {
     if (!hasHydratedPrefsRef.current) return;
     writeStorageValue(STORAGE_KEYS.view, viewState);
   }, [viewState]);
+
+  useEffect(() => {
+    if (!hasHydratedPrefsRef.current) return;
+    writeStorageValue(STORAGE_KEYS.tradeLevels, tradeLevelVisibility);
+  }, [tradeLevelVisibility]);
 
   const handleFetchData = useCallback(async () => {
     const runId = fetchRunIdRef.current + 1;
@@ -445,6 +502,11 @@ export default function Home() {
           score: log.score,
           sl: log.sl,
           tp: log.tp,
+          tp1: log.tp1,
+          tp2: log.tp2,
+          tp3: log.tp3,
+          lots: log.totalLots || log.lots,
+          riskReward: log.riskReward || log.grossRewardRisk,
           isApproved: log.isApproved,
           qualityTier: log.qualityTier,
           strategy: log.strategy,
@@ -575,6 +637,10 @@ export default function Home() {
                   waterfallMarkers={analysisResult.waterfallMarkers}
                   sessionSettings={sessionSettings}
                   settings={settings}
+                  tradeLevelVisibility={tradeLevelVisibility}
+                  setTradeLevelVisibility={setTradeLevelVisibility}
+                  selectedTrade={selectedTrade}
+                  onSelectTrade={setSelectedTrade}
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center">
@@ -584,16 +650,35 @@ export default function Home() {
             </CardContent>
           </Card>
           <Collapsible className="rounded-2xl border bg-card shadow-md">
+            <CollapsibleTriggerButton sectionName="Dynamic Risk Management & Position Sizing (Phase 8)" />
+            <CollapsibleContent>
+              <RiskManagementPanel 
+                simulatedAccount={analysisResult.simulatedAccount}
+                riskDiagnostics={analysisResult.riskDiagnostics}
+                tradePlans={analysisResult.tradePlans}
+                symbol={config?.symbol || 'XAUUSD'}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+
+          <Collapsible className="rounded-2xl border bg-card shadow-md">
             <CollapsibleTriggerButton sectionName="Trade Log" />
             <CollapsibleContent>
-              <TradeLog tradeLog={displayedTradeLog} />
+              <TradeLog 
+                tradeLog={displayedTradeLog} 
+                selectedTrade={selectedTrade}
+                onSelectTrade={setSelectedTrade}
+              />
             </CollapsibleContent>
           </Collapsible>
 
           <Collapsible className="rounded-2xl border bg-card shadow-md">
             <CollapsibleTriggerButton sectionName="Signal Diagnostics" />
             <CollapsibleContent>
-              <SignalDiagnosticsPanel diagnostics={analysisResult.diagnostics} />
+              <SignalDiagnosticsPanel 
+                diagnostics={analysisResult.diagnostics} 
+                rankedOpportunities={analysisResult.rankedOpportunities} 
+              />
             </CollapsibleContent>
           </Collapsible>
         </div>

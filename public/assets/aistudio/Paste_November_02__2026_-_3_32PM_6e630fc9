@@ -1,0 +1,1495 @@
+# PHASE 8 — PROFESSIONAL DYNAMIC RISK MANAGEMENT, POSITION SIZING, PRECISION SL/TP & ADVANCED TRADE MANAGEMENT ENGINE
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative trading engineer, professional risk management system architect, algorithmic trading researcher, execution simulation specialist, financial mathematics engineer, and expert Next.js developer.
+
+Your task is to implement **Phase 8 — Dynamic Risk Management, Position Sizing, Stop-Loss/Take-Profit Optimization and Advanced Trade Management** into my existing TradeZella Canvas application.
+
+This phase should transform the existing signal finder into a risk-aware trading analysis and simulation platform.
+
+**IMPORTANT: Implement actual working code, automated tests, settings integration and professional UI improvements. Do not provide only an implementation plan.**
+
+Preserve all existing functionality.
+
+Do not rebuild the application.
+
+Do not start Phase 9 automatically.
+
+---
+
+# 1. EXISTING APPLICATION ARCHITECTURE
+
+The application uses:
+
+- Next.js + React.
+- Finage historical market data.
+- Automatic two-day API chunk fetching.
+- Correct UTC epoch timestamps.
+- Historical candle merging.
+- HTML5 Canvas candlestick chart.
+- Historical replay.
+- Multiple symbols and timeframes.
+- Strategy settings.
+- BUY and SELL signals.
+- Trade logs and CSV export.
+
+The existing or planned Phase 1–7 modules cover:
+
+### Phase 1 — Signal Engine Repair
+
+- Correct BUY/SELL detection.
+- Centralized signal approval.
+- Duplicate suppression.
+- Non-repainting signals.
+- Historical replay consistency.
+
+### Phase 2 — Candle Psychology
+
+- Candle strength.
+- Rejection.
+- Momentum.
+- Waterfall sequences.
+- Exhaustion and first-pullback detection.
+
+### Phase 3 — Advanced SMC
+
+- BOS/CHoCH/MSS.
+- Liquidity sweeps.
+- Order Blocks.
+- FVG/IFVG.
+- Fibonacci.
+- Premium/discount zones.
+
+### Phase 4 — Market Adaptation
+
+- Market regime analysis.
+- AUTO/HYBRID/MANUAL modes.
+- Volatility classification.
+- Adaptive strategy settings.
+
+### Phase 5 — Scalping Intelligence
+
+- 1m/3m/5m scalping.
+- Microstructure.
+- Fast entries.
+- Waterfall scalping.
+- Precision entry planning.
+
+### Phase 6 — Intraday and Swing
+
+- Intraday setups.
+- Higher-timeframe structure.
+- Large moves.
+- Deep pullbacks.
+- Multi-session trade plans.
+
+### Phase 7 — Unified Trade Decisions
+
+- Unified signal scoring.
+- Conflict resolution.
+- BUY/SELL ranking.
+- Signal lifecycle.
+- Signal explanations.
+- Scalping/intraday/swing coordination.
+
+Before implementing anything, audit the actual repository and identify which features exist and function correctly.
+
+Do not assume all prior phase specifications have been implemented.
+
+Reuse the current codebase, existing signal contracts and calculation utilities.
+
+---
+
+# 2. MAIN PHASE 8 OBJECTIVE
+
+Build a unified risk and trade management engine that answers:
+
+1. Is the approved signal eligible for a risk-managed trade plan?
+2. What is the correct entry reference?
+3. Where is the structural invalidation level?
+4. What stop-loss distance is required?
+5. How much capital is permitted to be risked?
+6. What position size respects that risk?
+7. Are the spread and execution costs acceptable?
+8. Where should TP1, TP2 and TP3 be placed?
+9. Is the available reward sufficient relative to risk?
+10. When should a stop move to break-even?
+11. When should a trailing stop activate?
+12. When should partial profits be taken?
+13. When should the remaining position close?
+14. Does the trade violate daily, weekly or portfolio risk limits?
+15. Is the overall trading system operating inside configured drawdown limits?
+
+The engine should support:
+
+- Scalping.
+- Intraday.
+- Swing.
+- BUY.
+- SELL.
+- Trend continuation.
+- Reversal.
+- Breakout.
+- Waterfall momentum.
+
+**Critical distinction:** Trade analysis, simulation and execution must remain separate. This phase does not authorize real-money order placement.
+
+---
+
+# 3. COMPLETE EXISTING CODE AUDIT
+
+Inspect:
+
+- `src/lib/liquidity.js`
+- Phase 1–7 modules.
+- Existing SL/TP utilities.
+- Existing risk/reward calculations.
+- Existing trading-style profiles.
+- Existing signal lifecycle management.
+- Existing entry-planning logic.
+- Existing historical execution simulation.
+- `src/app/page.jsx`
+- `src/services/finageService.js`
+- `src/app/api/finage/route.js`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+
+Identify:
+
+- How entry prices are determined.
+- How stop-loss and targets are calculated.
+- Whether spread is modeled.
+- Whether real instrument metadata is available.
+- Whether position size is implemented.
+- Whether trade lifecycle states exist.
+- Whether partial exits are supported.
+- Whether account equity/balance is available.
+- How historical trades are evaluated.
+
+Reuse existing code where appropriate.
+
+Suggested modules, only if needed:
+
+- `src/lib/risk/riskEngine.js`
+- `src/lib/risk/positionSizing.js`
+- `src/lib/risk/stopLossEngine.js`
+- `src/lib/risk/takeProfitEngine.js`
+- `src/lib/risk/trailingStop.js`
+- `src/lib/risk/breakEven.js`
+- `src/lib/risk/exposureManager.js`
+- `src/lib/risk/drawdownProtection.js`
+- `src/lib/risk/tradeManagement.js`
+- `src/lib/risk/riskDiagnostics.js`
+- `src/lib/execution/executionSimulator.js`
+
+Keep modules testable, deterministic and independent of React rendering.
+
+---
+
+# 4. PROFESSIONAL ACCOUNT RISK MANAGEMENT
+
+Implement an optional simulated account risk profile.
+
+Support:
+
+- Account balance.
+- Account equity.
+- Account currency.
+- Available margin when relevant data is provided.
+- Current open-position exposure.
+- Realized P/L.
+- Unrealized P/L.
+- Historical drawdown.
+- Risk budget.
+
+Use simulated account values or explicitly connected account information only.
+
+Do not invent a real account balance.
+
+## 4.1 Risk per trade
+
+Allow configurable position-risk limits.
+
+Example test presets:
+
+### Conservative
+
+0.25%–0.5% of account equity risked per trade.
+
+### Balanced
+
+0.5%–1% per trade.
+
+### Aggressive
+
+1%–1.5% per trade.
+
+These are illustrative configurable values, not recommendations suitable for every trader.
+
+Do not automatically increase risk after winning or losing trades.
+
+Do not allow adaptive strategy settings to override hard maximum risk limits.
+
+## 4.2 Risk calculation
+
+Calculate monetary risk using:
+
+Risk Budget = Risk Capital × Risk Percentage / 100
+
+Use a clearly defined capital basis, such as equity or balance, selected in settings.
+
+Position size must be based on the actual stop-loss distance and verified instrument value per price movement.
+
+Include estimated trading costs and execution uncertainty in the risk budget where applicable.
+
+The actual realized loss can exceed planned risk because of slippage, gaps or execution failures.
+
+Never label a stop loss as a guaranteed maximum loss.
+
+---
+
+# 5. INSTRUMENT-AWARE POSITION SIZE ENGINE
+
+This is a critical component.
+
+Support:
+
+- XAUUSD.
+- Major Forex pairs.
+- Forex crosses.
+- Other existing supported instruments when specifications are available.
+
+Do not hardcode one universal position-sizing formula.
+
+## 5.1 Instrument metadata
+
+Each instrument should have validated information such as:
+
+- Symbol.
+- Asset class.
+- Quote currency.
+- Account currency.
+- Tick size.
+- Contract size.
+- Lot size.
+- Lot step.
+- Minimum lot.
+- Maximum lot.
+- Point/tick monetary value when provided.
+- Currency conversion requirements.
+- Broker or venue specifications when available.
+
+Finage market-data prices do not automatically define the execution contract specifications of a user's broker.
+
+If contract metadata is unavailable, require a user-selected instrument specification or clearly identified simulation profile.
+
+## 5.2 Dynamic position size
+
+Calculate:
+
+- Permitted monetary risk.
+- Entry-to-stop price distance.
+- Monetary value of that movement per unit or lot.
+- Estimated entry/exit costs.
+- Maximum permitted size.
+- Size rounded down to valid lot/quantity increments.
+
+If there is no safe valid position size, reject the simulated trade or return an insufficient-risk-budget state.
+
+Do not round upward in a way that exceeds the selected risk limit.
+
+## 5.3 Forex currency conversion
+
+If the account currency differs from the relevant profit/loss currency, use an appropriate conversion rate available at the simulated decision or execution time.
+
+Do not use today's exchange rate retroactively for historical trading results.
+
+If required historical conversion data is unavailable, disclose the limitation and do not present an exact monetary result.
+
+## 5.4 XAUUSD
+
+Handle Gold correctly.
+
+Do not assume:
+
+- Every Gold broker has the same pip convention.
+- One lot always has the same contract size.
+- Every broker uses identical tick values.
+
+Calculate price movement and risk from explicit instrument metadata.
+
+Display ticks, points, pips or lot quantities only when their definitions are established.
+
+---
+
+# 6. ADVANCED STRUCTURAL STOP-LOSS ENGINE
+
+Integrate with the existing Phase 3 SMC, Phase 5 scalping and Phase 6 swing engines.
+
+Stop-loss placement must match the underlying setup.
+
+## BUY stop-loss candidates
+
+- Confirmed swing low.
+- Liquidity sweep low.
+- Bullish Order Block invalidation.
+- Bullish FVG structural invalidation.
+- Pullback structure.
+- ATR-adjusted stop.
+- Breakout invalidation.
+
+## SELL stop-loss candidates
+
+- Confirmed swing high.
+- Liquidity sweep high.
+- Bearish Order Block invalidation.
+- Bearish FVG invalidation.
+- Pullback structure.
+- ATR-adjusted stop.
+- Breakout invalidation.
+
+## 6.1 Stop-loss methods
+
+Support:
+
+1. Structure Based.
+2. ATR Based.
+3. Liquidity Based.
+4. Order Block Based.
+5. Configured Fixed Distance.
+6. Hybrid Structural + Volatility Buffer.
+
+Use only levels known at the signal decision time.
+
+## 6.2 Stop-loss validation
+
+Verify:
+
+- Correct directional placement.
+- Valid stop distance.
+- Instrument tick-size alignment.
+- Minimum distance constraints if relevant.
+- Market volatility.
+- Spread exposure.
+- Required position-risk budget.
+
+If the structural stop is too wide, reduce the calculated position size where feasible.
+
+Do not blindly tighten a stop merely to manufacture a favorable risk/reward ratio.
+
+Do not place stops on invalidated zones.
+
+---
+
+# 7. ADVANCED TAKE-PROFIT INTELLIGENCE
+
+Build a dynamic TP1/TP2/TP3 planning engine.
+
+Use:
+
+- Opposing liquidity.
+- Market structure.
+- FVG boundaries.
+- Major swing high/low.
+- Session highs/lows.
+- ATR-based projections.
+- Fibonacci extensions.
+- Fixed risk/reward levels where appropriate.
+
+## TP1
+
+First meaningful target.
+
+## TP2
+
+Intermediate structural target.
+
+## TP3
+
+Extended target when supported by available market structure.
+
+Each target should include:
+
+- Exact price.
+- Target distance.
+- Gross reward-to-risk.
+- Estimated net reward-to-risk.
+- Structural reason.
+- Assigned partial-exit percentage.
+
+## Example
+
+BUY Entry: 2500.00
+
+SL: 2495.00
+
+TP1: 2505.00
+
+TP2: 2510.00
+
+TP3: 2515.00
+
+These are illustrative prices only.
+
+Do not hardcode these values.
+
+## 7.1 Target validity
+
+Reject or warn when:
+
+- Target is on the wrong side of entry.
+- Target is too close relative to transaction costs.
+- Target assumes unavailable future price information.
+- Target conflicts with invalidated structure.
+- Remaining reward-to-risk is inadequate under the selected risk profile.
+
+Do not assume distant targets will be reached.
+
+---
+
+# 8. PROFESSIONAL PARTIAL PROFIT MANAGEMENT
+
+Implement configurable partial closing.
+
+Example:
+
+- TP1: Close 40%.
+- TP2: Close 35%.
+- TP3: Close 25%.
+
+These allocations are examples.
+
+Allow alternative presets and custom percentages.
+
+Requirements:
+
+- Total allocations must not exceed 100%.
+- Partial quantities must respect instrument lot increments.
+- Remaining quantity must be tracked correctly.
+- Realized P/L must be calculated per partial exit.
+- Fees and execution costs must be allocated correctly.
+- Remaining risk exposure must update after each partial close.
+- No duplicate partial close on repeated replay processing.
+
+If rounding leaves a residual quantity, handle it using a documented deterministic policy.
+
+Do not count a partial TP as a full winning trade when the remaining position is still active.
+
+Maintain separate trade-level and exit-leg-level performance records.
+
+---
+
+# 9. AUTOMATIC BREAK-EVEN MANAGEMENT
+
+Implement optional break-even stop adjustment.
+
+Support activation based on:
+
+- Reaching TP1.
+- Reaching configurable R multiple.
+- Confirmed structural progression.
+- A validated trade-specific management rule.
+
+Example:
+
+When the simulated trade reaches +1R, the system may become eligible to move the stop to entry plus a cost-aware buffer.
+
+Do not automatically move every stop to break-even at the same price movement.
+
+## Break-even requirements
+
+- Distinguish BUY and SELL.
+- Account for spread and fees.
+- Use executable price assumptions.
+- Track modification timestamps.
+- Respect valid stop direction.
+- Do not modify stopped or closed trades.
+- Do not retroactively protect a trade before activation.
+- Avoid repeated modification events.
+- Respect broker minimum stop distance when modeled.
+
+A stop moved to the original entry price does not guarantee zero net loss because fees, spread, slippage and gaps may remain.
+
+---
+
+# 10. SMART TRAILING STOP ENGINE
+
+Implement multiple trailing-stop methods.
+
+## A. ATR Trailing
+
+Trail behind eligible market price using a configured ATR multiple.
+
+## B. Structural Trailing
+
+Use newly confirmed swing highs/lows.
+
+For BUY:
+- Trail below confirmed higher lows.
+
+For SELL:
+- Trail above confirmed lower highs.
+
+## C. Candle-Based Trailing
+
+Use confirmed candle structure under defined rules.
+
+## D. Momentum Trailing
+
+Adapt trailing behavior based on Phase 2 momentum state within the selected policy.
+
+## E. Hybrid Trailing
+
+Use structure and volatility together.
+
+## Critical requirements
+
+A protective trailing stop must never loosen simply because volatility increases later, unless an explicitly different management model permits and records that behavior.
+
+For normal protective trailing:
+
+- BUY stop must not move downward.
+- SELL stop must not move upward.
+
+Implement stop ratcheting and tick-size rounding.
+
+Only move stops when the required information becomes available.
+
+Prevent historical repainting.
+
+Do not create unrealistically perfect trailing exits using future candle highs/lows.
+
+---
+
+# 11. WATERFALL TRADE MANAGEMENT
+
+Integrate directly with the Phase 2 waterfall and Phase 5 scalping engines.
+
+## Bearish Waterfall
+
+When an eligible SELL is triggered:
+
+- Track momentum continuation.
+- Track structural invalidation.
+- Monitor pullback depth.
+- Evaluate exhaustion warnings.
+- Update trailing stop according to the selected rule.
+- Track TP progression.
+- Exit based on actual configured rules.
+
+## Bullish Momentum Cascade
+
+Apply equivalent logic for BUY trades.
+
+### Important
+
+Do not close every waterfall trade immediately because one counter-direction candle appears.
+
+Do not hold an invalidated trade simply because the previous trend was strong.
+
+Differentiate:
+
+- Normal pullback.
+- Momentum slowing.
+- Confirmed structural reversal.
+- Stop-loss trigger.
+- Target trigger.
+
+Trade-management rules must be measurable and repeatable.
+
+---
+
+# 12. SEPARATE SCALPING, INTRADAY AND SWING RISK PROFILES
+
+Each trading style should have independent risk-management behavior.
+
+## Scalping
+
+Focus:
+
+- Shorter trade duration.
+- Transaction costs.
+- Tight but valid structural stops.
+- Fast expiration.
+- Optional early break-even.
+- Appropriate short-horizon trailing.
+
+## Intraday
+
+Focus:
+
+- Session-level structure.
+- Intraday volatility.
+- Liquidity-based targets.
+- Session transition management.
+- Optional partial profit-taking.
+
+## Swing
+
+Focus:
+
+- Larger structural stops.
+- Lower position sizes when required.
+- Multi-session holding.
+- Overnight and weekend exposure.
+- Gap risk.
+- Holding costs.
+- Wider trailing policies.
+
+Do not apply a 1m scalping stop policy to a daily swing trade.
+
+Reuse Phase 4's trading-style profile manager.
+
+---
+
+# 13. AUTO / HYBRID / MANUAL RISK SETTINGS
+
+Integrate with Phase 4.
+
+## AUTO
+
+Automatically select eligible risk-management methods based on:
+
+- Trading style.
+- Market regime.
+- Volatility.
+- Structure.
+- Signal type.
+- Instrument specifications.
+
+AUTO may select:
+
+- Appropriate stop method.
+- Target method.
+- Trailing policy.
+- Break-even activation method.
+- Partial-profit profile.
+
+But it must remain within the user's risk limits.
+
+## HYBRID
+
+Allow locks for:
+
+- Risk per trade.
+- Stop method.
+- Target method.
+- Partial closing.
+- Break-even.
+- Trailing.
+- Max exposure.
+- Max daily loss.
+
+## MANUAL
+
+Respect explicitly configured settings.
+
+No hidden automatic changes.
+
+### Critical rule
+
+Automatic risk settings must never silently increase maximum allowed monetary risk.
+
+If volatility requires a wider stop, the engine should reduce position size or reject the setup.
+
+Do not automatically increase exposure to compensate for lower signal frequency or prior losses.
+
+---
+
+# 14. DAILY, WEEKLY AND ACCOUNT-LEVEL RISK PROTECTION
+
+Implement risk safeguards.
+
+Support:
+
+- Maximum risk per position.
+- Maximum total open risk.
+- Maximum daily realized loss.
+- Maximum weekly realized loss.
+- Maximum equity drawdown.
+- Maximum concurrent positions.
+- Maximum correlated exposure.
+- Optional maximum trades per session.
+- Optional cooldown after a configured sequence of losses.
+
+Use simulated/account-specific values only when available.
+
+## 14.1 Drawdown
+
+Calculate:
+
+- Starting equity.
+- Current equity.
+- Running peak equity.
+- Current drawdown.
+- Maximum historical drawdown.
+
+Distinguish balance drawdown from equity drawdown.
+
+## 14.2 Loss-limit protection
+
+When a defined risk limit is breached:
+
+- Prevent approval of new simulated entries.
+- Explain the specific restriction.
+- Preserve existing positions and manage them according to the configured policy.
+- Do not forcibly close trades unless an explicit predefined rule exists.
+- Record the event.
+
+Ensure daily/weekly reset boundaries use a clearly configured account timezone.
+
+Do not reset risk limits simply because the user changes chart timeframe.
+
+## 14.3 Portfolio exposure
+
+If multiple signals are approved:
+
+- Calculate aggregate potential loss under modeled stops.
+- Detect duplicated exposure.
+- Recognize correlated instruments using documented methods.
+- Avoid counting opposite trades as risk-free hedges.
+- Respect simultaneous-position limits.
+
+Correlation is not constant and should not be treated as a guarantee of offsetting losses.
+
+---
+
+# 15. SMART OVERTRADING PROTECTION
+
+Prevent uncontrolled trade frequency.
+
+Track:
+
+- Number of trades.
+- Trades by session.
+- Trades by strategy.
+- Duplicate attempts.
+- Consecutive losses.
+- Current total risk.
+- Existing open positions.
+
+Implement optional cooldown rules.
+
+Do not make cooldowns so strict that valid unrelated opportunities disappear without reason.
+
+Distinguish:
+
+- Duplicate signals.
+- Independent trade opportunities.
+- Risk-policy restrictions.
+- User-selected trade frequency limits.
+
+Do not modify the core signal detector to manufacture fewer signals.
+
+The risk layer can reject an otherwise valid trade plan without deleting the original analytical signal.
+
+---
+
+# 16. REALISTIC EXECUTION SIMULATION
+
+Build or improve the existing historical execution simulator.
+
+It must clearly separate:
+
+1. Signal detected.
+2. Signal approved.
+3. Order eligible.
+4. Order triggered.
+5. Position opened.
+6. Position managed.
+7. Partial exit.
+8. Full exit.
+
+Support:
+
+- Market orders.
+- Limit orders.
+- Stop orders.
+- Partial exits.
+- Stop-loss adjustments.
+- Take-profit orders.
+
+No real-money execution.
+
+## 16.1 Historical bid/ask
+
+Use historical bid/ask data when available.
+
+Otherwise use an explicitly configured spread model.
+
+Never assume OHLC close is always an executable fill.
+
+## 16.2 Slippage
+
+Support configurable and documented slippage assumptions.
+
+Consider:
+
+- Volatility.
+- Order type.
+- Market gaps.
+- Spread.
+- Instrument properties.
+
+Do not guarantee a stop fills at the requested level.
+
+## 16.3 Intrabar ambiguity
+
+If one historical OHLC candle touches both SL and TP:
+
+- Prefer verified lower-timeframe execution data when available.
+- Otherwise use a consistent conservative or documented ambiguity policy.
+- Flag ambiguous trades when appropriate.
+
+Never always select the profitable result.
+
+## 16.4 Partial exit sequence
+
+If multiple targets and stops are touched inside the same candle, do not invent a favorable fill sequence.
+
+Use a documented deterministic policy.
+
+## 16.5 Overnight and weekend gaps
+
+Handle:
+
+- Session rollover.
+- Market closures.
+- Weekend gaps.
+- Overnight costs.
+- Financing/swap where applicable.
+
+Do not invent candles during closed-market intervals.
+
+---
+
+# 17. RISK-AWARE SIGNAL APPROVAL
+
+Integrate with the Phase 7 Unified Trade Decision Engine.
+
+Do not replace its scoring system.
+
+The pipeline should be:
+
+1. Strategy detector generates candidate.
+2. Unified engine evaluates signal quality.
+3. Entry plan is constructed.
+4. Risk engine evaluates the plan.
+5. Position size and targets are calculated.
+6. Hard risk policies are checked.
+7. Risk decision is attached to the signal.
+8. Eligible trade plan is shown to the user.
+
+### Risk decision states
+
+- ELIGIBLE.
+- ELIGIBLE_WITH_WARNINGS.
+- INSUFFICIENT_RISK_BUDGET.
+- INVALID_STOP.
+- INSUFFICIENT_REWARD.
+- EXCESSIVE_SPREAD.
+- MAX_EXPOSURE_REACHED.
+- DAILY_LOSS_LIMIT.
+- INVALID_INSTRUMENT_SPEC.
+- DATA_QUALITY_BLOCKED.
+
+Preserve the original signal for analytics even when the risk layer rejects an entry.
+
+Do not label a risk-rejected BUY or SELL setup as a detection failure.
+
+---
+
+# 18. TRADE MANAGEMENT STATE MACHINE
+
+Implement a deterministic trade-management lifecycle.
+
+Suggested states:
+
+1. PLANNED.
+2. WAITING_FOR_ENTRY.
+3. ENTRY_TRIGGERED.
+4. OPEN.
+5. TP1_FILLED.
+6. TP2_FILLED.
+7. BREAK_EVEN_ACTIVE.
+8. TRAILING_ACTIVE.
+9. PARTIALLY_CLOSED.
+10. CLOSED_TARGET.
+11. CLOSED_STOP.
+12. CLOSED_MANUAL_SIMULATED.
+13. EXPIRED.
+14. CANCELLED.
+
+Use composable flags/events where necessary because TP fills, trailing activation and break-even may coexist.
+
+Avoid forcing fundamentally independent states into a single incompatible enumeration.
+
+Maintain an append-only event history where appropriate.
+
+Each event should contain:
+
+- Trade ID.
+- Event type.
+- Timestamp.
+- Old/new position quantity.
+- Old/new stop.
+- Fill price if applicable.
+- Realized P/L if applicable.
+- Relevant candle.
+- Rule ID.
+- Settings snapshot.
+
+Prevent duplicate state transitions during replay.
+
+---
+
+# 19. ADVANCED RISK DASHBOARD
+
+Improve the UI without replacing the existing Canvas chart.
+
+Add a professional **Risk & Trade Management Panel**.
+
+Show:
+
+### Account Overview
+
+- Simulated Account Equity.
+- Simulated Balance.
+- Available Risk Budget.
+- Total Open Risk.
+- Current Drawdown.
+- Daily Realized P/L.
+- Weekly Realized P/L.
+
+### Trade Planning
+
+- BUY/SELL.
+- Strategy.
+- Entry Price.
+- Stop Loss.
+- TP1.
+- TP2.
+- TP3.
+- Position Size.
+- Monetary Risk.
+- Estimated Reward.
+- Gross R:R.
+- Cost-Adjusted R:R.
+
+### Open Trade Management
+
+- Entry time.
+- Current simulated price.
+- Unrealized P/L.
+- Realized P/L.
+- Remaining position.
+- Break-even status.
+- Trailing stop.
+- Filled partial targets.
+- Current exit policy.
+
+### Risk Warnings
+
+- High spread.
+- Risk budget exceeded.
+- Insufficient instrument metadata.
+- Excessive correlated exposure.
+- Maximum drawdown reached.
+- Invalid structural stop.
+
+Do not display fictional account balances as real data.
+
+Clearly label simulation values.
+
+---
+
+# 20. CHART VISUALIZATION
+
+Preserve the existing HTML5 Canvas candlestick renderer.
+
+Add optional overlays for:
+
+- Entry.
+- Original SL.
+- Active SL.
+- TP1.
+- TP2.
+- TP3.
+- Break-even activation.
+- Trailing stop history.
+- Partial exit markers.
+- Final exit marker.
+
+Use clear BUY/SELL visual distinctions.
+
+Show the correct historical state during replay.
+
+Do not show future trailing-stop adjustments on earlier candles.
+
+Avoid rendering dozens of overlapping horizontal lines.
+
+Use active-trade highlighting and show/hide controls.
+
+Maintain zoom, pan, crosshair and smooth replay.
+
+---
+
+# 21. SETTINGS UX
+
+Extend `StrategySettings.jsx`.
+
+Recommended sections:
+
+## Risk Profile
+
+- Conservative.
+- Balanced.
+- Custom.
+
+## Capital and Instrument
+
+- Simulated Account Balance.
+- Account Currency.
+- Risk Capital Basis.
+- Instrument Specification.
+- Contract Size.
+- Lot Step.
+
+## Position Sizing
+
+- Fixed Lot.
+- Risk Percentage.
+- Fixed Monetary Risk.
+- Maximum Position Size.
+
+## Stop Loss
+
+- Structural.
+- ATR.
+- Liquidity.
+- Hybrid.
+- Stop Buffer.
+
+## Take Profit
+
+- Fixed R:R.
+- Structural.
+- Liquidity-Based.
+- Hybrid.
+- TP1/TP2/TP3.
+- Partial Exit Allocation.
+
+## Trade Management
+
+- Enable Break-Even.
+- Break-Even Trigger.
+- Enable Trailing Stop.
+- Trailing Method.
+- Trailing Sensitivity.
+- Setup Expiration.
+
+## Risk Protection
+
+- Max Risk Per Trade.
+- Max Open Risk.
+- Daily Loss Limit.
+- Weekly Loss Limit.
+- Maximum Drawdown.
+- Maximum Concurrent Positions.
+- Correlated Exposure Limit.
+
+## Advanced Simulation
+
+- Spread Model.
+- Slippage.
+- Fees.
+- Overnight Financing.
+- Intrabar Fill Policy.
+- Gap Execution Policy.
+
+All controls must connect to actual calculations.
+
+Preserve current saved settings.
+
+Validate numerical ranges and prevent invalid risk configurations.
+
+---
+
+# 22. HISTORICAL DATA AND REPLAY INTEGRITY
+
+Preserve the existing Finage data pipeline.
+
+Including:
+
+- Historical date selection.
+- Two-day API chunking.
+- Epoch timestamp normalization.
+- Sorted candle merging.
+- Deduplication.
+- Correct timeframe alignment.
+- Multi-timeframe analysis.
+- Historical replay.
+
+The risk engine must work across the complete merged candle dataset.
+
+Do not reset position state at API chunk boundaries.
+
+Do not use future candle prices to decide earlier stops or targets.
+
+A historical risk settings snapshot must remain unchanged when current settings are updated later.
+
+Distinguish real Finage historical candles from simulated fallback data.
+
+Never report simulated fallback performance as verified historical trading performance.
+
+---
+
+# 23. PERFORMANCE ANALYTICS
+
+Build detailed risk-aware trading statistics.
+
+Track:
+
+- Total Approved Signals.
+- Total Entry Orders.
+- Triggered Trades.
+- Open Trades.
+- Closed Trades.
+- Wins.
+- Losses.
+- Break-Even Trades.
+- Average Win.
+- Average Loss.
+- Gross P/L.
+- Net P/L.
+- Net Expectancy.
+- Profit Factor.
+- Maximum Drawdown.
+- Average R Multiple.
+- Risk per Trade.
+- Average Holding Time.
+- Average Spread Cost.
+- Average Slippage.
+- Average Fees.
+- Partial Exit Contribution.
+- Trailing Stop Contribution.
+
+Provide breakdowns by:
+
+- BUY.
+- SELL.
+- Scalping.
+- Intraday.
+- Swing.
+- Strategy.
+- Timeframe.
+- Market Regime.
+- Risk Profile.
+- Exit Method.
+
+Compare:
+
+- Original Fixed SL/TP.
+- Structural SL/TP.
+- Break-Even Enabled.
+- Trailing Enabled.
+- Partial Profit Enabled.
+
+Use identical underlying signals and comparable cost assumptions when measuring the effect of trade-management policies.
+
+Do not claim a policy improves performance without actual testing.
+
+---
+
+# 24. REQUIRED AUTOMATED TESTS
+
+Implement deterministic unit, integration and regression tests.
+
+### Test 1 — BUY Position Size
+Correct risk-based quantity calculation.
+
+### Test 2 — SELL Position Size
+Correct short-side risk calculation.
+
+### Test 3 — XAUUSD Instrument Metadata
+Correct contract-size, tick and lot handling.
+
+### Test 4 — Forex Currency Conversion
+Correct account-currency P/L calculation using available historical conversions.
+
+### Test 5 — Insufficient Risk Budget
+No invalid or oversized position approved.
+
+### Test 6 — Structural BUY Stop
+Correct stop below valid bullish invalidation.
+
+### Test 7 — Structural SELL Stop
+Correct stop above valid bearish invalidation.
+
+### Test 8 — ATR Stop
+Correct volatility-adjusted distance.
+
+### Test 9 — Invalid Stop
+Correct rejection without fabricated repair.
+
+### Test 10 — TP1/TP2/TP3
+Correct target order and direction.
+
+### Test 11 — Partial Profit
+Correct position reductions and realized P/L.
+
+### Test 12 — Partial Quantity Rounding
+Correct handling of lot/quantity increments.
+
+### Test 13 — Break-Even BUY
+Correct activation and stop modification.
+
+### Test 14 — Break-Even SELL
+Correct equivalent bearish behavior.
+
+### Test 15 — ATR Trailing
+Correct trailing calculations without loosening protective stops.
+
+### Test 16 — Structural Trailing
+Only confirmed structures affect trailing.
+
+### Test 17 — Waterfall Management
+Correct momentum-based management without future-data access.
+
+### Test 18 — Daily Loss Limit
+New simulated entries are restricted after a limit breach.
+
+### Test 19 — Weekly Loss Limit
+Correct period accounting and restriction.
+
+### Test 20 — Maximum Drawdown
+Correct equity-peak and drawdown calculation.
+
+### Test 21 — Maximum Open Risk
+Correct combined position-risk checks.
+
+### Test 22 — Correlated Positions
+No false assumption of risk-free hedging.
+
+### Test 23 — AUTO Mode
+Adaptive risk-method selection remains within hard user limits.
+
+### Test 24 — HYBRID Mode
+Locked settings remain unchanged.
+
+### Test 25 — MANUAL Mode
+No hidden adaptive modification.
+
+### Test 26 — Scalping Risk Profile
+Correct shorter-duration policy.
+
+### Test 27 — Swing Risk Profile
+Correct larger structural stop and multi-session policy.
+
+### Test 28 — Stop/Target Same Candle
+Conservative or documented ambiguous fill behavior.
+
+### Test 29 — Slippage
+Correct cost-adjusted entry and exit.
+
+### Test 30 — Spread
+Correct bid/ask or spread-model application.
+
+### Test 31 — Weekend Gap
+No assumed guaranteed stop fill.
+
+### Test 32 — Overnight Costs
+Correct holding-cost accounting when configured.
+
+### Test 33 — Partial Exit + Trailing
+No duplicate fills or incorrect remaining quantity.
+
+### Test 34 — Replay Consistency
+Identical execution events for identical historical data and assumptions.
+
+### Test 35 — No Future Information
+Stop/target modifications never depend on unavailable candles.
+
+### Test 36 — Multi-API Historical Range
+Trade state continues across merged Finage chunk boundaries.
+
+### Test 37 — Existing Signal Compatibility
+Phase 7 signal decisions remain functional.
+
+### Test 38 — Deterministic Simulation
+Same inputs produce identical results.
+
+### Test 39 — Fixed vs Advanced Risk Comparison
+Compare identical historical trades with different management policies.
+
+### Test 40 — Performance
+Large historical datasets remain responsive.
+
+Additional edge cases:
+
+- Zero account balance.
+- Negative/invalid risk input.
+- Missing contract metadata.
+- Zero stop distance.
+- Non-finite prices.
+- Invalid lot increments.
+- Missing conversion rate.
+- Partial market closure.
+- Duplicate events.
+- Stale replay state.
+- Settings changes during an open simulated trade.
+
+---
+
+# 25. IMPLEMENTATION ORDER
+
+Complete the phase in this order:
+
+1. Audit Phase 1–7 implementation.
+2. Identify existing risk and SL/TP logic.
+3. Standardize instrument metadata.
+4. Implement simulated account configuration.
+5. Build risk-per-trade calculations.
+6. Implement instrument-aware position sizing.
+7. Improve structural stop-loss calculations.
+8. Build dynamic TP1/TP2/TP3 plans.
+9. Implement partial-profit accounting.
+10. Implement break-even rules.
+11. Implement trailing-stop rules.
+12. Add waterfall-specific trade management.
+13. Add scalping/intraday/swing management profiles.
+14. Implement portfolio and loss-limit restrictions.
+15. Integrate Phase 4 AUTO/HYBRID/MANUAL.
+16. Integrate Phase 7 Unified Decision Engine.
+17. Implement trade-management event lifecycle.
+18. Improve execution simulation.
+19. Add risk dashboard.
+20. Add chart SL/TP and management overlays.
+21. Add risk settings.
+22. Add detailed risk analytics.
+23. Validate historical replay.
+24. Run automated regression tests.
+25. Optimize performance.
+26. Run available lint, type-check and production build commands.
+27. Report implementation results and remaining limitations.
+
+Avoid unnecessary architectural rewrites.
+
+---
+
+# 26. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rebuild the existing application.
+- Replace Finage.
+- Break historical two-day API chunking.
+- Break UTC timestamp normalization.
+- Break candle merging.
+- Replace the HTML5 Canvas chart.
+- Break historical playback.
+- Break existing BUY/SELL detection.
+- Reintroduce duplicate signals.
+- Break Phase 2 Candle Psychology.
+- Break Phase 3 SMC.
+- Break Phase 4 Adaptive Settings.
+- Break Phase 5 Scalping.
+- Break Phase 6 Intraday/Swing.
+- Break Phase 7 Unified Decisions.
+- Allow risk automation to exceed user-defined maximums.
+- Increase risk automatically after losses.
+- Assume every stop executes at its requested price.
+- Assume zero spread or zero slippage.
+- Assume every historical order fills.
+- Modify historical trades using future information.
+- Use simulated fallback data as verified real-market results.
+- Create fake account balances or performance.
+- Promise guaranteed profits.
+- Claim 70–90% win rate without independent evidence.
+- Implement real-money automatic order placement.
+- Introduce unnecessary AI dependencies.
+- Begin Phase 9 automatically.
+
+---
+
+# 27. PHASE 8 COMPLETION CRITERIA
+
+Phase 8 is complete when:
+
+1. Risk-per-trade calculation works.
+2. Position sizing respects instrument specifications.
+3. BUY/SELL sizing works correctly.
+4. Structure-based stop-loss works.
+5. ATR-based stop-loss works.
+6. TP1/TP2/TP3 calculations work.
+7. Partial profit-taking works.
+8. Break-even management works.
+9. Trailing stops work without retroactive knowledge.
+10. Scalping, intraday and swing risk policies remain distinct.
+11. AUTO/HYBRID/MANUAL settings work.
+12. Hard maximum risk limits remain protected.
+13. Daily/weekly loss protection works.
+14. Maximum drawdown tracking works.
+15. Portfolio exposure calculations work.
+16. Trade-management lifecycle remains deterministic.
+17. Spread/slippage and execution assumptions are explicit.
+18. Historical replay produces consistent trade events.
+19. Existing Phases 1–7 remain operational.
+20. Risk dashboard and chart overlays work.
+21. Net performance analytics distinguish actual simulated fills from signals.
+22. Large historical datasets remain responsive.
+23. Available automated tests and build checks pass, or failures are documented accurately.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+- Files created and modified.
+- Existing modules reused.
+- Instrument metadata model.
+- Position sizing formulas.
+- Stop-loss calculation methods.
+- Take-profit planning methods.
+- Break-even rules.
+- Trailing-stop rules.
+- Partial exit handling.
+- Exposure and drawdown protection logic.
+- Trade state machine.
+- Risk dashboard changes.
+- Strategy settings changes.
+- Before/after historical comparisons using identical data.
+- Cost-adjusted performance statistics.
+- Non-repainting/replay test results.
+- Performance benchmarks.
+- Known limitations and unresolved issues.
+
+## FINAL OBJECTIVE
+
+Upgrade TradeZella Canvas with professional, explainable, instrument-aware risk and trade-management capabilities.
+
+The application should combine:
+
+- Dynamic position sizing.
+- Structural Stop Loss.
+- ATR-based Stop Loss.
+- TP1/TP2/TP3.
+- Partial Profit Booking.
+- Break-Even Management.
+- Smart Trailing Stops.
+- Waterfall Trade Management.
+- Daily/Weekly Loss Protection.
+- Portfolio Exposure Monitoring.
+- Market-Adaptive Risk Policies.
+- Realistic Trade Simulation.
+- Cost-Adjusted Performance Analytics.
+
+The system must support both BUY and SELL across Scalping, Intraday and Swing trading.
+
+It must preserve the Phase 1–7 intelligence, remain non-repainting, avoid fabricated results and respect all hard user risk limits.
+
+**Implement Phase 8 completely without breaking existing functionality.**
+
+**Do not proceed to Phase 9 automatically.**

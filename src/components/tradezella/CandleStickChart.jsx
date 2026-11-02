@@ -13,8 +13,17 @@ import {
   ChevronsRight,
   Sun,
   Moon,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 
 function getSignalColor(signal, fallbackColor) {
   if (!signal.score) return fallbackColor;
@@ -67,6 +76,10 @@ export const CandleStickChart = memo(function CandleStickChart({
   waterfallMarkers = [],
   sessionSettings,
   settings,
+  tradeLevelVisibility,
+  setTradeLevelVisibility,
+  selectedTrade,
+  onSelectTrade,
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -76,9 +89,36 @@ export const CandleStickChart = memo(function CandleStickChart({
   const [forceTheme, setForceTheme] = useState('dark'); // Default to dark for pro trading terminal
   const [hoveredCandle, setHoveredCandle] = useState(null);
   const [hoveredMarker, setHoveredMarker] = useState(null);
+  const [selectedMarkerState, setSelectedMarkerState] = useState(null);
   const [themeColors, setThemeColors] = useState({});
 
+  const [internalTradeLevelVisibility, setInternalTradeLevelVisibility] = useState({
+    showTradeLevels: false,
+    showEntry: false,
+    showStopLoss: false,
+    showTakeProfit: false,
+    showLabels: false,
+    showSelectedTradeLevels: true,
+  });
+
+  const activeTradeLevels = tradeLevelVisibility || internalTradeLevelVisibility;
+  const updateTradeLevels = setTradeLevelVisibility || setInternalTradeLevelVisibility;
+
+  const handleToggleLevel = useCallback((key, value) => {
+    updateTradeLevels(prev => {
+      const next = typeof value === 'boolean' ? value : !prev[key];
+      return { ...prev, [key]: next };
+    });
+  }, [updateTradeLevels]);
+
+  useEffect(() => {
+    if (selectedTrade !== undefined) {
+      setSelectedMarkerState(selectedTrade);
+    }
+  }, [selectedTrade]);
+
   const isDraggingRef = useRef(false);
+  const clickStartRef = useRef({ x: 0, y: 0, time: 0 });
   const [dragStart, setDragStart] = useState({ x: 0, candleOffset: 0 });
   const crosshairRef = useRef(null);
   const drawFrameId = useRef(null);
@@ -654,6 +694,169 @@ export const CandleStickChart = memo(function CandleStickChart({
       });
     }
 
+    // 9.6 Phase 8 — Clean Trade Levels Overlay (Show/Hide Controls)
+    const {
+      showTradeLevels = false,
+      showEntry = false,
+      showStopLoss = false,
+      showTakeProfit = false,
+      showLabels = false,
+      showSelectedTradeLevels = true,
+    } = activeTradeLevels;
+
+    const targetSelected = selectedTrade || selectedMarkerState;
+    const hasSelected = Boolean(targetSelected);
+
+    if ((showTradeLevels || (showSelectedTradeLevels && hasSelected)) && markers && markers.length > 0) {
+      const tradesToRender = [];
+      const seenIds = new Set();
+
+      // 1. If a trade is selected and showSelectedTradeLevels is ON, it takes priority and is displayed cleanly
+      if (showSelectedTradeLevels && targetSelected) {
+        const matched = markers.find(m => (
+          (targetSelected.id && m.id === targetSelected.id) ||
+          (m.index === targetSelected.index && Math.abs(m.price - targetSelected.price) < 0.0001) ||
+          (targetSelected.time && m.time === targetSelected.time)
+        )) || targetSelected;
+
+        if (matched && matched.sl && matched.tp) {
+          tradesToRender.push({ ...matched, isSelected: true });
+          seenIds.add(matched.id || `${matched.index}-${matched.price}`);
+        }
+      }
+
+      // 2. If Master showTradeLevels is ON, include active/visible trades (capped to recent 3 to prevent clutter)
+      if (showTradeLevels) {
+        const visibleApproved = markers
+          .filter(m => m.sl && m.tp && m.index >= startIndex - 5 && m.index <= endIndex + 5)
+          .sort((a, b) => b.index - a.index);
+
+        for (const m of visibleApproved) {
+          const mId = m.id || `${m.index}-${m.price}`;
+          if (!seenIds.has(mId) && tradesToRender.length < 3) {
+            tradesToRender.push({ ...m, isSelected: false });
+            seenIds.add(mId);
+          }
+        }
+      }
+
+      // Anti-overlap vertical placement tracker for text labels
+      const renderedLabelYs = [];
+      const getAdjustedY = (targetY) => {
+        let y = targetY;
+        for (const prevY of renderedLabelYs) {
+          if (Math.abs(y - prevY) < 14) {
+            y = prevY + (y >= prevY ? 14 : -14);
+          }
+        }
+        y = Math.max(topPadding + 10, Math.min(height - bottomPadding - 10, y));
+        renderedLabelYs.push(y);
+        return y;
+      };
+
+      tradesToRender.forEach(m => {
+        const isTradeSelected = m.isSelected;
+        const canDrawEntry = isTradeSelected ? true : showEntry;
+        const canDrawSl = isTradeSelected ? true : showStopLoss;
+        const canDrawTp = isTradeSelected ? true : showTakeProfit;
+        const canDrawLabels = isTradeSelected ? true : showLabels;
+
+        const startX = Math.max(0, (m.index - viewState.candleOffset) * candleWidth + candleWidth / 2);
+        const lineLen = drawableWidth - 2;
+
+        ctx.save();
+
+        // 1. ENTRY LEVEL
+        if (canDrawEntry && m.price) {
+          const entryY = priceToY(m.price);
+          if (entryY >= topPadding && entryY <= height - bottomPadding) {
+            ctx.beginPath();
+            ctx.strokeStyle = isTradeSelected ? 'rgba(56, 189, 248, 0.85)' : 'rgba(56, 189, 248, 0.45)';
+            ctx.lineWidth = isTradeSelected ? 1.5 : 1;
+            ctx.setLineDash([4, 4]);
+            ctx.moveTo(startX, entryY);
+            ctx.lineTo(lineLen, entryY);
+            ctx.stroke();
+
+            if (canDrawLabels) {
+              const labelY = getAdjustedY(entryY);
+              const labelText = `ENTRY: ${m.price.toFixed(decimals)}${m.lots ? ` (${m.lots}L)` : ''}`;
+              ctx.font = 'bold 9px Inter';
+              const textWidth = ctx.measureText(labelText).width;
+
+              ctx.fillStyle = 'rgba(12, 16, 23, 0.85)';
+              ctx.fillRect(lineLen - textWidth - 8, labelY - 7, textWidth + 6, 14);
+
+              ctx.fillStyle = '#38bdf8';
+              ctx.textAlign = 'right';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(labelText, lineLen - 5, labelY);
+            }
+          }
+        }
+
+        // 2. STOP LOSS LEVEL
+        if (canDrawSl && m.sl) {
+          const slY = priceToY(m.sl);
+          if (slY >= topPadding && slY <= height - bottomPadding) {
+            ctx.beginPath();
+            ctx.strokeStyle = isTradeSelected ? 'rgba(239, 68, 68, 0.9)' : 'rgba(239, 68, 68, 0.5)';
+            ctx.lineWidth = isTradeSelected ? 1.5 : 1;
+            ctx.setLineDash([4, 4]);
+            ctx.moveTo(startX, slY);
+            ctx.lineTo(lineLen, slY);
+            ctx.stroke();
+
+            if (canDrawLabels) {
+              const labelY = getAdjustedY(slY);
+              const labelText = `SL: ${m.sl.toFixed(decimals)}`;
+              ctx.font = 'bold 9px Inter';
+              const textWidth = ctx.measureText(labelText).width;
+
+              ctx.fillStyle = 'rgba(12, 16, 23, 0.85)';
+              ctx.fillRect(lineLen - textWidth - 8, labelY - 7, textWidth + 6, 14);
+
+              ctx.fillStyle = '#ef4444';
+              ctx.textAlign = 'right';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(labelText, lineLen - 5, labelY);
+            }
+          }
+        }
+
+        // 3. TAKE PROFIT LEVEL
+        if (canDrawTp && m.tp) {
+          const tpY = priceToY(m.tp);
+          if (tpY >= topPadding && tpY <= height - bottomPadding) {
+            ctx.beginPath();
+            ctx.strokeStyle = isTradeSelected ? 'rgba(34, 197, 94, 0.9)' : 'rgba(34, 197, 94, 0.5)';
+            ctx.lineWidth = isTradeSelected ? 1.5 : 1;
+            ctx.setLineDash([2, 3]);
+            ctx.moveTo(startX, tpY);
+            ctx.lineTo(lineLen, tpY);
+            ctx.stroke();
+
+            if (canDrawLabels) {
+              const labelY = getAdjustedY(tpY);
+              const labelText = `TP: ${m.tp.toFixed(decimals)}${m.riskReward ? ` (${m.riskReward}R)` : ''}`;
+              ctx.font = 'bold 9px Inter';
+              const textWidth = ctx.measureText(labelText).width;
+
+              ctx.fillStyle = 'rgba(12, 16, 23, 0.85)';
+              ctx.fillRect(lineLen - textWidth - 8, labelY - 7, textWidth + 6, 14);
+
+              ctx.fillStyle = '#22c55e';
+              ctx.textAlign = 'right';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(labelText, lineLen - 5, labelY);
+            }
+          }
+        }
+
+        ctx.restore();
+      });
+    }
+
     // 10. Crosshair & Active Hover Cursor
     if (crosshairRef.current) {
       const { x, y } = crosshairRef.current;
@@ -727,6 +930,9 @@ export const CandleStickChart = memo(function CandleStickChart({
     htfKeyLevels,
     sessionSettings,
     settings,
+    activeTradeLevels,
+    selectedTrade,
+    selectedMarkerState,
   ]);
 
   // Request animation frame throttled draw
@@ -775,10 +981,10 @@ export const CandleStickChart = memo(function CandleStickChart({
     scheduleDraw();
   }, [scheduleDraw]);
 
-  // Drag pan
+  // Drag pan & Marker click selection
   const handleMouseDown = (e) => {
     if (e.button !== 0) return;
-    e.preventDefault();
+    clickStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
     isDraggingRef.current = true;
     setIsDragging(true);
     setDragStart({ x: e.clientX, candleOffset: viewState.candleOffset });
@@ -828,12 +1034,41 @@ export const CandleStickChart = memo(function CandleStickChart({
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e) => {
     if (isDraggingRef.current) {
       isDraggingRef.current = false;
       setIsDragging(false);
       if (containerRef.current) containerRef.current.style.cursor = 'crosshair';
       scheduleDraw();
+    }
+
+    // Detect click (not drag) to toggle trade selection
+    if (e && clickStartRef.current) {
+      const dist = Math.hypot(e.clientX - clickStartRef.current.x, e.clientY - clickStartRef.current.y);
+      const elapsed = Date.now() - clickStartRef.current.time;
+      if (dist < 6 && elapsed < 400) {
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (rect) {
+          const x = e.clientX - rect.left;
+          const candleIdx = Math.floor(viewState.candleOffset + x / viewState.zoom);
+          const matchedMarkers = markersByIndex.get(candleIdx);
+          if (matchedMarkers && matchedMarkers.length > 0) {
+            const picked = matchedMarkers[0];
+            const currentSelected = selectedTrade || selectedMarkerState;
+            const isSame = currentSelected && (
+              currentSelected.id === picked.id ||
+              (currentSelected.index === picked.index && Math.abs(currentSelected.price - picked.price) < 0.0001)
+            );
+            const next = isSame ? null : picked;
+            setSelectedMarkerState(next);
+            onSelectTrade?.(next);
+          } else {
+            setSelectedMarkerState(null);
+            onSelectTrade?.(null);
+          }
+          scheduleDraw();
+        }
+      }
     }
   };
 
@@ -1048,6 +1283,88 @@ export const CandleStickChart = memo(function CandleStickChart({
           >
             <ChevronsRight className="h-3.5 w-3.5" />
           </Button>
+
+          <div className="h-4 w-px bg-white/10 mx-0.5" />
+
+          {/* Trade Levels Visibility Controls */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-7 px-2 gap-1.5 font-medium text-xs rounded-lg transition-colors border ${
+                  activeTradeLevels.showTradeLevels || (activeTradeLevels.showSelectedTradeLevels && (selectedTrade || selectedMarkerState))
+                    ? 'bg-blue-600/25 text-blue-300 border-blue-500/40 hover:bg-blue-600/35'
+                    : 'border-transparent text-gray-200 hover:text-white hover:bg-white/10'
+                }`}
+                title="Show/Hide Entry, Stop Loss & Take Profit Levels"
+              >
+                <Layers className="h-3.5 w-3.5 text-sky-400" />
+                <span className="hidden sm:inline">Trade Levels</span>
+                {activeTradeLevels.showTradeLevels && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-56 bg-[#111827]/95 backdrop-blur-md border border-white/15 text-white shadow-2xl z-50"
+            >
+              <DropdownMenuLabel className="text-xs font-semibold text-gray-300 flex items-center justify-between">
+                <span>Trade Levels</span>
+                <span className="text-[10px] text-gray-400 font-normal">Overlay Controls</span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuCheckboxItem
+                checked={activeTradeLevels.showTradeLevels}
+                onCheckedChange={(val) => handleToggleLevel('showTradeLevels', val)}
+                className="font-semibold text-emerald-400 focus:text-emerald-300 cursor-pointer"
+              >
+                Show Trade Levels
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuCheckboxItem
+                checked={activeTradeLevels.showEntry}
+                onCheckedChange={(val) => handleToggleLevel('showEntry', val)}
+                disabled={!activeTradeLevels.showTradeLevels}
+                className={!activeTradeLevels.showTradeLevels ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+              >
+                Show Entry Levels
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={activeTradeLevels.showStopLoss}
+                onCheckedChange={(val) => handleToggleLevel('showStopLoss', val)}
+                disabled={!activeTradeLevels.showTradeLevels}
+                className={!activeTradeLevels.showTradeLevels ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+              >
+                Show Stop Loss (SL)
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={activeTradeLevels.showTakeProfit}
+                onCheckedChange={(val) => handleToggleLevel('showTakeProfit', val)}
+                disabled={!activeTradeLevels.showTradeLevels}
+                className={!activeTradeLevels.showTradeLevels ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+              >
+                Show Take Profit (TP)
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={activeTradeLevels.showLabels}
+                onCheckedChange={(val) => handleToggleLevel('showLabels', val)}
+                disabled={!activeTradeLevels.showTradeLevels}
+                className={!activeTradeLevels.showTradeLevels ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+              >
+                Show Trade Level Labels
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuCheckboxItem
+                checked={activeTradeLevels.showSelectedTradeLevels}
+                onCheckedChange={(val) => handleToggleLevel('showSelectedTradeLevels', val)}
+                className="cursor-pointer"
+              >
+                Show Selected Trade Levels
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="h-4 w-px bg-white/10 mx-0.5" />
 
