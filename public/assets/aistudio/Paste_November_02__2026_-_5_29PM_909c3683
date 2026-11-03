@@ -1,0 +1,1380 @@
+# MASTER TASK — COMPLETE A-TO-Z PERFORMANCE AUDIT, OPTIMIZATION & RELIABILITY IMPROVEMENTS
+
+## PROJECT: TradeZella Canvas — Next.js + React + Finage API + HTML5 Canvas
+
+Act as a senior Next.js performance engineer, React rendering optimization specialist, quantitative trading systems architect, market-data pipeline engineer, HTML5 Canvas performance expert, and production reliability engineer.
+
+Your mission is to perform a complete end-to-end performance audit and optimization of my EXISTING TradeZella application.
+
+**IMPORTANT: I want ACTUAL CODE OPTIMIZATION across the entire application, not only suggestions, CSS changes, or a written audit report.**
+
+Inspect the current codebase first, measure the actual bottlenecks, fix the verified problems, test everything, and preserve existing functionality.
+
+## MAIN GOALS
+
+1. Make historical market data load efficiently.
+2. Optimize automatic two-day Finage API requests.
+3. Eliminate duplicate/unnecessary API calls.
+4. Make date-range selection fast and reliable.
+5. Correctly merge and cache historical candles.
+6. Make the HTML5 Canvas chart smooth.
+7. Eliminate lag during zoom, pan and scrolling.
+8. Optimize BUY/SELL signal calculations.
+9. Optimize all SMC/ICT indicators and overlays.
+10. Prevent repeated recalculation of unchanged data.
+11. Improve market replay responsiveness.
+12. Make AUTO settings and strategy switching efficient.
+13. Reduce React rerenders.
+14. Optimize trade logs and performance analytics.
+15. Reduce CPU usage and memory consumption.
+16. Improve mobile and tablet performance.
+17. Prevent UI freezing on large historical datasets.
+18. Maintain correct timestamps and trading logic.
+19. Preserve existing Phase 1–9 functionality.
+20. Implement robust error handling, diagnostics and regression tests.
+
+Do not optimize by disabling features, truncating historical data, silently dropping signals, or reducing calculation accuracy.
+
+---
+
+# 1. FIRST — COMPLETE CODEBASE PERFORMANCE AUDIT
+
+Inspect the entire repository.
+
+Pay special attention to:
+
+- `src/app/page.jsx`
+- `src/app/api/finage/route.js`
+- `src/app/api/finage/live/route.js`
+- `src/services/finageService.js`
+- `src/lib/liquidity.js`
+- `src/lib/simulatedMarket.js`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/StrategySettings.jsx`
+- `src/components/tradezella/TopBar.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+- Phase 1–9 signal, candle psychology, SMC, adaptive settings, scalping, swing and risk modules.
+- Existing hooks, contexts, stores, worker files, utilities, caches and API clients.
+
+Inspect all relevant application routes and components, not only the main chart page.
+
+Identify:
+
+- Slow API calls.
+- Duplicate network requests.
+- Request waterfalls.
+- Incorrect date calculations.
+- Repeated indicator calculations.
+- Expensive loops.
+- Repeated array copying/sorting.
+- Unnecessary state updates.
+- Unnecessary React renders.
+- Large DOM trees.
+- Excessive Canvas redraws.
+- Memory leaks.
+- Stale cached data.
+- Slow replay operations.
+- Expensive settings changes.
+- Large JavaScript bundles.
+- UI-thread blocking calculations.
+
+Use available profiling tools and representative historical datasets.
+
+Record baseline measurements before making changes.
+
+Do not blindly add memoization or caching everywhere.
+
+Optimize actual hotspots.
+
+---
+
+# 2. FINAGE API PERFORMANCE OPTIMIZATION
+
+Optimize the complete Finage historical-data pipeline.
+
+## Automatic Two-Day API Chunking
+
+My application supports selecting a historical date range and automatically dividing it into maximum-two-day requests.
+
+Preserve this functionality.
+
+Example:
+
+Start: October 10, 2026, 00:00 UTC.
+
+End: October 20, 2026, 00:00 UTC, exclusive.
+
+Generate:
+
+1. October 10–12.
+2. October 12–14.
+3. October 14–16.
+4. October 16–18.
+5. October 18–20.
+
+Five API chunks.
+
+If the date picker treats October 20 as an inclusive calendar day, fetch through October 21 00:00 UTC, using six chunks.
+
+Never omit the final selected day.
+
+## Required Optimizations
+
+- Generate chunks deterministically.
+- Avoid overlapping requests except where required by a verified provider API contract.
+- Deduplicate identical in-flight requests.
+- Use bounded concurrency.
+- Support a configurable concurrency limit.
+- Start with a maximum of three concurrent requests, subject to the provider's actual limits.
+- Avoid unlimited parallel requests.
+- Retry transient failures with bounded exponential backoff.
+- Respect rate limits.
+- Handle API pagination and candle limits.
+- Cache successful completed chunks.
+- Reuse cached chunks for overlapping date selections.
+- Fetch only missing chunks.
+- Prevent stale requests from replacing new selections.
+- Avoid redundant requests during React rerenders.
+- Handle empty or partially returned chunks correctly.
+
+Do not hardcode the five-request example.
+
+Support arbitrary date ranges.
+
+### Example of cache reuse
+
+First selection:
+
+October 10–20.
+
+Second selection:
+
+October 12–22.
+
+The system should reuse compatible already cached chunks and fetch only missing ranges.
+
+Do not refetch the entire historical period unnecessarily.
+
+Ensure cache keys include all relevant request parameters.
+
+---
+
+# 3. ADVANCED HISTORICAL CANDLE CACHE
+
+Create or improve a centralized historical market-data cache.
+
+Use a key conceptually equivalent to:
+
+`provider + symbol + timeframe + UTC start + UTC end + data version`
+
+Where applicable, include session/adjustment parameters that affect the returned data.
+
+Support:
+
+- In-flight request deduplication.
+- Completed-chunk caching.
+- Cache expiration.
+- Controlled refresh.
+- Cache invalidation.
+- Bounded cache size.
+- Least-recently-used eviction where appropriate.
+- Safe concurrent access.
+- Historical data provenance.
+
+Use the existing caching architecture if it is already suitable.
+
+Avoid adding multiple overlapping caches that become inconsistent.
+
+### Critical behavior
+
+When changing only the chart zoom level:
+
+Do not fetch market data again.
+
+When opening Strategy Settings:
+
+Do not fetch market data again.
+
+When opening Trade History:
+
+Do not fetch market data again unless the required data is genuinely missing.
+
+When switching chart overlay visibility:
+
+Do not fetch market data again.
+
+When changing a calculation-only strategy setting:
+
+Reuse existing market candles and recalculate only affected analytical results.
+
+When changing the selected date range:
+
+Reuse overlapping cached historical chunks.
+
+---
+
+# 4. EPOCH TIMESTAMP AND CANDLE MERGING OPTIMIZATION
+
+Ensure all timestamps follow the actual Finage API contract.
+
+Normalize timestamps internally into a consistent UTC representation, preferably epoch milliseconds.
+
+Validate:
+
+- Unix seconds.
+- Unix milliseconds.
+- ISO timestamps if supported.
+- Timeframe boundaries.
+- Correct chronological ordering.
+
+Avoid repeated timestamp conversions throughout rendering and calculation loops.
+
+## Candle Merging
+
+Optimize merging:
+
+1. Collect all completed API results.
+2. Normalize candles once.
+3. Validate OHLC data.
+4. Deduplicate by symbol, timeframe and timestamp.
+5. Resolve conflicting duplicate values deterministically.
+6. Sort efficiently.
+7. Preserve complete requested history.
+8. Report unexpected gaps.
+9. Distinguish market closures from missing candles.
+10. Publish one coherent dataset.
+
+Avoid repeatedly sorting the entire history after every incoming chunk.
+
+Prefer merging sorted chunk results efficiently where possible.
+
+Do not invent candles to fill real-data gaps.
+
+### Important
+
+Historical API chunk boundaries must not reset:
+
+- Indicators.
+- Liquidity structure.
+- Order Blocks.
+- FVG detection.
+- Waterfall sequences.
+- Market regime history.
+- Trade state.
+- Replay calculations.
+
+---
+
+# 5. DATE RANGE PICKER OPTIMIZATION
+
+Optimize the complete date-selection workflow.
+
+Support:
+
+- Fast date selection.
+- Custom date ranges.
+- Quick date presets.
+- Clear selected-range display.
+- Accurate timezone handling.
+- Inclusive calendar-day semantics where intended.
+- Proper loading progress.
+- Request cancellation or stale-response suppression.
+- Cache reuse.
+- Smooth chart updates.
+
+## Required UX
+
+When the user selects a new date range:
+
+1. Validate the range.
+2. Determine required chunks.
+3. Check cached chunks.
+4. Request missing chunks.
+5. Show real loading progress.
+6. Merge and validate results.
+7. Update the chart using the completed dataset.
+8. Run required indicator calculations.
+9. Update signal history and replay controls.
+
+Avoid multiple independent components triggering the same fetch.
+
+### Loading Progress
+
+Display meaningful progress such as:
+
+- Completed chunks.
+- Total chunks.
+- Cached chunks reused.
+- Total validated candles.
+- Failed/retrying chunks.
+
+Never display 100% completion while required requests remain unresolved.
+
+Do not show incomplete history as complete.
+
+---
+
+# 6. HTML5 CANVAS CHART PERFORMANCE — TOP PRIORITY
+
+**This is one of the most important optimization areas.**
+
+My candlestick chart must remain smooth during:
+
+- Zoom.
+- Pan.
+- Scroll.
+- Crosshair movement.
+- Replay.
+- Timeframe selection.
+- Date selection.
+- Signal selection.
+- Settings changes.
+
+Inspect the current Canvas rendering pipeline deeply.
+
+## 6.1 Viewport-Based Rendering
+
+Do not render every historical candle on every frame.
+
+Calculate the visible candle-index range.
+
+Render only visible candles, plus a small justified overscan buffer.
+
+Keep the complete historical dataset available in memory/cache.
+
+Do not truncate historical data just to improve Canvas speed.
+
+The user must still be able to navigate from the first available candle to the last available candle.
+
+## 6.2 Rendering Layers
+
+Separate visual responsibilities logically:
+
+- Background/grid.
+- Candlesticks.
+- Volume.
+- Market structure.
+- Liquidity.
+- Order Blocks.
+- FVG.
+- Fibonacci.
+- Signal markers.
+- Entry/SL/TP.
+- Crosshair.
+- Selected-trade highlighting.
+
+Use separate logical or physical rendering layers where beneficial.
+
+Static layers should not be recalculated unnecessarily when only the crosshair changes.
+
+## 6.3 Crosshair Optimization
+
+Mouse movement should not trigger complete trading-strategy recalculation.
+
+Update only the crosshair and related tooltip.
+
+Avoid expensive React state updates for every pointer movement.
+
+Use frame-based scheduling where suitable.
+
+## 6.4 Device Pixel Ratio
+
+Handle high-DPI displays correctly.
+
+- Proper backing-canvas dimensions.
+- Correct CSS dimensions.
+- Correct coordinate scaling.
+- No unnecessary resizing.
+- Safe device-pixel-ratio handling.
+
+Do not repeatedly reset Canvas dimensions during normal chart updates.
+
+## 6.5 Canvas Draw Optimization
+
+- Batch similar drawing operations.
+- Minimize repeated context state changes.
+- Avoid excessive text measurement.
+- Cache reusable text/layout calculations.
+- Avoid creating expensive graphics objects every frame.
+- Use efficient visible-range calculations.
+- Skip offscreen indicators.
+- Avoid unnecessary shadows and expensive effects.
+- Use appropriate requestAnimationFrame scheduling.
+
+Do not compromise price accuracy.
+
+---
+
+# 7. CHART ZOOM, PAN AND SCROLL PERFORMANCE
+
+Improve chart interaction responsiveness.
+
+## Zoom
+
+- Smooth mouse-wheel zoom.
+- Zoom around the cursor where supported.
+- Stable candle positioning.
+- Respect minimum/maximum zoom.
+- Avoid repeated full indicator calculations.
+- No chart jumps.
+
+## Pan
+
+- Smooth horizontal drag.
+- Stable time-to-pixel mapping.
+- Correct candle indexing.
+- No accidental chart reset.
+- Efficient visible-range updates.
+
+## Replay
+
+- Smooth candle updates.
+- Stable viewport behavior.
+- No unnecessary chart remount.
+- No full-history rebuild on every frame.
+
+## Mobile
+
+- Smooth touch panning.
+- Pinch zoom where supported.
+- Avoid unwanted page scrolling during chart gestures.
+- Prevent touch event leaks.
+- Keep performance acceptable on mid-range devices.
+
+Use accurate coordinate calculations.
+
+Do not make chart interactions visually smooth by displaying incorrect candle positions.
+
+---
+
+# 8. ENTRY, SL AND TP OVERLAY OPTIMIZATION
+
+My chart previously showed too many overlapping ENTRY, Stop Loss and Take Profit labels.
+
+Preserve or implement display-only visibility controls.
+
+Support:
+
+- Show Entry.
+- Show SL.
+- Show TP.
+- Show Trade-Level Labels.
+- Show Selected Trade Levels.
+- Master Show/Hide Trade Levels.
+
+## Default Behavior
+
+Use a clean chart.
+
+- BUY/SELL primary markers visible.
+- Historical Entry/SL/TP overlays hidden by default for new configurations.
+- Selected-trade levels optionally visible.
+- Existing saved visibility preferences preserved.
+
+### Performance
+
+Do not render hundreds of historical SL/TP lines when they are hidden.
+
+Use viewport and selected-trade filtering.
+
+Prevent overlapping labels.
+
+Do not recalculate actual stop-loss or take-profit values when visibility changes.
+
+**Visualization state must remain separate from trading calculation state.**
+
+---
+
+# 9. BUY/SELL SIGNAL ENGINE PERFORMANCE
+
+Optimize every active signal detector.
+
+Including:
+
+- Liquidity sweeps.
+- BOS.
+- CHoCH.
+- MSS.
+- Order Blocks.
+- FVG/IFVG.
+- Fibonacci.
+- Premium/Discount zones.
+- Candle psychology.
+- Momentum.
+- Waterfall.
+- Scalping.
+- Intraday.
+- Swing.
+- Unified scoring.
+- Conflict resolution.
+
+## Required Improvements
+
+- Avoid multiple strategies independently calculating identical ATR values.
+- Reuse confirmed swing structures.
+- Reuse candle measurements.
+- Cache unchanged indicator series.
+- Use incremental state updates where valid.
+- Avoid repeatedly scanning full history.
+- Optimize active-zone lookups.
+- Avoid repeated duplicate detection.
+- Avoid repeated signal sorting.
+- Process only newly available candles when possible.
+
+## Important
+
+Incremental calculations and full-history calculations must produce equivalent confirmed signal events for the same data and information cutoff.
+
+Do not introduce:
+
+- Look-ahead bias.
+- Repainting.
+- Missing valid BUY/SELL signals.
+- Incorrect historical confirmation.
+- Artificial signal suppression.
+
+Optimization must preserve algorithm correctness.
+
+---
+
+# 10. SMART MONEY CONCEPTS ENGINE OPTIMIZATION
+
+Optimize Phase 3 calculations.
+
+### Market Structure
+
+Use efficient confirmed-swing indexing.
+
+Avoid searching every earlier candle repeatedly for the same structure.
+
+### Liquidity
+
+Maintain efficient active liquidity pool structures.
+
+Update only affected pools as new candles arrive.
+
+### Order Blocks
+
+- Track confirmed active zones.
+- Track mitigation.
+- Track invalidation.
+- Avoid rescanning all historical zones for each candle where a more efficient algorithm is possible.
+
+### FVG
+
+- Efficient three-candle detection.
+- Incremental mitigation updates.
+- Active-zone indexing.
+- Fast visible-zone selection.
+
+### Fibonacci
+
+- Recalculate anchors only when confirmed relevant structure changes.
+- Avoid recomputing identical retracement levels every render.
+
+### Premium/Discount
+
+- Reuse active confirmed dealing ranges.
+- Update only when their structural anchors or validity change.
+
+Do not drop important historical indicators merely to improve speed.
+
+---
+
+# 11. CANDLE PSYCHOLOGY AND WATERFALL OPTIMIZATION
+
+Optimize Phase 2.
+
+Reuse:
+
+- Candle body.
+- Wick sizes.
+- ATR.
+- Displacement.
+- Closing strength.
+- Directional sequence.
+- Rejection calculations.
+
+Avoid calculating the same measurements independently inside multiple strategy functions.
+
+## Waterfall
+
+Use an efficient sequence state machine.
+
+Track:
+
+- Sequence ID.
+- Direction.
+- Impulse.
+- Continuation.
+- Pullback.
+- Exhaustion.
+- Invalidation.
+
+Update existing sequences incrementally.
+
+Do not repeatedly recreate entire waterfall histories during replay.
+
+Do not generate duplicate BUY/SELL signals during recalculation.
+
+---
+
+# 12. MARKET-ADAPTIVE SETTINGS PERFORMANCE
+
+Optimize Phase 4 AUTO/HYBRID/MANUAL behavior.
+
+Current adaptive settings should not cause excessive recalculation.
+
+### AUTO
+
+Recalculate effective settings only when relevant market regime or configuration changes justify it.
+
+### HYBRID
+
+Respect locked settings while updating unlocked parameters.
+
+### MANUAL
+
+Do not run unnecessary adaptive calculations.
+
+## Settings Snapshots
+
+Use stable, versioned settings snapshots.
+
+Avoid creating a new configuration identity on every React render when values are unchanged.
+
+### Important
+
+Opening a settings drawer must not regenerate all trade signals.
+
+Changing a display-only setting must not rerun strategy analysis.
+
+Changing a strategy-affecting setting should invalidate only the calculations that depend on it.
+
+Maintain historical decision-time settings.
+
+---
+
+# 13. REACT RENDERING OPTIMIZATION
+
+Audit every important component.
+
+Identify:
+
+- Unnecessary rerenders.
+- Large parent components managing unrelated state.
+- Expensive derived values inside render.
+- Unstable callback identities.
+- Recreated objects/arrays.
+- Repeated filtering and sorting.
+- Context updates causing entire application rerenders.
+
+Apply appropriate improvements:
+
+- Component separation.
+- React.memo where profiling justifies it.
+- useMemo for expensive stable derived data.
+- useCallback where stable callbacks matter.
+- Stable references.
+- Efficient selectors.
+- Local UI state isolation.
+- Batching updates where appropriate.
+- Lazy loading noncritical sections.
+
+Avoid excessive or unnecessary memoization.
+
+## Critical Rule
+
+Chart rendering and trading calculations must not be triggered by:
+
+- Opening a dropdown.
+- Hovering a button.
+- Opening signal details.
+- Switching a display tab.
+- Changing a purely visual setting.
+
+Keep the main chart mounted when opening or closing other panels whenever practical.
+
+---
+
+# 14. NEXT.JS APPLICATION OPTIMIZATION
+
+Audit the complete Next.js architecture.
+
+Check:
+
+- Client and server component boundaries.
+- Unnecessary client-side JavaScript.
+- Heavy imports.
+- Dynamic imports.
+- Route handlers.
+- Data serialization.
+- Duplicate API fetching.
+- Environment variable handling.
+- Server-side caching.
+- Bundle splitting.
+- Production build output.
+
+Keep Finage API credentials server-side.
+
+Do not expose private keys through frontend bundles.
+
+Avoid transferring very large duplicated datasets between components or server/client boundaries.
+
+Use efficient payload representations only when compatible with existing consumers.
+
+Do not introduce a new framework or state library simply for performance.
+
+Optimize the existing implementation.
+
+---
+
+# 15. WEB WORKER / BACKGROUND CALCULATION OPTIMIZATION
+
+If profiling shows trading calculations are blocking the browser's main UI thread, evaluate moving expensive pure computations to Web Workers.
+
+Possible candidates:
+
+- Historical indicator analysis.
+- SMC processing.
+- Large signal calculations.
+- Multi-timeframe analysis.
+- Backtesting.
+- Performance metrics.
+
+### Worker Requirements
+
+- Keep calculation outputs deterministic.
+- Use structured-clone-compatible data.
+- Avoid unnecessary large-data transfers.
+- Use transferable buffers only when safe and beneficial.
+- Support cancellation or stale-job rejection.
+- Version jobs by dataset and settings.
+- Keep the UI responsive.
+- Provide a safe fallback where required.
+
+Do not move everything into workers without benchmarking.
+
+Do not introduce inconsistent duplicate calculation engines.
+
+OffscreenCanvas should only be considered if supported and demonstrably beneficial.
+
+Preserve the existing chart renderer unless a narrowly scoped migration is justified.
+
+---
+
+# 16. HISTORICAL REPLAY PERFORMANCE
+
+Optimize the entire replay system.
+
+Support:
+
+- Play.
+- Pause.
+- Step Forward.
+- Step Backward.
+- Jump to Start.
+- Jump to End.
+- Adjustable speed.
+- Seeking to a selected timestamp.
+
+## Required Improvements
+
+- Avoid full-history recomputation after every step.
+- Reuse cached indicator state.
+- Reuse confirmed historical events.
+- Maintain deterministic replay state.
+- Update only necessary UI.
+- Keep playback responsive while analysis is running.
+- Cancel obsolete work when seeking or switching datasets.
+
+Consider efficient checkpoints or snapshots if backward seeking is expensive.
+
+Snapshots must be reconstructible and tied to the correct data/settings versions.
+
+### Important
+
+Never display future signals before their historical confirmation time.
+
+Never show future trade outcomes during earlier replay.
+
+Maintain correct historical adaptive settings and SL/TP states.
+
+---
+
+# 17. LARGE HISTORICAL DATASET HANDLING
+
+The application must support significantly larger historical datasets than a single small API response.
+
+Design for:
+
+- Thousands of candles.
+- Tens of thousands of candles.
+- Larger datasets when memory and provider access permit.
+
+Do not impose arbitrary silent truncation.
+
+Use:
+
+- Efficient arrays.
+- Incremental processing.
+- Viewport rendering.
+- Virtualized lists.
+- Bounded caches.
+- Worker-based computation when justified.
+- Memory-aware retention policies.
+
+### Data Precision
+
+Do not sacrifice numerical precision in trade-price calculations simply to save memory.
+
+If typed arrays are introduced, evaluate precision requirements and preserve the original data contract where needed.
+
+Do not use approximate candle data to generate exact-looking historical trading results.
+
+---
+
+# 18. SIGNAL CENTER & TRADE HISTORY OPTIMIZATION
+
+Optimize Phase 7 and Phase 9 interfaces.
+
+## Signal Center
+
+- Avoid rerendering every signal card when one signal changes.
+- Use stable signal IDs.
+- Cache derived scores and summaries.
+- Optimize sorting and filtering.
+- Virtualize long lists where beneficial.
+- Preserve selected signal state.
+
+## Trade History
+
+- Efficient sorting.
+- Efficient filtering.
+- Pagination/virtualization.
+- CSV export without blocking the chart.
+- Correct timestamp formatting.
+- Correct trading style separation.
+
+Do not recalculate all historical strategies just to display trade history.
+
+---
+
+# 19. ANALYTICS & BACKTESTING OPTIMIZATION
+
+Optimize Phase 8/9 performance analytics.
+
+Including:
+
+- Equity curve.
+- Drawdown.
+- Win rate.
+- Profit factor.
+- Expectancy.
+- R multiples.
+- BUY/SELL comparisons.
+- Strategy breakdown.
+- Scalping/Intraday/Swing breakdown.
+- Market regime analysis.
+
+## Requirements
+
+- Cache derived metrics by dataset, execution assumptions, settings and filter version.
+- Avoid recalculating all statistics on every UI render.
+- Recalculate only when relevant results or filters change.
+- Keep large tables responsive.
+- Use efficient chart data aggregation.
+- Lazy-load expensive analytics views where appropriate.
+
+Avoid incorrect performance statistics caused by caching outdated execution results.
+
+Never use visual downsampling to change actual underlying financial calculations.
+
+---
+
+# 20. API ERROR, RETRY & STALE DATA HANDLING
+
+Build reliable request lifecycle management.
+
+Handle:
+
+- Network failures.
+- Timeouts.
+- Finage rate limits.
+- Invalid API responses.
+- Missing candles.
+- Partially available date ranges.
+- Invalid symbol/timeframe combinations.
+- Unauthorized data permissions.
+- Request cancellation.
+- Stale responses.
+
+### Critical
+
+If the user switches from XAUUSD to EURUSD before the old request finishes, old XAUUSD data must not overwrite the EURUSD chart.
+
+Use request generation IDs, cancellation or equivalent safe stale-response protection.
+
+Deduplicate requests at the appropriate layer.
+
+Never create uncontrolled retry loops.
+
+Show clear error states.
+
+Do not silently replace real data with simulated candles.
+
+---
+
+# 21. LOADING & PERCEIVED PERFORMANCE
+
+Improve UI feedback.
+
+Use:
+
+- Proper skeletons.
+- Meaningful fetch progress.
+- Chunk completion counts.
+- Nonblocking loading indicators.
+- Clear empty states.
+- Retry controls.
+- Data-source status.
+- Progressive rendering only when correctness and completeness states remain clear.
+
+Do not freeze the entire interface while fetching historical data.
+
+Keep existing validated content visible when appropriate, but clearly distinguish it from newly requested data.
+
+Never label stale data as belonging to the currently selected symbol/date range.
+
+Avoid full-page loading flashes for small display-only interactions.
+
+---
+
+# 22. RESPONSIVE PERFORMANCE OPTIMIZATION
+
+Test:
+
+- Desktop.
+- Laptop.
+- Tablet.
+- Mobile.
+
+Ensure:
+
+- Canvas dimensions update efficiently.
+- ResizeObserver or equivalent resize handling does not create loops.
+- No constant Canvas resizing.
+- No unnecessary chart remounting.
+- Touch gestures remain smooth.
+- Large tables remain contained.
+- Settings drawers remain responsive.
+- Signal selection is fast.
+- Mobile devices do not render unnecessary desktop-only panel content.
+
+Use compact responsive UI.
+
+Do not reduce trading data accuracy on mobile.
+
+---
+
+# 23. MEMORY LEAK PREVENTION
+
+Audit:
+
+- Event listeners.
+- Resize observers.
+- Animation frames.
+- Intervals.
+- Subscriptions.
+- Abort controllers.
+- Workers.
+- Chart references.
+- Cached arrays.
+- Signal history references.
+- Replay callbacks.
+- DOM and Canvas resources.
+
+Ensure proper cleanup.
+
+Avoid:
+
+- Duplicate event listeners.
+- Unbounded caches.
+- Detached DOM references.
+- Workers left running.
+- Repeated animation loops.
+- Stale closures.
+- Persistent references to abandoned historical datasets.
+
+Test repeated:
+
+- Symbol switching.
+- Timeframe switching.
+- Date-range switching.
+- Replay restart.
+- Opening/closing settings.
+- Mount/unmount of chart components.
+
+Memory usage should stabilize after repeated workflows rather than growing without bound.
+
+---
+
+# 24. PRODUCTION DIAGNOSTICS
+
+Add development-only performance diagnostics.
+
+Track:
+
+- Finage requests sent.
+- Cache hits/misses.
+- Duplicate requests prevented.
+- API duration.
+- Candle normalization duration.
+- Candle merge duration.
+- Indicator calculation duration.
+- Signal calculation duration.
+- Chart rendering duration.
+- Replay step duration.
+- React render count.
+- Memory usage where measurable.
+- Data consistency warnings.
+
+### Example Diagnostic Output
+
+Dataset: XAUUSD 5m.
+
+Selected Range: 10 days.
+
+API Chunks: 5.
+
+Cache Reused: 3.
+
+New Requests: 2.
+
+Candle Count: Actual result.
+
+Chart Render Duration: Measured result.
+
+Signal Calculation Duration: Measured result.
+
+These fields must show actual measurements, never hardcoded numbers.
+
+Keep diagnostics disabled or lightweight in production.
+
+Do not log API keys or private configuration.
+
+---
+
+# 25. PERFORMANCE TARGETS & BENCHMARKING
+
+Establish measurable performance goals.
+
+Use representative datasets and actual supported test environments.
+
+### Suggested Targets
+
+Treat these as engineering targets to evaluate, not guaranteed performance figures.
+
+1. Eliminate unnecessary duplicate Finage requests.
+2. Make repeated cached date-range selections substantially faster than cold loads.
+3. Keep chart zoom/pan close to 60 FPS on a representative desktop when feasible.
+4. Maintain usable mobile chart interactions.
+5. Avoid long main-thread blocking tasks during ordinary chart navigation.
+6. Reduce unnecessary strategy recalculations.
+7. Keep replay responsive at supported playback speeds.
+8. Ensure memory usage stabilizes after repeated navigation.
+9. Avoid full chart remounts for display-only setting changes.
+10. Preserve exact signal and trade results after optimization.
+
+Measure:
+
+- Cold-load time.
+- Warm-load time.
+- API latency.
+- Render duration.
+- Signal computation duration.
+- Replay throughput.
+- Main-thread long tasks.
+- Peak memory.
+- Bundle size.
+
+Report actual before/after improvements with the hardware, browser, timeframe and candle count used.
+
+Do not claim a specific percentage improvement without measurement.
+
+---
+
+# 26. COMPREHENSIVE REGRESSION TESTING
+
+Implement tests that verify both performance and correctness.
+
+## Market Data Tests
+
+1. Two-day chunk generation.
+2. Inclusive end-date semantics.
+3. Epoch normalization.
+4. Sorted candle merging.
+5. Duplicate removal.
+6. Missing candle handling.
+7. Cache reuse.
+8. Request deduplication.
+9. Rate-limit handling.
+10. Stale-request cancellation.
+
+## Chart Tests
+
+11. Initial rendering.
+12. Zoom.
+13. Pan.
+14. Crosshair.
+15. Time axis.
+16. Price axis.
+17. Overlay visibility.
+18. Signal selection.
+19. Entry/SL/TP toggles.
+20. Full historical range access.
+
+## Strategy Tests
+
+21. BUY detection unchanged.
+22. SELL detection unchanged.
+23. Candle psychology unchanged.
+24. Waterfall unchanged.
+25. SMC calculations unchanged.
+26. Adaptive settings unchanged.
+27. Scalping unchanged.
+28. Intraday unchanged.
+29. Swing unchanged.
+30. Signal ranking unchanged.
+
+## Replay Tests
+
+31. Play/pause.
+32. Forward/backward.
+33. Jump to timestamp.
+34. Correct signal confirmation timing.
+35. No future-data leakage.
+36. Deterministic results.
+37. Correct trade states.
+38. No unnecessary recalculation.
+
+## UI Tests
+
+39. Settings.
+40. Signal Center.
+41. Trade History.
+42. Analytics.
+43. Date selection.
+44. Mobile responsiveness.
+45. Tablet responsiveness.
+46. Loading/error states.
+47. Keyboard interactions.
+48. Settings persistence.
+
+## Performance Tests
+
+49. Large historical datasets.
+50. Repeated date changes.
+51. Repeated symbol changes.
+52. Repeated timeframe changes.
+53. Continuous replay.
+54. Repeated settings interactions.
+55. Memory leak checks.
+56. React rerender checks.
+57. Chart interaction responsiveness.
+58. API caching benchmarks.
+
+Also test malformed data, empty datasets and insufficient indicator warm-up history.
+
+---
+
+# 27. PRESERVE ALL EXISTING FUNCTIONALITY
+
+**This is a strict requirement.**
+
+Do not break:
+
+- Historical Finage API fetching.
+- Two-day API chunking.
+- Date range selection.
+- Candle merging.
+- UTC epoch timestamps.
+- Chart zoom/pan.
+- Candle crosshair.
+- Historical replay.
+- Candle psychology.
+- Waterfall signals.
+- BOS/CHoCH/MSS.
+- Order Blocks.
+- FVG/IFVG.
+- Liquidity.
+- Fibonacci.
+- Market-adaptive settings.
+- AUTO/HYBRID/MANUAL modes.
+- Scalping.
+- Intraday.
+- Swing.
+- Unified signal scoring.
+- Conflict resolution.
+- BUY/SELL markers.
+- Risk management.
+- Entry/SL/TP.
+- Partial exits.
+- Trailing stops.
+- Trade logs.
+- CSV export.
+- Analytics.
+- Saved settings.
+- Responsive design.
+
+Before major changes, record deterministic baseline outputs on fixed datasets.
+
+After optimization, compare:
+
+- Candle count.
+- Candle timestamps.
+- OHLC values.
+- Signal IDs.
+- Signal direction.
+- Confirmation timestamps.
+- Score.
+- Entry/SL/TP.
+- Simulated trade events.
+- Trade results.
+
+Any differences must be traced to an explicitly documented bug fix or intentional behavior change.
+
+Performance optimization must not silently alter trading behavior.
+
+---
+
+# 28. IMPLEMENTATION PRIORITY
+
+Follow this order.
+
+## P0 — Critical Data & Chart Performance
+
+1. Audit the codebase and profile bottlenecks.
+2. Fix duplicate Finage requests.
+3. Optimize two-day API chunk fetching.
+4. Optimize historical caching.
+5. Optimize timestamp normalization and merging.
+6. Optimize visible-candle Canvas rendering.
+7. Fix excessive Entry/SL/TP overlays.
+8. Fix chart freezing and excessive redraws.
+
+## P1 — Calculation & Replay Performance
+
+9. Optimize ATR and shared indicators.
+10. Optimize SMC and liquidity calculations.
+11. Optimize candle psychology and waterfall.
+12. Optimize scalping/intraday/swing calculations.
+13. Optimize unified signal scoring and deduplication.
+14. Optimize AUTO settings recalculation.
+15. Optimize replay state and seeking.
+16. Introduce workers only where profiling justifies them.
+
+## P2 — React & UI Performance
+
+17. Reduce unnecessary rerenders.
+18. Optimize state management.
+19. Optimize Signal Center.
+20. Optimize settings drawers.
+21. Optimize Trade History.
+22. Optimize analytics.
+23. Optimize responsive layouts.
+24. Improve loading and error states.
+
+## P3 — Reliability & Production Verification
+
+25. Eliminate memory leaks.
+26. Add performance diagnostics.
+27. Run full regression tests.
+28. Benchmark large historical datasets.
+29. Run lint, type-check and production build.
+30. Fix verified regressions.
+31. Document actual performance improvements.
+
+Do not stop after completing only a few easy optimizations.
+
+Cover the entire application in this phase.
+
+---
+
+# 29. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rebuild the application from scratch.
+- Replace Finage.
+- Replace the Canvas chart unnecessarily.
+- Remove trading strategies.
+- Disable indicators for speed without user selection.
+- Delete historical candles to improve performance.
+- Truncate valid history silently.
+- Change BUY/SELL results unintentionally.
+- Change signal timestamps.
+- Reintroduce repainting.
+- Use future candles.
+- Alter historical trade outcomes through caching.
+- Change stop-loss or targets unintentionally.
+- Break current settings.
+- Break automatic date fetching.
+- Introduce infinite retry loops.
+- Introduce race conditions.
+- Introduce stale signal caches.
+- Use unbounded memory caches.
+- Move everything into Web Workers without justification.
+- Add large unnecessary dependencies.
+- Add fake loading performance metrics.
+- Claim performance improvements without benchmarking.
+- Skip regression testing.
+- Stop after UI-only optimization.
+
+---
+
+# 30. FINAL DELIVERABLES
+
+After completing all changes, provide:
+
+1. Complete performance audit findings.
+2. Root causes of slow loading.
+3. Root causes of unnecessary API requests.
+4. Finage fetching improvements.
+5. Candle caching and merging improvements.
+6. Date-range optimization details.
+7. Chart rendering improvements.
+8. Zoom/pan/crosshair improvements.
+9. Signal calculation optimizations.
+10. SMC and waterfall calculation improvements.
+11. Replay optimization details.
+12. AUTO settings performance improvements.
+13. React rerender improvements.
+14. Trade Log and analytics improvements.
+15. Memory leak fixes.
+16. Files created and modified.
+17. Before/after benchmark measurements.
+18. API request-count comparison.
+19. Signal consistency verification.
+20. Replay consistency verification.
+21. Responsive performance verification.
+22. Tests executed and actual results.
+23. Production build result.
+24. Any unresolved issues and their measured impact.
+
+## FINAL OBJECTIVE
+
+Transform TradeZella Canvas into a fast, stable, scalable and production-quality trading analysis platform.
+
+The application must efficiently handle large historical datasets, multiple Finage requests, sophisticated trading strategies, dynamic chart overlays, historical replay, adaptive settings, comprehensive trade analytics and responsive interfaces.
+
+**The chart should feel smooth, historical data should load efficiently, settings should react immediately, and strategy calculations should not freeze the application.**
+
+Optimize the complete system from API fetching to final pixels rendered.
+
+**Most important: Preserve the correctness of every existing trading algorithm, signal, timestamp, risk calculation and historical trade result.**
+
+Implement the actual optimizations, verify them against baseline behavior, and report measured improvements.
+
+Do not provide only a plan. Complete the optimization work within the existing project.

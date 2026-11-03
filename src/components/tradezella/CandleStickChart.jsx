@@ -167,44 +167,46 @@ export const CandleStickChart = memo(function CandleStickChart({
       crosshair: isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
       bullishBreaker: 'rgba(38, 166, 154, 0.12)',
       bearishBreaker: 'rgba(239, 83, 80, 0.12)',
-      bullishBreakerBorder: 'rgba(38, 166, 154, 0.6)',
-      bearishBreakerBorder: 'rgba(239, 83, 80, 0.6)',
-      bullishMitigation: 'rgba(38, 166, 154, 0.15)',
-      bearishMitigation: 'rgba(239, 83, 80, 0.15)',
-      bullishMitigationBorder: 'rgba(38, 166, 154, 0.6)',
-      bearishMitigationBorder: 'rgba(239, 83, 80, 0.6)',
-      bullishOb: 'rgba(38, 166, 154, 0.16)',
-      bearishOb: 'rgba(239, 83, 80, 0.16)',
-      bullishObBorder: 'rgba(38, 166, 154, 0.65)',
-      bearishObBorder: 'rgba(239, 83, 80, 0.65)',
-      bullishCob: 'rgba(16, 185, 129, 0.16)',
-      bearishCob: 'rgba(239, 83, 80, 0.16)',
-      bullishCobBorder: 'rgba(16, 185, 129, 0.65)',
-      bearishCobBorder: 'rgba(239, 83, 80, 0.65)',
+      bullishBreaker: 'rgba(38, 166, 154, 0.08)',
+      bearishBreaker: 'rgba(239, 83, 80, 0.08)',
+      bullishBreakerBorder: 'rgba(38, 166, 154, 0.4)',
+      bearishBreakerBorder: 'rgba(239, 83, 80, 0.4)',
+      bullishMitigation: 'rgba(38, 166, 154, 0.08)',
+      bearishMitigation: 'rgba(239, 83, 80, 0.08)',
+      bullishMitigationBorder: 'rgba(38, 166, 154, 0.4)',
+      bearishMitigationBorder: 'rgba(239, 83, 80, 0.4)',
+      bullishOb: 'rgba(38, 166, 154, 0.08)',
+      bearishOb: 'rgba(239, 83, 80, 0.08)',
+      bullishObBorder: 'rgba(38, 166, 154, 0.4)',
+      bearishObBorder: 'rgba(239, 83, 80, 0.4)',
+      bullishCob: 'rgba(16, 185, 129, 0.08)',
+      bearishCob: 'rgba(239, 83, 80, 0.08)',
+      bullishCobBorder: 'rgba(16, 185, 129, 0.4)',
+      bearishCobBorder: 'rgba(239, 83, 80, 0.4)',
       mssArrow: '#facc15',
-      bullishFvg: 'rgba(38, 166, 154, 0.12)',
-      bearishFvg: 'rgba(239, 83, 80, 0.12)',
-      bullishFvgBorder: 'rgba(38, 166, 154, 0.4)',
-      bearishFvgBorder: 'rgba(239, 83, 80, 0.4)',
-      imbalanceZone: 'rgba(168, 85, 247, 0.12)',
-      imbalanceZoneBorder: 'rgba(168, 85, 247, 0.5)',
-      dealingRangePremium: 'rgba(239, 83, 80, 0.06)',
-      dealingRangeDiscount: 'rgba(38, 166, 154, 0.06)',
-      dealingRangeEq: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)',
-      asianRange: 'rgba(148, 163, 184, 0.12)',
-      asianRangeBorder: 'rgba(148, 163, 184, 0.4)',
-      classicBreakoutZone: 'rgba(59, 130, 246, 0.12)',
-      classicBreakoutZoneBorder: 'rgba(59, 130, 246, 0.45)',
-      powerOfThreeAccumulation: 'rgba(250, 204, 21, 0.12)',
-      powerOfThreeAccumulationBorder: 'rgba(250, 204, 21, 0.5)',
-      htfSupport: 'rgba(59, 130, 246, 0.5)',
-      htfResistance: 'rgba(239, 83, 80, 0.5)',
+      bullishFvg: 'rgba(38, 166, 154, 0.06)',
+      bearishFvg: 'rgba(239, 83, 80, 0.06)',
+      bullishFvgBorder: 'rgba(38, 166, 154, 0.3)',
+      bearishFvgBorder: 'rgba(239, 83, 80, 0.3)',
+      imbalanceZone: 'rgba(168, 85, 247, 0.08)',
+      imbalanceZoneBorder: 'rgba(168, 85, 247, 0.4)',
+      dealingRangePremium: 'rgba(239, 83, 80, 0.04)',
+      dealingRangeDiscount: 'rgba(38, 166, 154, 0.04)',
+      dealingRangeEq: isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.3)',
+      asianRange: 'rgba(148, 163, 184, 0.08)',
+      asianRangeBorder: 'rgba(148, 163, 184, 0.35)',
+      classicBreakoutZone: 'rgba(59, 130, 246, 0.08)',
+      classicBreakoutZoneBorder: 'rgba(59, 130, 246, 0.35)',
+      powerOfThreeAccumulation: 'rgba(250, 204, 21, 0.08)',
+      powerOfThreeAccumulationBorder: 'rgba(250, 204, 21, 0.4)',
+      htfSupport: 'rgba(59, 130, 246, 0.4)',
+      htfResistance: 'rgba(239, 83, 80, 0.4)',
       slColor: '#f97316',
       tpColor: '#10b981',
-      sessionAsia: isDark ? 'rgba(0, 128, 255, 0.08)' : 'rgba(0, 128, 255, 0.05)',
-      sessionLondon: isDark ? 'rgba(8, 145, 178, 0.15)' : 'rgba(8, 145, 178, 0.1)',
-      sessionNY: isDark ? 'rgba(255, 165, 0, 0.12)' : 'rgba(255, 165, 0, 0.08)',
-      sessionOverlap: isDark ? 'rgba(168, 85, 247, 0.14)' : 'rgba(168, 85, 247, 0.1)',
+      sessionAsia: isDark ? 'rgba(0, 128, 255, 0.03)' : 'rgba(0, 128, 255, 0.02)',
+      sessionLondon: isDark ? 'rgba(8, 145, 178, 0.04)' : 'rgba(8, 145, 178, 0.02)',
+      sessionNY: isDark ? 'rgba(255, 165, 0, 0.04)' : 'rgba(255, 165, 0, 0.02)',
+      sessionOverlap: isDark ? 'rgba(168, 85, 247, 0.05)' : 'rgba(168, 85, 247, 0.02)',
       volBull: isDark ? 'rgba(38, 166, 154, 0.35)' : 'rgba(38, 166, 154, 0.25)',
       volBear: isDark ? 'rgba(239, 83, 80, 0.35)' : 'rgba(239, 83, 80, 0.25)',
     });
@@ -436,46 +438,116 @@ export const CandleStickChart = memo(function CandleStickChart({
       }
     }
 
-    // 5. Institutional Structure Overlays (OB, FVG, Liquidity Pools)
+    // 5. Institutional Structure Overlays (OB, FVG, Breakers, Mitigations, Asian Ranges, Liquidity Pools)
     // Order Blocks
-    if (settings?.showOrderBlocks && orderBlocks) {
+    if (settings?.showOrderBlocks && orderBlocks && orderBlocks.length > 0) {
       orderBlocks.forEach(ob => {
         if (ob.index > endIndex || ob.index < startIndex - 100) return;
         const obStartX = (ob.index - viewState.candleOffset) * candleWidth;
-        const obEndX = drawableWidth;
-        if (obStartX > drawableWidth) return;
+        const obEndIdx = ob.mitigationIndex ?? ob.endIndex ?? (ob.index + 20);
+        const obEndX = Math.min(drawableWidth, (obEndIdx - viewState.candleOffset) * candleWidth);
+        if (obStartX > drawableWidth || obEndX < 0 || obEndX <= obStartX) return;
 
         const yHigh = priceToY(ob.high);
         const yLow = priceToY(ob.low);
         const isBull = ob.type === 'bullish';
 
+        const drawX = Math.max(0, obStartX);
+        const drawW = obEndX - drawX;
+        const drawH = Math.max(2, yLow - yHigh);
+
         ctx.fillStyle = isBull ? themeColors.bullishOb : themeColors.bearishOb;
         ctx.strokeStyle = isBull ? themeColors.bullishObBorder : themeColors.bearishObBorder;
         ctx.lineWidth = 1;
 
-        ctx.fillRect(Math.max(0, obStartX), yHigh, obEndX - Math.max(0, obStartX), yLow - yHigh);
-        ctx.strokeRect(Math.max(0, obStartX), yHigh, obEndX - Math.max(0, obStartX), yLow - yHigh);
+        ctx.fillRect(drawX, yHigh, drawW, drawH);
+        ctx.strokeRect(drawX, yHigh, drawW, drawH);
+
+        if (drawW > 25) {
+          ctx.fillStyle = isBull ? '#22c55e' : '#ef4444';
+          ctx.font = 'bold 9px Inter';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText(isBull ? 'OB' : 'OB', drawX + 3, yHigh + 2);
+        }
       });
     }
 
     // Fair Value Gaps
-    if (settings?.showFvgs && fvgs) {
+    if (settings?.showFvgs && fvgs && fvgs.length > 0) {
       fvgs.forEach(fvg => {
         if (fvg.index > endIndex || fvg.index < startIndex - 80) return;
         const fvgStartX = (fvg.index - viewState.candleOffset) * candleWidth;
-        const fvgEndX = drawableWidth;
-        if (fvgStartX > drawableWidth) return;
+        const fvgEndIdx = fvg.fillIndex ?? fvg.endIndex ?? (fvg.index + 15);
+        const fvgEndX = Math.min(drawableWidth, (fvgEndIdx - viewState.candleOffset) * candleWidth);
+        if (fvgStartX > drawableWidth || fvgEndX < 0 || fvgEndX <= fvgStartX) return;
 
         const yTop = priceToY(Math.max(fvg.start, fvg.end));
         const yBottom = priceToY(Math.min(fvg.start, fvg.end));
         const isBull = fvg.type === 'bullish';
 
+        const drawX = Math.max(0, fvgStartX);
+        const drawW = fvgEndX - drawX;
+        const drawH = Math.max(1.5, yBottom - yTop);
+
         ctx.fillStyle = isBull ? themeColors.bullishFvg : themeColors.bearishFvg;
         ctx.strokeStyle = isBull ? themeColors.bullishFvgBorder : themeColors.bearishFvgBorder;
         ctx.lineWidth = 0.8;
 
-        ctx.fillRect(Math.max(0, fvgStartX), yTop, fvgEndX - Math.max(0, fvgStartX), yBottom - yTop);
-        ctx.strokeRect(Math.max(0, fvgStartX), yTop, fvgEndX - Math.max(0, fvgStartX), yBottom - yTop);
+        ctx.fillRect(drawX, yTop, drawW, drawH);
+        ctx.strokeRect(drawX, yTop, drawW, drawH);
+      });
+    }
+
+    // Breaker Blocks
+    if (settings?.showBreakerBlocks && breakerBlocks && breakerBlocks.length > 0) {
+      breakerBlocks.forEach(bb => {
+        if (bb.index > endIndex || bb.index < startIndex - 80) return;
+        const startX = (bb.index - viewState.candleOffset) * candleWidth;
+        const endIdx = bb.mitigationIndex ?? (bb.index + 20);
+        const endX = Math.min(drawableWidth, (endIdx - viewState.candleOffset) * candleWidth);
+        if (startX > drawableWidth || endX < 0 || endX <= startX) return;
+
+        const yHigh = priceToY(bb.high);
+        const yLow = priceToY(bb.low);
+        const isBull = bb.type === 'bullish';
+
+        const drawX = Math.max(0, startX);
+        const drawW = endX - drawX;
+        const drawH = Math.max(2, yLow - yHigh);
+
+        ctx.fillStyle = isBull ? themeColors.bullishBreaker : themeColors.bearishBreaker;
+        ctx.strokeStyle = isBull ? themeColors.bullishBreakerBorder : themeColors.bearishBreakerBorder;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+
+        ctx.fillRect(drawX, yHigh, drawW, drawH);
+        ctx.strokeRect(drawX, yHigh, drawW, drawH);
+        ctx.setLineDash([]);
+      });
+    }
+
+    // Asian Ranges Overlay
+    if (settings?.showAsianRange && asianRanges && asianRanges.length > 0) {
+      asianRanges.forEach(ar => {
+        if (!ar || ar.endIndex < startIndex || ar.startIndex > endIndex) return;
+        const startX = Math.max(0, (ar.startIndex - viewState.candleOffset) * candleWidth);
+        const endX = Math.min(drawableWidth, (ar.endIndex - viewState.candleOffset) * candleWidth);
+        if (endX <= startX) return;
+
+        const yHigh = priceToY(ar.high);
+        const yLow = priceToY(ar.low);
+        const drawH = Math.max(2, yLow - yHigh);
+
+        ctx.fillStyle = themeColors.asianRange;
+        ctx.strokeStyle = themeColors.asianRangeBorder;
+        ctx.lineWidth = 1;
+        ctx.fillRect(startX, yHigh, endX - startX, drawH);
+        ctx.strokeRect(startX, yHigh, endX - startX, drawH);
+
+        ctx.fillStyle = themeColors.textMuted;
+        ctx.font = '9px Inter';
+        ctx.fillText('Asian Range', startX + 4, yHigh + 2);
       });
     }
 
@@ -766,6 +838,8 @@ export const CandleStickChart = memo(function CandleStickChart({
 
         ctx.save();
 
+        const dec = m.price > 100 ? 2 : 5;
+
         // 1. ENTRY LEVEL
         if (canDrawEntry && m.price) {
           const entryY = priceToY(m.price);
@@ -780,7 +854,7 @@ export const CandleStickChart = memo(function CandleStickChart({
 
             if (canDrawLabels) {
               const labelY = getAdjustedY(entryY);
-              const labelText = `ENTRY: ${m.price.toFixed(decimals)}${m.lots ? ` (${m.lots}L)` : ''}`;
+              const labelText = `ENTRY: ${m.price.toFixed(dec)}${m.lots ? ` (${m.lots}L)` : ''}`;
               ctx.font = 'bold 9px Inter';
               const textWidth = ctx.measureText(labelText).width;
 
@@ -809,7 +883,7 @@ export const CandleStickChart = memo(function CandleStickChart({
 
             if (canDrawLabels) {
               const labelY = getAdjustedY(slY);
-              const labelText = `SL: ${m.sl.toFixed(decimals)}`;
+              const labelText = `SL: ${m.sl.toFixed(dec)}`;
               ctx.font = 'bold 9px Inter';
               const textWidth = ctx.measureText(labelText).width;
 
@@ -838,7 +912,7 @@ export const CandleStickChart = memo(function CandleStickChart({
 
             if (canDrawLabels) {
               const labelY = getAdjustedY(tpY);
-              const labelText = `TP: ${m.tp.toFixed(decimals)}${m.riskReward ? ` (${m.riskReward}R)` : ''}`;
+              const labelText = `TP: ${m.tp.toFixed(dec)}${m.riskReward ? ` (${m.riskReward}R)` : ''}`;
               ctx.font = 'bold 9px Inter';
               const textWidth = ctx.measureText(labelText).width;
 
@@ -917,19 +991,14 @@ export const CandleStickChart = memo(function CandleStickChart({
     viewState,
     themeColors,
     liquidityData,
-    breakerBlocks,
-    mitigationBlocks,
     orderBlocks,
-    continuationOrderBlocks,
     fvgs,
-    imbalanceZones,
-    dealingRange,
+    breakerBlocks,
     asianRanges,
-    powerOfThreeZones,
-    classicBreakoutZones,
-    htfKeyLevels,
     sessionSettings,
     settings,
+    markers,
+    waterfallMarkers,
     activeTradeLevels,
     selectedTrade,
     selectedMarkerState,
@@ -991,6 +1060,8 @@ export const CandleStickChart = memo(function CandleStickChart({
     if (containerRef.current) containerRef.current.style.cursor = 'grabbing';
   };
 
+  const hoveredIndexRef = useRef(-1);
+
   const handleMouseMove = (e) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -1001,20 +1072,26 @@ export const CandleStickChart = memo(function CandleStickChart({
     if (x > 0 && y > 0 && x < rect.width && y < rect.height) {
       crosshairRef.current = { x, y };
 
-      // Update hovered candle for top HUD
+      // Update hovered candle for top HUD only when candle index changes
       const candleIdx = Math.floor(viewState.candleOffset + x / viewState.zoom);
-      if (candleIdx >= 0 && candleIdx < candles.length) {
-        setHoveredCandle(candles[candleIdx]);
-        const matchedMarkers = markersByIndex.get(candleIdx);
-        setHoveredMarker(matchedMarkers && matchedMarkers.length > 0 ? matchedMarkers[0] : null);
-      } else {
+      if (candleIdx !== hoveredIndexRef.current) {
+        hoveredIndexRef.current = candleIdx;
+        if (candleIdx >= 0 && candleIdx < candles.length) {
+          setHoveredCandle(candles[candleIdx]);
+          const matchedMarkers = markersByIndex.get(candleIdx);
+          setHoveredMarker(matchedMarkers && matchedMarkers.length > 0 ? matchedMarkers[0] : null);
+        } else {
+          setHoveredCandle(null);
+          setHoveredMarker(null);
+        }
+      }
+    } else {
+      if (hoveredIndexRef.current !== -1) {
+        hoveredIndexRef.current = -1;
+        crosshairRef.current = null;
         setHoveredCandle(null);
         setHoveredMarker(null);
       }
-    } else {
-      crosshairRef.current = null;
-      setHoveredCandle(null);
-      setHoveredMarker(null);
     }
     scheduleDraw();
 

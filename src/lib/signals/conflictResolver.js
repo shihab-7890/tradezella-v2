@@ -20,6 +20,7 @@ export function resolveSignalConflicts(setups, candleTimeIndex, options = {}) {
     let conflictType = CONFLICT_TYPES.NONE;
     let conflictWarning = null;
     let conflictResolution = 'VALID_INDEPENDENT';
+    const relatedCandidateIds = [];
 
     // Compare with other setups in chronological window
     for (let j = 0; j < setups.length; j++) {
@@ -33,6 +34,10 @@ export function resolveSignalConflicts(setups, candleTimeIndex, options = {}) {
 
       // Are they in opposite directions?
       if (current.direction !== other.direction) {
+        const otherId = other.candidateId || other.id;
+        if (otherId && !relatedCandidateIds.includes(otherId)) {
+          relatedCandidateIds.push(otherId);
+        }
         const priceDiffPct = Math.abs(current.price - other.price) / Math.max(current.price, other.price);
 
         // Conflict Type B: Cross-Timeframe / Cross-Style
@@ -42,8 +47,9 @@ export function resolveSignalConflicts(setups, candleTimeIndex, options = {}) {
           conflictResolution = 'PRESERVED_INDEPENDENT_STYLE';
           conflictsDetected.push({
             type: conflictType,
-            setupA: current.candidateId,
-            setupB: other.candidateId,
+            setupA: current.candidateId || current.id,
+            setupB: other.candidateId || other.id,
+            relatedCandidateIds: [current.candidateId || current.id, other.candidateId || other.id],
             warning: conflictWarning,
           });
           continue;
@@ -84,8 +90,9 @@ export function resolveSignalConflicts(setups, candleTimeIndex, options = {}) {
 
           conflictsDetected.push({
             type: conflictType,
-            setupA: current.candidateId,
-            setupB: other.candidateId,
+            setupA: current.candidateId || current.id,
+            setupB: other.candidateId || other.id,
+            relatedCandidateIds: [current.candidateId || current.id, other.candidateId || other.id],
             warning: conflictWarning,
           });
           continue;
@@ -103,6 +110,7 @@ export function resolveSignalConflicts(setups, candleTimeIndex, options = {}) {
       conflictType,
       conflictWarning,
       conflictResolution,
+      relatedCandidateIds,
       isConflicted: conflictType !== CONFLICT_TYPES.NONE,
     });
   }

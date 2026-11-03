@@ -140,9 +140,11 @@ export function scoreSignal(
   score = Math.min(10, Math.max(0, Math.round(score * 10) / 10));
 
   let qualityTier: SignalQualityTier = 'Candidate';
-  if (score >= 5.0) qualityTier = 'A+';
-  else if (score >= 4.0) qualityTier = 'A';
-  else if (score >= 3.0) qualityTier = 'B';
+  if (score >= 8.5) qualityTier = 'A+';
+  else if (score >= 7.5) qualityTier = 'A';
+  else if (score >= 6.5) qualityTier = 'B';
+  else if (score >= 5.0) qualityTier = 'Watch';
+  else qualityTier = 'Rejected';
 
   return {
     score,

@@ -49,9 +49,10 @@ export const STRATEGY_FAMILIES = {
 };
 
 export const QUALITY_GRADES = {
-  A_PLUS: 'A+',   // 90 - 100
-  A: 'A',         // 80 - 89.9
-  B: 'B',         // 65 - 79.9
+  A_PLUS: 'A+',   // 85 - 100
+  A: 'A',         // 75 - 84.9
+  B: 'B',         // 65 - 74.9
   WATCH: 'Watch', // 50 - 64.9
-  LOW: 'Low',     // < 50
+  REJECTED: 'Rejected', // < 50
+  LOW: 'Rejected',      // < 50
 };

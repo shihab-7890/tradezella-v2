@@ -1,0 +1,1185 @@
+# MASTER UPGRADE — REAL TRADING EXPERIENCE, HIGH-QUALITY SIGNALS, REALISTIC EXECUTION & PROFESSIONAL TRADING WORKFLOW
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative trading systems architect, professional discretionary-trading workflow designer, market-data engineer, backtesting specialist, execution simulation developer and expert Next.js engineer.
+
+I have already implemented a large trading analysis application with approximately ten phases of features.
+
+The application contains or has been designed to contain:
+
+- Historical Finage data.
+- HTML5 Canvas charts.
+- 1m/3m/5m/15m/1h/4h/Daily analysis.
+- SMC, ICT, BOS, CHoCH and MSS.
+- Order Blocks and Fair Value Gaps.
+- Fibonacci and liquidity intelligence.
+- Candle psychology.
+- Waterfall momentum.
+- Scalping, intraday and swing strategies.
+- Adaptive AUTO/HYBRID/MANUAL settings.
+- Unified scoring.
+- BUY/SELL conflict resolution.
+- Risk management.
+- Historical replay.
+- Backtesting.
+- Report generation and downloads.
+
+However, the system currently does not provide a sufficiently clear, realistic trading experience.
+
+Too many signals appear, the distinction between signals and executed trades is confusing, some scoring classifications are questionable, and the exported backtest does not demonstrate actual execution outcomes.
+
+**MY MAIN GOAL: Make this application behave like a disciplined real-market trading assistant and paper-trading simulator, not just a technical indicator dashboard.**
+
+Implement genuine improvements across data quality, signal selection, entry readiness, paper execution, trade management, UI clarity, performance measurement and reliability.
+
+Do not replace the existing architecture unnecessarily.
+
+Do not add more strategies merely for feature count.
+
+Do not implement real-money order execution in this task.
+
+---
+
+# 1. FIRST: AUDIT THE REAL PROBLEMS
+
+Inspect the complete codebase and recent exports.
+
+Known observations from my exported trading data:
+
+- 224 approved signal records.
+- 115 BUY and 109 SELL records.
+- 177 signals labeled A+.
+- Numeric scores ranging from 40 to 65/100.
+- Nine timestamps containing both BUY and SELL records.
+- Empty trading-style fields.
+- Repeated suppressed entries in the HTML report.
+- Backtest report showing zero executed trades.
+- A report section labeling suppressed signals as executed trades.
+- A malformed CSV timestamp field.
+
+These observations require a root-cause investigation.
+
+Investigate:
+
+- Is the scoring scale wrong?
+- Are approvals effectively unconditional?
+- Are candidates being confused with approved trades?
+- Are repeated setup states emitted as separate trade ideas?
+- Is strategy deduplication incomplete?
+- Are entry orders ever created?
+- Does the execution simulator actually run?
+- Are trades missing because of entry rules, risk rejection, data gaps or broken integration?
+- Are reporting models inconsistent?
+- Is the market-data fallback producing artificial candles?
+- Are timestamps and market sessions correctly interpreted?
+
+Do not hide these defects through UI-only changes.
+
+Fix the actual calculation and state-management problems.
+
+---
+
+# 2. VERIFIED REAL-MARKET DATA FOUNDATION
+
+Before generating signals, validate the market data.
+
+## 2.1 Provider verification
+
+Inspect the actual Finage endpoints and response formats.
+
+Verify:
+
+- Correct symbol.
+- Correct timeframe.
+- Correct OHLC values.
+- Correct UTC timestamp units.
+- Data ordering.
+- Missing candles.
+- Duplicate candles.
+- API permissions.
+- Provider coverage.
+- Data-source identity.
+- Response limits.
+- Rate limits.
+
+Finage aggregate responses may contain epoch millisecond timestamps.
+
+Use the documented response contract of the actual endpoint rather than guessing units.
+
+## 2.2 Historical data integrity
+
+Preserve:
+
+- Automatic maximum-two-day API requests.
+- Date range selection.
+- Chunk caching.
+- Candle normalization.
+- Chronological merging.
+- Deduplication.
+- Complete selected history.
+
+Do not invent missing candles.
+
+Do not silently truncate history.
+
+## 2.3 Market trading calendar
+
+This is critical.
+
+Implement instrument-specific market hours.
+
+For XAUUSD spot Gold, validate the actual trading schedule of the selected feed or broker, including:
+
+- Weekend closure.
+- Sunday reopening.
+- Daily maintenance breaks.
+- Holidays.
+- Daylight-saving changes.
+- Market session boundaries.
+
+The uploaded report contains Sunday morning records requiring investigation.
+
+Verify whether they result from valid provider data, timestamp conversion, separate weekend instruments or simulated fallback.
+
+Do not blindly remove legitimate data belonging to an explicitly different instrument.
+
+Flag invalid or unsupported market-session data.
+
+## 2.4 Real versus demo data
+
+Create visible data-source states:
+
+- REAL HISTORICAL DATA.
+- LIVE PROVIDER DATA.
+- PAPER TRADING.
+- SIMULATED/DEMO DATA.
+- DATA UNAVAILABLE.
+
+Never silently treat generated demo candles as genuine XAUUSD prices.
+
+Never include simulated fallback results in verified real-market performance reports.
+
+---
+
+# 3. REAL-TIME MARKET DATA EXPERIENCE
+
+The existing live route may be a stub or incomplete.
+
+Inspect and implement the supported live-data pipeline properly.
+
+Use actual provider capabilities and plan permissions.
+
+Requirements:
+
+- Real streaming or appropriate polling where supported.
+- Connection status.
+- Last quote timestamp.
+- Last completed candle timestamp.
+- Reconnection.
+- Stale-data detection.
+- Rate-limit handling.
+- Gap recovery.
+- Out-of-order message handling.
+- Correct candle aggregation.
+- Clear market-open/closed status.
+
+Do not create artificial intrabar updates from historical OHLC candles and label them live quotes.
+
+If the provider does not support a required real-time feature, clearly expose the limitation.
+
+### Important
+
+A new candle should be finalized exactly once.
+
+The strategy engine must not approve a closed-candle setup repeatedly because of duplicate quote updates.
+
+---
+
+# 4. SEPARATE SIGNAL DETECTION FROM EXECUTION
+
+Create clear boundaries between:
+
+1. Market observation.
+2. Pattern detection.
+3. Trade setup candidate.
+4. Approved opportunity.
+5. Entry order.
+6. Executed position.
+7. Closed trade.
+8. Performance result.
+
+These are not interchangeable states.
+
+## Example
+
+The system detects a bullish FVG.
+
+That is a pattern.
+
+Price revisits the FVG and confirms a valid bullish reaction.
+
+That is a setup candidate.
+
+The unified engine validates structure, entry conditions and risk.
+
+That may become an approved BUY opportunity.
+
+The entry price is reached after the order becomes eligible.
+
+That becomes a simulated executed trade.
+
+The position later reaches its stop or target.
+
+That produces a measurable trade result.
+
+**Only a completed simulated trade should contribute to resolved trade win-rate statistics.**
+
+Do not classify every technical pattern as a trade.
+
+---
+
+# 5. PROFESSIONAL SIGNAL QUALITY FILTER
+
+Implement an effective Quality First decision model.
+
+Prioritize:
+
+- Meaningful market structure.
+- Liquidity confirmation.
+- Setup-specific candle behavior.
+- Momentum condition.
+- Regime suitability.
+- Entry timing.
+- Valid invalidation.
+- Remaining target distance.
+- Realistic execution costs.
+
+## Quality modes
+
+### QUALITY FIRST
+
+Default clean trading view.
+
+Show only fully approved eligible setups.
+
+### BALANCED
+
+Allow more standard strategy-specific confirmations.
+
+### EXPLORATION
+
+Show developing candidates and technical pattern observations separately.
+
+Exploratory patterns are not approved trade recommendations.
+
+### Critical
+
+Do not just increase the score threshold.
+
+Analyze why a setup should qualify.
+
+Do not make every strategy require BOS + CHoCH + MSS + FVG + OB + liquidity sweep simultaneously.
+
+Use different confirmation rules for continuation, reversal, breakout and momentum strategies.
+
+Do not force a minimum number of signals per hour.
+
+---
+
+# 6. CORRECT QUALITY SCORING
+
+Repair the current questionable grading behavior.
+
+Create one canonical score scale.
+
+Version the existing historical score systems.
+
+Document:
+
+- Scoring range.
+- Category weights.
+- Approval thresholds.
+- Grade boundaries.
+- Missing evidence handling.
+- Correlated evidence caps.
+
+Test the relationship between scores and actual cost-adjusted outcomes.
+
+Do not automatically classify a low score as A+.
+
+Do not label a score as a win probability.
+
+Preserve previous score metadata so historical reports remain interpretable.
+
+---
+
+# 7. PROFESSIONAL MARKET CONTEXT
+
+Make the system analyze market conditions like an experienced trader would, using observable data.
+
+Detect:
+
+- Strong bullish trend.
+- Strong bearish trend.
+- Sideways range.
+- Volatility compression.
+- Breakout expansion.
+- Potential reversal.
+- Choppy conditions.
+- Momentum exhaustion.
+
+Track:
+
+- Higher-timeframe direction.
+- Entry-timeframe structure.
+- Market liquidity zones.
+- Important support/resistance.
+- Session context.
+- ATR and volatility.
+- Current momentum.
+- Relevant structural targets.
+
+Show a concise explanation of the current market state.
+
+Do not infer actual institutional order flow solely from OHLC candles.
+
+---
+
+# 8. HIGH-IMPACT ECONOMIC EVENT AWARENESS
+
+Add an optional verified economic-event risk layer if a suitable calendar data source is available.
+
+For relevant Gold and Forex instruments, this may include:
+
+- CPI.
+- Nonfarm Payrolls.
+- FOMC rate decisions.
+- Federal Reserve announcements.
+- GDP.
+- Major employment releases.
+- Central-bank decisions.
+
+The system should be able to:
+
+- Display verified upcoming event timestamps.
+- Identify relevant affected currencies.
+- Show event risk windows.
+- Mark unusual execution-risk conditions.
+- Apply user-configured entry restrictions around events.
+- Resume normal eligibility after the configured restriction ends.
+
+Use timezone-aware timestamps.
+
+Do not invent news events, releases or predictions.
+
+Do not block all trades by default.
+
+Historical backtests must use only event information available at the historical decision time.
+
+If no verified economic calendar source is configured, show the feature as unavailable rather than manufacturing events.
+
+---
+
+# 9. INSTITUTIONAL-STYLE ENTRY PLANNING
+
+Build a professional entry decision workflow.
+
+Every approved opportunity must explain:
+
+- What is the setup?
+- Why is it valid?
+- What confirms the entry?
+- What price is eligible?
+- What invalidates it?
+- What is the stop loss?
+- What are the realistic targets?
+- Is the entry too late?
+- Is the spread acceptable?
+- Is the opportunity still active?
+
+## Entry types
+
+Support:
+
+- Market-on-confirmation.
+- Limit entry.
+- Stop entry.
+- Breakout retest.
+- FVG retracement.
+- OB retest.
+- First-pullback entry.
+
+The selected order type must match the strategy.
+
+### Early entries
+
+Allow early setups only with explicit confirmation rules.
+
+Do not pretend the system knew future candle movement.
+
+### Anti-chase protection
+
+Identify cases where price has already moved too far from a reasonable entry.
+
+Use:
+
+- ATR extension.
+- Structural stop distance.
+- Nearest opposing liquidity.
+- Available reward/risk.
+- Setup age.
+- Momentum exhaustion.
+
+If the entry is no longer suitable, show:
+
+MISSED ENTRY or WAIT FOR PULLBACK.
+
+Do not force a late trade.
+
+---
+
+# 10. REALISTIC PAPER-TRADING EXECUTION ENGINE
+
+Create or repair a genuinely working paper-trading simulator.
+
+**Do not connect to real-money trading automatically.**
+
+## Supported simulated orders
+
+- Market.
+- Limit.
+- Stop.
+- Stop Loss.
+- Take Profit.
+- Partial Close.
+- Trailing Stop.
+- Break-Even.
+
+## Simulated order lifecycle
+
+- CREATED.
+- VALIDATED.
+- ACCEPTED.
+- WORKING.
+- PARTIALLY_FILLED, where supported.
+- FILLED.
+- CANCELLED.
+- EXPIRED.
+- REJECTED.
+
+## Position lifecycle
+
+- OPEN.
+- PARTIALLY_CLOSED.
+- CLOSED_TP.
+- CLOSED_SL.
+- CLOSED_OTHER.
+
+Keep order and position states separate.
+
+### Execution assumptions
+
+Model:
+
+- Bid/ask spread.
+- Slippage.
+- Commission.
+- Execution latency assumptions.
+- Market hours.
+- Instrument tick size.
+- Position size.
+- Partial fills where supported.
+- Overnight costs.
+- Market gaps.
+
+Use actual executable bid/ask data where available.
+
+Otherwise label the assumptions.
+
+Do not guarantee fills at exact OHLC candle extremes.
+
+Do not assume every limit order touched by a candle would have filled.
+
+### Historical limitations
+
+When SL and TP both fall inside the same OHLC candle, use lower-timeframe data where available or a documented conservative/ambiguous policy.
+
+Do not always choose the winning outcome.
+
+---
+
+# 11. PROFESSIONALLY MANAGED POSITIONS
+
+Build a realistic simulated trade-management workflow.
+
+Each position should track:
+
+- Entry time.
+- Entry price.
+- Entry quantity.
+- Original stop.
+- Current stop.
+- TP1.
+- TP2.
+- TP3.
+- Realized P/L.
+- Unrealized P/L.
+- Partial exits.
+- Fees.
+- Remaining quantity.
+- Current management state.
+
+Support:
+
+- Structural stops.
+- ATR stops.
+- Break-even.
+- Trailing stops.
+- Partial profit-taking.
+- Time-based exit when configured.
+- Structural invalidation exits.
+
+Do not automatically alter the original stop/target plan after future results become known.
+
+Record every management decision with its actual eligible timestamp.
+
+---
+
+# 12. REALISTIC RISK CONTROL
+
+Build or repair account-level paper-trading risk management.
+
+Allow user-configured:
+
+- Simulated account equity.
+- Risk per trade.
+- Maximum open risk.
+- Daily loss limit.
+- Weekly loss limit.
+- Maximum drawdown.
+- Maximum concurrent positions.
+- Maximum exposure per symbol.
+- Correlated exposure restrictions.
+
+Provide conservative configurable example presets, without treating them as universally appropriate financial advice.
+
+The position size must use:
+
+- Actual stop distance.
+- Instrument contract size.
+- Tick/point monetary value.
+- Currency conversion where needed.
+- Available risk budget.
+- Transaction cost assumptions.
+
+Do not hardcode a universal Gold pip or lot specification.
+
+### Hard safeguards
+
+- Never automatically increase risk after a loss.
+- Never override maximum risk in AUTO mode.
+- Never force a trade because the signal score is high.
+- Never assume stops guarantee an exact maximum loss.
+
+---
+
+# 13. SMART SIGNAL NOTIFICATION SYSTEM
+
+Add alerts for meaningful events.
+
+Examples:
+
+- New approved opportunity.
+- Entry condition confirmed.
+- Paper order filled.
+- Stop or target reached.
+- Setup invalidated.
+- Entry expired.
+- Risk limit reached.
+- Market data stale.
+
+Avoid sending an alert for every candle.
+
+Deduplicate alerts using stable setup and state-transition IDs.
+
+Support user-configurable notification preferences.
+
+Use existing application notification infrastructure if available.
+
+Do not create fake push notifications or claim delivery without an actual configured delivery channel.
+
+---
+
+# 14. CLEAN PROFESSIONAL TRADING TERMINAL
+
+Redesign the main user experience around decision clarity.
+
+## Top Bar
+
+- Symbol.
+- Timeframe.
+- Date range.
+- Trading style.
+- Data source.
+- Market status.
+- AUTO/MANUAL.
+- Quality mode.
+
+## Market Overview
+
+- Direction.
+- Trend strength.
+- Volatility.
+- Momentum.
+- Current regime.
+- Higher-timeframe context.
+
+## Main Chart
+
+By default display:
+
+- Candles.
+- Approved BUY/SELL markers.
+- Selected important levels.
+
+Hide excessive internal analysis markers by default.
+
+## Right-Side Opportunity Panel
+
+Show:
+
+- Best BUY setup.
+- Best SELL setup.
+- Ready-to-trade setups.
+- Waiting-for-entry setups.
+- Current WAIT reason.
+
+## Trade Panel
+
+Show:
+
+- Entry.
+- Stop.
+- Targets.
+- Position size.
+- Simulated execution status.
+- Trade management.
+
+## Bottom Tabs
+
+- Signal History.
+- Paper Orders.
+- Open Positions.
+- Closed Trades.
+- Backtesting.
+- Reports.
+- Diagnostics.
+
+Do not show everything at once.
+
+The interface should remain clean and responsive.
+
+---
+
+# 15. ONE SETUP, ONE SIGNAL, ONE EXPLANATION
+
+Fix duplicate alerts and repeated chart markers.
+
+Use stable setup identity.
+
+The same liquidity sweep should not create a new BUY marker every candle.
+
+The same waterfall sequence should not create repeated SELL trade ideas unless a genuinely independent setup forms.
+
+Related BOS/FVG/OB/candle-psychology evidence should support one primary setup.
+
+Preserve separate legitimate opportunities on different timeframes.
+
+### Signal detail
+
+Every approved trade idea should display:
+
+- Primary strategy.
+- Supporting evidence.
+- Quality score.
+- Trading style.
+- Entry confirmation.
+- Entry plan.
+- Stop.
+- Targets.
+- Risk/reward.
+- Expiry.
+- Data timestamp.
+- Relevant conflict warnings.
+
+Show exactly why a candidate was approved, watched, rejected or invalidated.
+
+---
+
+# 16. REAL-TIME PAPER FORWARD TESTING
+
+This is one of the most important improvements.
+
+Historical backtesting alone is not enough.
+
+Build a forward-testing mode that begins from newly arriving genuine market data and records paper decisions before their outcomes are known.
+
+## Paper Forward Test
+
+When enabled:
+
+1. Listen to actual eligible live market updates.
+2. Finalize candles correctly.
+3. Run the existing signal engine.
+4. Publish only approved opportunities.
+5. Create paper orders under the user's configured policy.
+6. Track genuine subsequent quote/candle movements.
+7. Simulate fills with documented execution assumptions.
+8. Manage positions.
+9. Record actual observed paper outcomes.
+10. Update performance statistics.
+
+Never retroactively create a historical paper order after knowing the result.
+
+### Daily forward-testing log
+
+Store:
+
+- Date.
+- Symbol.
+- Strategy.
+- Direction.
+- Signal time.
+- Entry eligibility.
+- Order creation.
+- Execution outcome.
+- Stop/target changes.
+- Final result.
+- Spread/cost assumptions.
+- Data feed quality.
+
+Keep paper-forward results separate from historical backtesting.
+
+---
+
+# 17. TRADING JOURNAL
+
+Create a professional trading journal.
+
+For every completed simulated trade, allow:
+
+- Strategy label.
+- Setup screenshot or chart reference.
+- Entry reason.
+- Exit reason.
+- Market regime.
+- Risk/reward.
+- Actual simulated outcome.
+- Mistake or observation.
+- User notes.
+
+Use actual trade data automatically where available.
+
+Do not make the user manually re-enter everything.
+
+Support reviewing:
+
+- Best-performing setups.
+- Worst-performing setups.
+- Repeated execution issues.
+- Missed entries.
+- Costly trading conditions.
+
+Keep user notes separate from automated algorithm evidence.
+
+---
+
+# 18. BACKTEST VS PAPER FORWARD COMPARISON
+
+Provide separate performance sections.
+
+### Historical Backtest
+
+Simulation using past candles.
+
+### Walk-Forward Out-of-Sample
+
+Historical periods not used for parameter selection.
+
+### Paper Forward Trading
+
+New signals recorded prospectively and evaluated afterward.
+
+Compare:
+
+- Signal count.
+- Entry execution rate.
+- Win rate.
+- Net expectancy.
+- Profit Factor.
+- Drawdown.
+- Trading costs.
+- Average R.
+- Average holding time.
+
+Do not claim a strategy is accurate because it performed well only on data used for optimization.
+
+### Statistical reliability
+
+Mark results with insufficient samples.
+
+Do not present performance as verified if:
+
+- No trades executed.
+- Quotes are simulated.
+- Costs are missing.
+- Historical fills are ambiguous.
+- Data provenance is unknown.
+- Future information leaked into the strategy.
+
+---
+
+# 19. REPAIR BACKTEST REPORTING
+
+The existing HTML report incorrectly shows suppressed signal records under Executed Trades and reports zero-valued performance statistics when no trades executed.
+
+Fix this.
+
+Create separate report sections:
+
+1. Raw Pattern Events.
+2. Signal Candidates.
+3. Approved Opportunities.
+4. Paper Orders.
+5. Filled Orders.
+6. Closed Trades.
+7. Performance Analytics.
+
+Do not calculate win rate from candidates.
+
+Do not display undefined win rate, Sharpe or Profit Factor as meaningful zero values.
+
+Use N/A with an explanation.
+
+Fix CSV escaping and missing trading-style metadata.
+
+Include actual timestamps, data source, settings version and run ID.
+
+Every report must be traceable to the actual source dataset and trading simulation.
+
+---
+
+# 20. AUTOMATIC SETTINGS WITHOUT CONFUSION
+
+I want professional automatic behavior.
+
+The user should not have to manage hundreds of parameters.
+
+Create:
+
+- AUTO.
+- HYBRID.
+- MANUAL.
+
+### AUTO
+
+Use:
+
+- Existing market regime.
+- Volatility.
+- Selected trading style.
+- Strategy suitability.
+- Tested parameter ranges.
+- Current execution feasibility.
+
+Do not constantly change every setting.
+
+Use bounded, stable adaptations.
+
+### HYBRID
+
+Allow user locks.
+
+### MANUAL
+
+Respect all existing manual preferences.
+
+### User-facing simplified controls
+
+- Trading style.
+- Signal quality.
+- Risk profile.
+- Data mode.
+- Show advanced analysis.
+
+Keep detailed parameter controls available only in Advanced Settings.
+
+Do not use unverified self-learning behavior that optimizes recent losses by changing settings unpredictably.
+
+---
+
+# 21. DAILY TRADING EXPERIENCE
+
+The ideal user journey should be:
+
+1. Open TradeZella.
+2. Select XAUUSD.
+3. Select Scalping, Intraday or Swing.
+4. Choose AUTO + Quality First.
+5. Confirm market-data status.
+6. Review market direction and volatility.
+7. Inspect qualified opportunities.
+8. Select a setup.
+9. Review entry, SL, TP and risk.
+10. Place or enable a simulated paper order.
+11. See the order become active only when legitimately filled.
+12. Observe subsequent trade management.
+13. Review the closed trade and outcome.
+14. Open the journal.
+15. Review daily trading statistics.
+16. Generate a PDF/Excel report.
+
+Do not show a BUY/SELL button as executable if the system lacks actual paper-order handling.
+
+Every control must have real underlying behavior.
+
+---
+
+# 22. PERFORMANCE AND RELIABILITY
+
+Preserve the existing A-to-Z performance optimization.
+
+Requirements:
+
+- No repeated Finage calls for unchanged data.
+- Correct two-day chunk caching.
+- Smooth chart viewport rendering.
+- Fast signal updates.
+- Incremental indicators where correct.
+- No chart freezes from trade management.
+- Efficient signal history.
+- Stable AUTO settings.
+- No duplicate alert delivery.
+- No uncontrolled retries.
+- Safe reconnection.
+- Memory leak prevention.
+- Correct replay and live-mode separation.
+
+Do not let historical replay overwrite the live paper account state.
+
+Do not let a stale live subscription update a different selected symbol.
+
+Preserve all existing Phases 1–10 features.
+
+---
+
+# 23. REQUIRED TESTING
+
+Implement meaningful unit, integration and end-to-end tests.
+
+## Data
+
+- Genuine vs simulated data.
+- Correct session calendar.
+- Sunday/weekend closure.
+- Daily maintenance breaks.
+- Historical chunking.
+- Epoch normalization.
+- No duplicate candles.
+- Stale quote rejection.
+- Live reconnection.
+
+## Signals
+
+- BUY detection.
+- SELL detection.
+- Correct grade mapping.
+- Proper rejection states.
+- No duplicate setup publication.
+- Correct opposite-direction conflict handling.
+- No future data usage.
+- Correct strategy-specific confirmation.
+- Expired entry rejection.
+
+## Paper Execution
+
+- Market entry.
+- Limit order.
+- Stop order.
+- Spread.
+- Slippage.
+- Fees.
+- Partial fills when modeled.
+- Stop-loss.
+- Take-profit.
+- Same-candle ambiguity.
+- Weekend gap.
+- Position sizing.
+- Daily loss limits.
+
+## Trading Workflow
+
+- Candidate → Approved → Paper Order → Fill → Position → Exit.
+- Signal explanation.
+- Order status.
+- Risk status.
+- Trade history.
+- Journal.
+- Notifications.
+- Reports.
+
+## Performance
+
+- Historical replay consistency.
+- Paper-forward recording.
+- Correct closed-trade accounting.
+- No fake win-rate metrics.
+- Accurate BUY/SELL comparisons.
+- Cost-adjusted expectancy.
+- Out-of-sample validation.
+- Fixed vs adaptive comparison.
+
+## UI
+
+- Clean chart.
+- Selected Entry/SL/TP overlays.
+- Trading style switching.
+- AUTO settings.
+- Signal Center.
+- Paper orders.
+- Position management.
+- Mobile/tablet responsiveness.
+- No excessive rerenders.
+
+---
+
+# 24. IMPLEMENTATION PRIORITY
+
+## P0 — Repair Actual Trading Correctness
+
+1. Audit the recent CSV and HTML report problems.
+2. Fix data-source provenance and market-session validation.
+3. Correct scoring/grade mappings.
+4. Fix unconditional approvals and repeated signals.
+5. Separate candidates from trade executions.
+6. Fix the simulated execution pipeline.
+7. Correct trade accounting and reporting.
+
+## P1 — Realistic Trading Experience
+
+8. Implement reliable live market-data lifecycle where provider access permits.
+9. Build realistic paper order handling.
+10. Implement complete paper position management.
+11. Apply risk controls.
+12. Add trade lifecycle history.
+13. Add stale-price and spread checks.
+
+## P2 — Professional UI
+
+14. Simplify the terminal.
+15. Default to Quality First.
+16. Show only approved signals on the chart.
+17. Build clear BUY/SELL/WAIT explanations.
+18. Build Paper Orders and Positions panels.
+19. Implement a trading journal.
+20. Integrate meaningful event notifications.
+
+## P3 — Forward Validation
+
+21. Implement paper-forward testing.
+22. Compare with historical backtesting.
+23. Measure realistic execution costs.
+24. Run walk-forward tests.
+25. Evaluate each strategy separately.
+26. Generate corrected reports.
+27. Verify performance and reliability.
+
+---
+
+# 25. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rebuild the application from scratch.
+- Add dozens of unnecessary indicators.
+- Generate more signals merely to appear active.
+- Force equal BUY and SELL signals.
+- Treat every candle pattern as an entry.
+- Hide underlying signal errors with CSS.
+- Require every strategy to meet identical conditions.
+- Change historical trades based on future outcomes.
+- Fabricate live prices.
+- Treat simulated data as real.
+- Invent bid/ask or real volume.
+- Assume zero spread.
+- Assume guaranteed order fills.
+- Assume all stops fill perfectly.
+- Promise 70%, 80% or 90% accuracy.
+- Automatically increase risk after losses.
+- Automatically place real-money trades.
+- Break existing SMC, scalping or swing functionality.
+- Break historical Finage fetching.
+- Break replay, chart, settings or reports.
+- Skip reproducibility tests.
+
+---
+
+# 26. FINAL DELIVERABLES
+
+After implementing the upgrade, provide:
+
+1. Root causes of existing issues.
+2. Actual code changes.
+3. Files created and modified.
+4. Data-source validation changes.
+5. Market-session handling.
+6. Scoring and grading fixes.
+7. Approval/rejection logic.
+8. Deduplication fixes.
+9. Entry and execution simulation.
+10. Risk-management integration.
+11. Real-time data handling.
+12. Paper-trading workflow.
+13. Order and position lifecycle.
+14. Signal Center changes.
+15. Trading journal.
+16. Notification improvements.
+17. Historical vs forward-testing comparison.
+18. Backtesting report corrections.
+19. Actual BUY/SELL counts.
+20. Actual triggered and closed trades.
+21. Cost-adjusted performance results.
+22. Out-of-sample validation results.
+23. Replay consistency results.
+24. Performance benchmarks.
+25. Remaining issues and limitations.
+
+## FINAL OBJECTIVE
+
+Turn TradeZella Canvas into a professional, realistic, disciplined trading analysis and paper-trading platform.
+
+I want an application where:
+
+- The market data is reliable.
+- Market hours are validated.
+- BUY and SELL signals are meaningful.
+- Duplicate signals are suppressed.
+- A+ grades reflect documented evidence.
+- Entries occur at realistic eligible prices.
+- Spread and slippage are considered.
+- Stop losses and take profits are managed correctly.
+- Trades are simulated and tracked accurately.
+- Open and closed trades are clearly separated.
+- Performance is measured from real simulated outcomes.
+- Backtesting and forward-testing remain distinct.
+- Automatic settings are simple and stable.
+- Reports are accurate and downloadable.
+- The chart stays clean and fast.
+- Every important trading decision is explainable.
+
+**PRIORITIZE REAL TRADING CORRECTNESS OVER SIGNAL QUANTITY.**
+
+Implement the full upgrade within the existing application without breaking current functionality.
+
+Do not claim that the application is ready for real-money trading until independent data, execution and forward-testing validation have been completed.

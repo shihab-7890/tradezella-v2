@@ -1,4 +1,4 @@
-const CACHE_TTL_MS = 60_000;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes for historical candles
 const historicalDataCache = new Map();
 const pendingHistoricalRequests = new Map();
 
@@ -31,9 +31,10 @@ export async function getHistoricalDataWithDetails(symbol, timeframe, from, to, 
     const startDate = getDateKey(from);
     const endDate = getDateKey(to);
     const inclusive = options.inclusive !== false; // default true for UI date-picker ranges
-    const cacheKey = `${symbol}|${timeframe}|${startDate}|${endDate}|${inclusive}`;
-    const cached = historicalDataCache.get(cacheKey);
+    const cleanSym = symbol.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const cacheKey = `${cleanSym}|${timeframe}|${startDate}|${endDate}|${inclusive}`;
 
+    const cached = historicalDataCache.get(cacheKey);
     if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
       return cached.data;
     }
@@ -42,7 +43,8 @@ export async function getHistoricalDataWithDetails(symbol, timeframe, from, to, 
       return pendingHistoricalRequests.get(cacheKey);
     }
 
-    const apiUrl = `/api/finage?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&start=${startDate}&end=${endDate}&inclusive=${inclusive}`;
+    const baseUrl = typeof window !== 'undefined' ? '' : (process.env.APP_URL || 'http://localhost:3000');
+    const apiUrl = `${baseUrl}/api/finage?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&start=${startDate}&end=${endDate}&inclusive=${inclusive}`;
 
     const request = fetch(apiUrl)
       .then(async response => {
@@ -78,3 +80,4 @@ export async function getHistoricalDataWithDetails(symbol, timeframe, from, to, 
     };
   }
 }
+

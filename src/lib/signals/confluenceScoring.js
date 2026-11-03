@@ -126,19 +126,19 @@ export function scoreCandidate(candidate, activeSettings = {}) {
   // Anti-Double-Counting: BOS + MSS + CHoCH from same move are capped at 20 pts
   // ==========================================
   let msPoints = 0;
-  if (evidence.marketStructure.hasBos) {
+  if (evidence?.marketStructure?.hasBos) {
     msPoints += 10;
     reasons.push('BOS Verified (+10)');
   }
-  if (evidence.marketStructure.hasMss) {
+  if (evidence?.marketStructure?.hasMss) {
     msPoints += 8;
     reasons.push('MSS/CHoCH Shift (+8)');
   }
-  if (evidence.marketStructure.hasChoch && !evidence.marketStructure.hasMss) {
+  if (evidence?.marketStructure?.hasChoch && !evidence?.marketStructure?.hasMss) {
     msPoints += 6;
     reasons.push('CHoCH Detected (+6)');
   }
-  if (evidence.marketStructure.isFresh) {
+  if (evidence?.marketStructure?.isFresh) {
     msPoints += 2;
   }
   const rawMs = Math.min(20, msPoints);
@@ -148,15 +148,15 @@ export function scoreCandidate(candidate, activeSettings = {}) {
   // Category B: Liquidity (Base Max: 20 pts)
   // ==========================================
   let liqPoints = 0;
-  if (evidence.liquidity.sweepDetected) {
+  if (evidence?.liquidity?.sweepDetected) {
     liqPoints += 12;
     reasons.push('Liquidity Sweep Confirmed (+12)');
   }
-  if (evidence.liquidity.reclaimConfirmed) {
+  if (evidence?.liquidity?.reclaimConfirmed) {
     liqPoints += 6;
     reasons.push('Level Reclaim (+6)');
   }
-  if (evidence.liquidity.poolSignificance === 'high') {
+  if (evidence?.liquidity?.poolSignificance === 'high') {
     liqPoints += 2;
   }
   const rawLiq = Math.min(20, liqPoints);
@@ -166,17 +166,17 @@ export function scoreCandidate(candidate, activeSettings = {}) {
   // Category C: Candle Psychology (Base Max: 15 pts)
   // ==========================================
   let cpPoints = 0;
-  const disp = evidence.candlePsychology?.displacementQuality !== undefined ? evidence.candlePsychology.displacementQuality : 0.5;
+  const disp = evidence?.candlePsychology?.displacementQuality !== undefined ? evidence.candlePsychology.displacementQuality : 0.5;
   cpPoints += Math.round(disp * 8); // Up to 8 pts for strong displacement
-  if (evidence.candlePsychology?.rejectionWickRatio > 0.3) {
+  if (evidence?.candlePsychology?.rejectionWickRatio > 0.3) {
     cpPoints += 5;
     reasons.push(`Rejection Wick (${Math.round(evidence.candlePsychology.rejectionWickRatio * 100)}%) (+5)`);
   }
-  if (evidence.candlePsychology?.momentumFollowThrough) {
+  if (evidence?.candlePsychology?.momentumFollowThrough) {
     cpPoints += 2;
     reasons.push('Momentum Follow-through (+2)');
   }
-  if (evidence.candlePsychology?.exhaustionDetected) {
+  if (evidence?.candlePsychology?.exhaustionDetected) {
     cpPoints = Math.max(0, cpPoints - 4);
     reasons.push('Exhaustion Penalty (-4)');
   }
@@ -188,19 +188,19 @@ export function scoreCandidate(candidate, activeSettings = {}) {
   // Anti-Double-Counting: OB + FVG + Fib capped at 15
   // ==========================================
   let zcPoints = 0;
-  if (evidence.zoneConfluence.inOrderBlock) {
+  if (evidence?.zoneConfluence?.inOrderBlock) {
     zcPoints += 7;
     reasons.push('Order Block Retest (+7)');
   }
-  if (evidence.zoneConfluence.inFvg) {
+  if (evidence?.zoneConfluence?.inFvg) {
     zcPoints += 5;
     reasons.push('FVG Infill (+5)');
   }
-  if (evidence.zoneConfluence.atFibLevel) {
+  if (evidence?.zoneConfluence?.atFibLevel) {
     zcPoints += 3;
     reasons.push('OTE Fibonacci Confluence (+3)');
   }
-  if (evidence.zoneConfluence.inDiscountOrPremium) {
+  if (evidence?.zoneConfluence?.inDiscountOrPremium) {
     zcPoints += 2;
   }
   const rawZc = Math.min(15, zcPoints);
@@ -210,20 +210,20 @@ export function scoreCandidate(candidate, activeSettings = {}) {
   // Category E: Multi-Timeframe Context (Base Max: 15 pts)
   // ==========================================
   let mtfPoints = 0;
-  if (evidence.multiTimeframe.alignedWithHtf) {
+  if (evidence?.multiTimeframe?.alignedWithHtf) {
     mtfPoints += 10;
     reasons.push(`HTF ${evidence.multiTimeframe.htfDirection} Aligned (+10)`);
-  } else if (evidence.multiTimeframe.htfDirection === 'Ranging') {
+  } else if (evidence?.multiTimeframe?.htfDirection === 'Ranging') {
     mtfPoints += 5;
     reasons.push('HTF Neutral Range (+5)');
   } else {
     // Counter-trend scalp or reversal
-    if (evidence.multiTimeframe.atKeyLevel) {
+    if (evidence?.multiTimeframe?.atKeyLevel) {
       mtfPoints += 4;
       reasons.push('Counter-trend at HTF Key Level (+4)');
     }
   }
-  if (evidence.multiTimeframe.atKeyLevel) {
+  if (evidence?.multiTimeframe?.atKeyLevel) {
     mtfPoints += 3;
   }
   const rawMtf = Math.min(15, mtfPoints);
@@ -232,7 +232,7 @@ export function scoreCandidate(candidate, activeSettings = {}) {
   // ==========================================
   // Category F: Market Regime Suitability (Base Max: 10 pts)
   // ==========================================
-  const rawRegime = Math.round((evidence.marketRegime.suitability || 0.6) * 10);
+  const rawRegime = Math.round((evidence?.marketRegime?.suitability || 0.6) * 10);
   breakdown.marketRegime = Math.round(rawRegime * weights.marketRegime * 10) / 10;
 
   // ==========================================
@@ -250,7 +250,7 @@ export function scoreCandidate(candidate, activeSettings = {}) {
     riskPoints += 1;
     reasons.push(`Low R:R (${rr.toFixed(1)}:1)`);
   }
-  if (evidence.riskSuitability.validSl) {
+  if (evidence?.riskSuitability?.validSl) {
     riskPoints += 4;
   }
   const rawRisk = Math.min(10, riskPoints);
@@ -283,10 +283,10 @@ export function scoreCandidate(candidate, activeSettings = {}) {
 
   const roundedTotal = Math.round(totalScore * 10) / 10;
 
-  // Quality Tier mapping
-  let qualityTier = QUALITY_GRADES.LOW;
-  if (roundedTotal >= 90) qualityTier = QUALITY_GRADES.A_PLUS;
-  else if (roundedTotal >= 80) qualityTier = QUALITY_GRADES.A;
+  // Quality Tier mapping (Canonical Scale: A+: 85-100, A: 75-84.9, B: 65-74.9, Watch: 50-64.9, Rejected: < 50)
+  let qualityTier = QUALITY_GRADES.REJECTED;
+  if (roundedTotal >= 85) qualityTier = QUALITY_GRADES.A_PLUS;
+  else if (roundedTotal >= 75) qualityTier = QUALITY_GRADES.A;
   else if (roundedTotal >= 65) qualityTier = QUALITY_GRADES.B;
   else if (roundedTotal >= 50) qualityTier = QUALITY_GRADES.WATCH;
 

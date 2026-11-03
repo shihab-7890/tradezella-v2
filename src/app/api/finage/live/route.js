@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { normalizeCandle } from '@/lib/finage';
 import { generateSimulatedCandles } from '@/lib/simulatedMarket';
 

@@ -211,8 +211,8 @@ export const DEFAULT_STRATEGY_SETTINGS = {
     enableUnifiedSignalEngine: true,
     enableConflictAnalysis: true,
     enableDuplicateSuppression: true,
-    qualityPreset: 'Balanced', // 'Light' | 'Balanced' | 'Selective'
-    unifiedScoreThreshold: 65, // 0 - 100 scale
+    qualityPreset: 'QUALITY_FIRST', // 'QUALITY_FIRST' | 'Balanced' | 'Selective' | 'Light'
+    unifiedScoreThreshold: 75, // 0 - 100 scale
     duplicateWindowCandles: 4,
     showScoreBreakdown: true,
     showConflictWarnings: true,
@@ -596,10 +596,18 @@ function inferSignalStrategy(signal) {
 }
 
 function getQualityTier(score) {
-    if (score >= 5) return 'A+';
-    if (score >= 4) return 'A';
-    if (score >= 3) return 'B';
-    return 'Candidate';
+    if (score > 10) {
+        if (score >= 85) return 'A+';
+        if (score >= 75) return 'A';
+        if (score >= 65) return 'B';
+        if (score >= 50) return 'Watch';
+        return 'Rejected';
+    }
+    if (score >= 8.5) return 'A+';
+    if (score >= 7.5) return 'A';
+    if (score >= 6.5) return 'B';
+    if (score >= 5.0) return 'Watch';
+    return 'Rejected';
 }
 
 function passesGlobalQualityFilters(signal, candles, settings, candleTimeIndex = null, qualityContext = null) {
@@ -732,45 +740,68 @@ function calculateRiskManagement(signal, candles, settings, candleTimeIndex = nu
     return { sl, tp };
 }
 
+const emaCache = new WeakMap();
 function calculateEMA(prices, period) {
     if (!prices || prices.length < period) return [];
+    let periodMap = emaCache.get(prices);
+    if (!periodMap) {
+        periodMap = new Map();
+        emaCache.set(prices, periodMap);
+    }
+    if (periodMap.has(period)) {
+        return periodMap.get(period);
+    }
+
     const k = 2 / (period + 1);
     let ema = [prices[0]];
     for (let i = 1; i < prices.length; i++) {
         ema.push(prices[i] * k + ema[i-1] * (1 - k));
     }
+    periodMap.set(period, ema);
     return ema;
 }
 
-function calculateATR(candles, period) {
-  const trueRanges = new Array(candles.length);
-  for (let i = 0; i < candles.length; i++) {
-    const c = candles[i];
-    if (i === 0) {
-      trueRanges[i] = c.high - c.low;
-      continue;
+const atrCache = new WeakMap();
+function calculateATR(candles, period = 20) {
+    if (!candles || candles.length === 0) return [];
+    let periodMap = atrCache.get(candles);
+    if (!periodMap) {
+        periodMap = new Map();
+        atrCache.set(candles, periodMap);
+    }
+    if (periodMap.has(period)) {
+        return periodMap.get(period);
     }
 
-    const prev = candles[i - 1];
-    trueRanges[i] = Math.max(
-      c.high - c.low,
-      Math.abs(c.high - prev.close),
-      Math.abs(c.low - prev.close)
-    );
-  }
-  
-  const atr = [];
-  let rollingSum = 0;
-  for (let i = 0; i < trueRanges.length; i++) {
-    rollingSum += trueRanges[i];
-    if (i < period) {
-      atr.push(null);
-      continue;
+    const trueRanges = new Array(candles.length);
+    for (let i = 0; i < candles.length; i++) {
+        const c = candles[i];
+        if (i === 0) {
+            trueRanges[i] = c.high - c.low;
+            continue;
+        }
+
+        const prev = candles[i - 1];
+        trueRanges[i] = Math.max(
+            c.high - c.low,
+            Math.abs(c.high - prev.close),
+            Math.abs(c.low - prev.close)
+        );
     }
-    rollingSum -= trueRanges[i - period];
-    atr.push(rollingSum / period);
-  }
-  return atr;
+    
+    const atr = [];
+    let rollingSum = 0;
+    for (let i = 0; i < trueRanges.length; i++) {
+        rollingSum += trueRanges[i];
+        if (i < period) {
+            atr.push(null);
+            continue;
+        }
+        rollingSum -= trueRanges[i - period];
+        atr.push(rollingSum / period);
+    }
+    periodMap.set(period, atr);
+    return atr;
 }
 
 

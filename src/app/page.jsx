@@ -7,13 +7,28 @@ import { CandleStickChart } from '@/components/tradezella/CandleStickChart';
 import { TradeLog } from '@/components/tradezella/TradeLog';
 import { SignalDiagnosticsPanel } from '@/components/tradezella/SignalDiagnosticsPanel';
 import { RiskManagementPanel } from '@/components/tradezella/RiskManagementPanel';
+import { BacktestingDashboard } from '@/components/tradezella/BacktestingDashboard';
+import { ReportCenter } from '@/components/tradezella/ReportCenter';
 import { useToast } from '@/hooks/use-toast';
 import { runConfluenceEngine } from '@/lib/liquidity';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ChevronsUpDown } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  BarChart2,
+  Sliders,
+  ShieldAlert,
+  ListOrdered,
+  Activity,
+  FileText,
+  X,
+  Layers,
+  ChevronRight,
+  Maximize2
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const createInitialAnalysisResult = () => ({
   tradeLog: [],
@@ -33,6 +48,8 @@ const createInitialAnalysisResult = () => ({
   simulatedAccount: null,
   riskDiagnostics: null,
   tradePlans: [],
+  diagnostics: null,
+  rankedOpportunities: [],
 });
 
 const STORAGE_KEYS = {
@@ -41,6 +58,7 @@ const STORAGE_KEYS = {
   session: 'sessionOverlayPrefs:v1',
   view: 'tradezella:view:v1',
   tradeLevels: 'tradezella:tradeLevels:v1',
+  sidebar: 'tradezella:sidebar:v1',
 };
 
 const defaultTradeLevelVisibility = {
@@ -174,7 +192,7 @@ const initialSettings = {
   showHtfKeyLevels: true,
   htfTimeframe: '4h',
   confluenceScoreThreshold: 4,
-  keyLevelProximity: 0.004, // 0.4%
+  keyLevelProximity: 0.004,
   defaultRiskRewardRatio: 1.5,
   volumeConfirmationGlobal: false,
   minimumDisplacementAtr: 0.8,
@@ -196,10 +214,10 @@ const initialSettings = {
   onlyShowZonesAboveThreshold: false,
   
   // Breaker Block Settings
-  breakerBlockConfirmation: 'Candle Rejection', // Options: 'Candle Rejection', 'FVG', 'MSS'
+  breakerBlockConfirmation: 'Candle Rejection',
 
   // Mitigation Block Settings
-  mitigationBlockConfirmation: 'Rejection Candle', // Options: 'Rejection Candle', 'FVG', 'MSS'
+  mitigationBlockConfirmation: 'Rejection Candle',
 
   // COB + MSS Settings
   cobLookbackPeriod: 20,
@@ -242,11 +260,11 @@ const initialSettings = {
   requireMomentumBreakout: true,
   momentumEntryType: 'Close of Spike',
 
-  slBufferPercent: 0.002, // 0.2%
+  slBufferPercent: 0.002,
   
   // Phase 7 — Unified Signal Scoring & Decision Engine
   enableUnifiedSignalEngine: true,
-  qualityPreset: 'Balanced', // Light, Balanced, Selective
+  qualityPreset: 'Balanced',
   unifiedScoreThreshold: 60,
   enableConflictAnalysis: true,
   preserveIndependentStyles: true,
@@ -293,6 +311,7 @@ export default function Home() {
   const [sessionSettings, setSessionSettings] = useState(initialSessionSettings);
   const [tradeLevelVisibility, setTradeLevelVisibility] = useState(defaultTradeLevelVisibility);
   const [selectedTrade, setSelectedTrade] = useState(null);
+  const [latestBacktestRun, setLatestBacktestRun] = useState(null);
   
   const [candles, setCandles] = useState([]);
   const [telemetry, setTelemetry] = useState(null);
@@ -302,10 +321,18 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [viewState, setViewState] = useState({
-    zoom: 10, // candle width in pixels
+    zoom: 10,
     candleOffset: 0,
   });
+
+  // Responsive Layout States
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('strategy'); // 'strategy' | 'risk' | 'trades' | 'diagnostics' | 'backtest' | 'reports'
   
+  // Mobile Drawer State
+  const [mobileDrawerTab, setMobileDrawerTab] = useState(null); // null | 'strategy' | 'risk' | 'trades' | 'analytics'
+  const [analyticsSubTab, setAnalyticsSubTab] = useState('diagnostics'); // 'diagnostics' | 'backtest' | 'reports'
+
   const containerRef = useRef(null);
   const fetchRunIdRef = useRef(0);
   const fetchAbortRef = useRef(null);
@@ -323,12 +350,14 @@ export default function Home() {
       ...defaultTradeLevelVisibility,
       ...readStorageValue(STORAGE_KEYS.tradeLevels, null),
     };
+    const savedSidebar = readStorageValue(STORAGE_KEYS.sidebar, true);
 
     setSettings(nextSettings);
     setConfig(nextConfig);
     setSessionSettings(nextSessionSettings);
     setViewState(nextViewState);
     setTradeLevelVisibility(nextTradeLevels);
+    setSidebarOpen(savedSidebar);
     hasHydratedPrefsRef.current = true;
     setHasHydratedPrefs(true);
   }, []);
@@ -358,6 +387,11 @@ export default function Home() {
     writeStorageValue(STORAGE_KEYS.tradeLevels, tradeLevelVisibility);
   }, [tradeLevelVisibility]);
 
+  useEffect(() => {
+    if (!hasHydratedPrefsRef.current) return;
+    writeStorageValue(STORAGE_KEYS.sidebar, sidebarOpen);
+  }, [sidebarOpen]);
+
   const handleFetchData = useCallback(async () => {
     const runId = fetchRunIdRef.current + 1;
     fetchRunIdRef.current = runId;
@@ -367,7 +401,7 @@ export default function Home() {
     analysisRunIdRef.current += 1;
 
     setIsLoading(true);
-    setLoadingStatus('Initializing 2-day chunked market data fetch...');
+    setLoadingStatus('Initializing market feed fetch...');
     setAnalysisResult(createInitialAnalysisResult());
     
     try {
@@ -382,7 +416,7 @@ export default function Home() {
       const endStr = dateRange.to.toISOString().split('T')[0];
       const apiUrl = `/api/finage?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&start=${startStr}&end=${endStr}&inclusive=true`;
       
-      setLoadingStatus(`Fetching historical ${symbol} (${timeframe}) across 48h chunks...`);
+      setLoadingStatus(`Fetching ${symbol} (${timeframe})...`);
       const response = await fetch(apiUrl, { signal: controller.signal });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -413,11 +447,11 @@ export default function Home() {
 
       const totalChunks = data.telemetry?.totalChunks || 1;
       const loadedMsg = data.isSimulated 
-        ? `[Demo Mode] Loaded ${data.candles.length.toLocaleString()} simulated candles across ${totalChunks} chunks.`
-        : `Loaded ${data.candles.length.toLocaleString()} real candles across ${totalChunks} chunks (${totalChunks * 2} days covered).`;
+        ? `[Demo Mode] Loaded ${data.candles.length.toLocaleString()} simulated candles.`
+        : `Loaded ${data.candles.length.toLocaleString()} real candles across ${totalChunks} chunks.`;
       
       toast({
-        title: data.isSimulated ? 'Demo Mode Active' : 'Market Data Loaded',
+        title: data.isSimulated ? 'Demo Feed Active' : 'Market Data Synced',
         description: loadedMsg,
       });
     } catch (error) {
@@ -448,7 +482,6 @@ export default function Home() {
           const result = await runConfluenceEngine(candles, settings, config);
           if (runId !== analysisRunIdRef.current) return;
           setAnalysisResult(result);
-          
         } catch (error) {
           if (runId !== analysisRunIdRef.current) return;
           console.error("Analysis Error:", error);
@@ -510,7 +543,7 @@ export default function Home() {
           isApproved: log.isApproved,
           qualityTier: log.qualityTier,
           strategy: log.strategy,
-          mssIndex: log.mssIndex, // Pass mssIndex for drawing
+          mssIndex: log.mssIndex,
         };
       }).filter(Boolean);
   }, [analysisResult.tradeLog, candleIndexByTime, settings.enableMtfEngine, settings.showOnlyHighQuality, settings.showCandidateOnlyMarkers, settings.observeManipulation]);
@@ -526,163 +559,309 @@ export default function Home() {
       .sort((a, b) => b.time - a.time);
   }, [analysisResult.tradeLog, settings.enableMtfEngine, settings.showOnlyHighQuality, settings.showCandidateOnlyMarkers]);
 
-  const CollapsibleTriggerButton = ({ sectionName }) => (
-    <CollapsibleTrigger asChild>
-      <Button variant="ghost" className="w-full justify-between px-4">
-        <span className="text-base font-semibold">{sectionName}</span>
-        <ChevronsUpDown className="h-4 w-4" />
-      </Button>
-    </CollapsibleTrigger>
-  );
-
   return (
-    <div className="flex h-screen w-full flex-col bg-background font-sans text-foreground">
-      <Collapsible>
-        <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between px-4 border-b">
-                <span className="text-lg font-semibold">Configuration</span>
-                <ChevronsUpDown className="h-4 w-4" />
-            </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <TopBar 
-            config={config} 
-            setConfig={setConfig} 
-            onFetchData={handleFetchData} 
-            isLoading={isLoading}
-            sessionSettings={sessionSettings}
-            setSessionSettings={setSessionSettings}
-           />
-        </CollapsibleContent>
-      </Collapsible>
-      
-      <main className="flex flex-1 flex-col gap-2 overflow-hidden p-4 pt-2">
-        <Collapsible className="rounded-2xl border bg-card shadow-md">
-           <CollapsibleTriggerButton sectionName="Strategy Settings" />
-          <CollapsibleContent>
-            <StrategySettings settings={settings} setSettings={setSettings} />
-          </CollapsibleContent>
-        </Collapsible>
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#070a0f] font-sans text-foreground">
+      {/* 1. Pro Terminal Header */}
+      <TopBar 
+        config={config} 
+        setConfig={setConfig} 
+        onFetchData={handleFetchData} 
+        isLoading={isLoading}
+        sessionSettings={sessionSettings}
+        setSessionSettings={setSessionSettings}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        telemetry={telemetry}
+        isSimulated={isSimulated}
+      />
 
-        {telemetry && (
-          <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl border bg-card/80 text-xs shadow-sm">
-            <div className="flex items-center gap-3">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium ${isSimulated ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
-                {isSimulated ? '● Demo Mode (Simulated)' : '● Finage Real Feed'}
-              </span>
-              <span className="text-muted-foreground">
-                Chunks: <strong className="text-foreground">{telemetry.completedChunks || telemetry.totalChunks}/{telemetry.totalChunks}</strong> (48h / chunk)
-              </span>
-              <span className="text-muted-foreground">
-                Duplicates Filtered: <strong className="text-foreground">{telemetry.duplicatesRemoved}</strong>
-              </span>
-              {telemetry.conflictsResolved > 0 && (
-                <span className="text-muted-foreground">
-                  Conflicts Resolved: <strong className="text-foreground">{telemetry.conflictsResolved}</strong>
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <span>
-                Weekend Closure: <strong className="text-foreground">{telemetry.weekendClosureMinutes}m</strong>
-              </span>
-              <span>
-                Intraday Gaps: <strong className="text-foreground">{telemetry.intradayMissingMinutes}m</strong>
-              </span>
-              <span>
-                Candles: <strong className="text-foreground">{telemetry.validCandles.toLocaleString()}</strong>
-              </span>
-            </div>
-          </div>
-        )}
+      {/* Loading Progress Ribbon */}
+      {isLoading && loadingStatus && (
+        <div className="h-5 px-3 bg-sky-500/10 border-b border-sky-500/20 text-[11px] text-sky-300 flex items-center justify-between shrink-0 animate-pulse">
+          <span className="font-medium truncate">{loadingStatus}</span>
+          <span className="text-[10px] text-sky-400/80 font-mono">Syncing Finage Feed...</span>
+        </div>
+      )}
 
-        {isLoading && loadingStatus && (
-          <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-lg border border-primary/20 bg-primary/5 text-xs text-primary animate-pulse">
-            <span>{loadingStatus}</span>
-          </div>
-        )}
-
-        <div className="flex-1 flex flex-col gap-2 overflow-hidden">
-          <Card ref={containerRef} className="flex-1 overflow-hidden shadow-xl rounded-2xl relative border-border/60 bg-[#0c1017]">
-            <CardContent className="h-full p-0 bg-[#0c1017]">
-              {isLoading && candles.length === 0 ? (
-                <div className="h-full w-full flex items-center justify-center">
-                  <div className="w-1/2 space-y-4">
-                    <Skeleton className="h-8 w-3/4" />
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-8 w-1/2" />
-                  </div>
+      {/* 2. Main Terminal Body (Desktop Split View & Mobile Viewport) */}
+      <div className="flex flex-1 w-full overflow-hidden relative">
+        {/* Main Chart Canvas Workspace */}
+        <main className="flex-1 h-full relative overflow-hidden bg-[#0c1017]">
+          <div ref={containerRef} className="h-full w-full relative">
+            {isLoading && candles.length === 0 ? (
+              <div className="h-full w-full flex flex-col items-center justify-center p-6 space-y-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-sky-500/10 flex items-center justify-center animate-pulse border border-sky-500/20">
+                  <Activity className="h-8 w-8 text-sky-400" />
                 </div>
-              ) : candles.length > 0 ? (
-                <CandleStickChart
-                  candles={candles}
-                  markers={markers}
-                  config={config}
-                  viewState={viewState}
-                  setViewState={setViewState}
-                  setIsDragging={setIsDragging}
-                  liquidityData={analysisResult.liquidityData}
-                  breakerBlocks={analysisResult.breakerBlocks}
-                  mitigationBlocks={analysisResult.mitigationBlocks}
-                  orderBlocks={analysisResult.orderBlocks}
-                  continuationOrderBlocks={analysisResult.continuationOrderBlocks}
-                  fvgs={analysisResult.fvgs}
-                  imbalanceZones={analysisResult.imbalanceZones}
-                  dealingRange={analysisResult.dealingRange}
-                  asianRanges={analysisResult.asianRanges}
-                  powerOfThreeZones={analysisResult.powerOfThreeZones}
-                  classicBreakoutZones={analysisResult.classicBreakoutZones}
-                  htfKeyLevels={analysisResult.htfKeyLevels}
-                  htfTrend={analysisResult.htfTrend}
-                  waterfallMarkers={analysisResult.waterfallMarkers}
-                  sessionSettings={sessionSettings}
-                  settings={settings}
-                  tradeLevelVisibility={tradeLevelVisibility}
-                  setTradeLevelVisibility={setTradeLevelVisibility}
-                  selectedTrade={selectedTrade}
-                  onSelectTrade={setSelectedTrade}
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <p className="text-muted-foreground">Select parameters and load data to begin.</p>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-white">Loading Market Feeds</h3>
+                  <p className="text-xs text-muted-foreground max-w-xs">{loadingStatus || 'Connecting to Finage market aggregate API...'}</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-          <Collapsible className="rounded-2xl border bg-card shadow-md">
-            <CollapsibleTriggerButton sectionName="Dynamic Risk Management & Position Sizing (Phase 8)" />
-            <CollapsibleContent>
+              </div>
+            ) : candles.length > 0 ? (
+              <CandleStickChart
+                candles={candles}
+                markers={markers}
+                config={config}
+                viewState={viewState}
+                setViewState={setViewState}
+                setIsDragging={setIsDragging}
+                liquidityData={analysisResult.liquidityData}
+                breakerBlocks={analysisResult.breakerBlocks}
+                mitigationBlocks={analysisResult.mitigationBlocks}
+                orderBlocks={analysisResult.orderBlocks}
+                continuationOrderBlocks={analysisResult.continuationOrderBlocks}
+                fvgs={analysisResult.fvgs}
+                imbalanceZones={analysisResult.imbalanceZones}
+                dealingRange={analysisResult.dealingRange}
+                asianRanges={analysisResult.asianRanges}
+                powerOfThreeZones={analysisResult.powerOfThreeZones}
+                classicBreakoutZones={analysisResult.classicBreakoutZones}
+                htfKeyLevels={analysisResult.htfKeyLevels}
+                htfTrend={analysisResult.htfTrend}
+                waterfallMarkers={analysisResult.waterfallMarkers}
+                sessionSettings={sessionSettings}
+                settings={settings}
+                tradeLevelVisibility={tradeLevelVisibility}
+                setTradeLevelVisibility={setTradeLevelVisibility}
+                selectedTrade={selectedTrade}
+                onSelectTrade={setSelectedTrade}
+              />
+            ) : (
+              <div className="h-full w-full flex flex-col items-center justify-center p-6 space-y-3 text-center">
+                <p className="text-xs text-muted-foreground">Select parameters and sync data to view price action.</p>
+                <Button size="sm" onClick={handleFetchData} className="bg-sky-600 hover:bg-sky-500 text-white text-xs">
+                  Load Market Data
+                </Button>
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Desktop Sidebar (Right Panel) */}
+        {sidebarOpen && (
+          <aside className="hidden md:flex flex-col w-[380px] lg:w-[420px] h-full border-l border-white/10 bg-[#090d14] z-20 shrink-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full w-full">
+              {/* Tab Header Bar */}
+              <div className="border-b border-white/10 bg-[#0d121c] p-1.5 shrink-0">
+                <TabsList className="grid grid-cols-6 h-8 w-full bg-white/5 p-0.5 rounded-lg text-xs">
+                  <TabsTrigger value="strategy" className="px-1 py-1 text-[11px] font-medium data-[state=active]:bg-sky-500/20 data-[state=active]:text-sky-300">
+                    Strategy
+                  </TabsTrigger>
+                  <TabsTrigger value="risk" className="px-1 py-1 text-[11px] font-medium data-[state=active]:bg-sky-500/20 data-[state=active]:text-sky-300">
+                    Risk
+                  </TabsTrigger>
+                  <TabsTrigger value="trades" className="px-1 py-1 text-[11px] font-medium data-[state=active]:bg-sky-500/20 data-[state=active]:text-sky-300 relative">
+                    Trades
+                    {displayedTradeLog.length > 0 && (
+                      <span className="ml-1 px-1 rounded bg-sky-500 text-[9px] text-white font-bold">{displayedTradeLog.length}</span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="diagnostics" className="px-1 py-1 text-[11px] font-medium data-[state=active]:bg-sky-500/20 data-[state=active]:text-sky-300">
+                    Diag
+                  </TabsTrigger>
+                  <TabsTrigger value="backtest" className="px-1 py-1 text-[11px] font-medium data-[state=active]:bg-sky-500/20 data-[state=active]:text-sky-300">
+                    Backtest
+                  </TabsTrigger>
+                  <TabsTrigger value="reports" className="px-1 py-1 text-[11px] font-medium data-[state=active]:bg-sky-500/20 data-[state=active]:text-sky-300">
+                    Report
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              {/* Tab Contents Container */}
+              <div className="flex-1 overflow-y-auto p-3 text-xs custom-scrollbar">
+                <TabsContent value="strategy" className="mt-0 space-y-4">
+                  <StrategySettings settings={settings} setSettings={setSettings} />
+                </TabsContent>
+
+                <TabsContent value="risk" className="mt-0 space-y-4">
+                  <RiskManagementPanel 
+                    simulatedAccount={analysisResult.simulatedAccount}
+                    riskDiagnostics={analysisResult.riskDiagnostics}
+                    tradePlans={analysisResult.tradePlans}
+                    symbol={config?.symbol || 'XAUUSD'}
+                  />
+                </TabsContent>
+
+                <TabsContent value="trades" className="mt-0 space-y-4">
+                  <TradeLog 
+                    tradeLog={displayedTradeLog} 
+                    selectedTrade={selectedTrade}
+                    onSelectTrade={setSelectedTrade}
+                  />
+                </TabsContent>
+
+                <TabsContent value="diagnostics" className="mt-0 space-y-4">
+                  <SignalDiagnosticsPanel 
+                    diagnostics={analysisResult.diagnostics} 
+                    rankedOpportunities={analysisResult.rankedOpportunities} 
+                  />
+                </TabsContent>
+
+                <TabsContent value="backtest" className="mt-0 space-y-4">
+                  <BacktestingDashboard 
+                    candles={candles} 
+                    config={config} 
+                    settings={settings} 
+                    onRunComplete={setLatestBacktestRun} 
+                  />
+                </TabsContent>
+
+                <TabsContent value="reports" className="mt-0 space-y-4">
+                  <ReportCenter 
+                    backtestRun={latestBacktestRun} 
+                    candles={candles} 
+                    config={config} 
+                    settings={settings} 
+                  />
+                </TabsContent>
+              </div>
+            </Tabs>
+          </aside>
+        )}
+      </div>
+
+      {/* 3. Mobile Navigation Bottom Bar (<768px) */}
+      <nav className="md:hidden h-14 w-full bg-[#090d14] border-t border-white/10 flex items-center justify-around px-2 z-30 shrink-0 select-none">
+        <button
+          onClick={() => setMobileDrawerTab(null)}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-colors text-[10px] font-medium",
+            mobileDrawerTab === null ? "text-sky-400 font-bold" : "text-gray-400 hover:text-white"
+          )}
+        >
+          <BarChart2 className="h-4 w-4" />
+          <span>Chart</span>
+        </button>
+
+        <button
+          onClick={() => setMobileDrawerTab('strategy')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-colors text-[10px] font-medium",
+            mobileDrawerTab === 'strategy' ? "text-sky-400 font-bold" : "text-gray-400 hover:text-white"
+          )}
+        >
+          <Sliders className="h-4 w-4" />
+          <span>Strategy</span>
+        </button>
+
+        <button
+          onClick={() => setMobileDrawerTab('risk')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-colors text-[10px] font-medium",
+            mobileDrawerTab === 'risk' ? "text-sky-400 font-bold" : "text-gray-400 hover:text-white"
+          )}
+        >
+          <ShieldAlert className="h-4 w-4" />
+          <span>Risk & Size</span>
+        </button>
+
+        <button
+          onClick={() => setMobileDrawerTab('trades')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-colors text-[10px] font-medium relative",
+            mobileDrawerTab === 'trades' ? "text-sky-400 font-bold" : "text-gray-400 hover:text-white"
+          )}
+        >
+          <ListOrdered className="h-4 w-4" />
+          <span>Trade Log</span>
+          {displayedTradeLog.length > 0 && (
+            <span className="absolute top-0.5 right-3 h-3.5 w-3.5 rounded-full bg-sky-500 text-[8px] text-white flex items-center justify-center font-bold">
+              {displayedTradeLog.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setMobileDrawerTab('analytics')}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-colors text-[10px] font-medium",
+            mobileDrawerTab === 'analytics' ? "text-sky-400 font-bold" : "text-gray-400 hover:text-white"
+          )}
+        >
+          <Activity className="h-4 w-4" />
+          <span>Analytics</span>
+        </button>
+      </nav>
+
+      {/* 4. Mobile Drawer / Sheet (<768px) */}
+      <Sheet open={mobileDrawerTab !== null} onOpenChange={(open) => !open && setMobileDrawerTab(null)}>
+        <SheetContent side="bottom" className="h-[85vh] p-0 bg-[#0c1017] border-t border-white/15 text-white z-50 flex flex-col">
+          {/* Drawer Handle & Header */}
+          <div className="flex items-center justify-between p-3 border-b border-white/10 bg-[#111827] shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+              <SheetTitle className="text-sm font-bold text-white">
+                {mobileDrawerTab === 'strategy' && 'Strategy & Signal Engine Controls'}
+                {mobileDrawerTab === 'risk' && 'Dynamic Risk & Position Sizing'}
+                {mobileDrawerTab === 'trades' && `Trade Log & Signal Execution (${displayedTradeLog.length})`}
+                {mobileDrawerTab === 'analytics' && 'Analytics, Backtesting & Reports'}
+              </SheetTitle>
+            </div>
+            <SheetDescription className="sr-only">Mobile Config Sheet</SheetDescription>
+          </div>
+
+          {/* Drawer Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 text-xs space-y-4 custom-scrollbar">
+            {mobileDrawerTab === 'strategy' && (
+              <StrategySettings settings={settings} setSettings={setSettings} />
+            )}
+
+            {mobileDrawerTab === 'risk' && (
               <RiskManagementPanel 
                 simulatedAccount={analysisResult.simulatedAccount}
                 riskDiagnostics={analysisResult.riskDiagnostics}
                 tradePlans={analysisResult.tradePlans}
                 symbol={config?.symbol || 'XAUUSD'}
               />
-            </CollapsibleContent>
-          </Collapsible>
+            )}
 
-          <Collapsible className="rounded-2xl border bg-card shadow-md">
-            <CollapsibleTriggerButton sectionName="Trade Log" />
-            <CollapsibleContent>
+            {mobileDrawerTab === 'trades' && (
               <TradeLog 
                 tradeLog={displayedTradeLog} 
                 selectedTrade={selectedTrade}
                 onSelectTrade={setSelectedTrade}
               />
-            </CollapsibleContent>
-          </Collapsible>
+            )}
 
-          <Collapsible className="rounded-2xl border bg-card shadow-md">
-            <CollapsibleTriggerButton sectionName="Signal Diagnostics" />
-            <CollapsibleContent>
-              <SignalDiagnosticsPanel 
-                diagnostics={analysisResult.diagnostics} 
-                rankedOpportunities={analysisResult.rankedOpportunities} 
-              />
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-      </main>
+            {mobileDrawerTab === 'analytics' && (
+              <Tabs value={analyticsSubTab} onValueChange={setAnalyticsSubTab} className="w-full space-y-3">
+                <TabsList className="grid grid-cols-3 h-8 w-full bg-white/5 p-0.5 rounded-lg text-xs">
+                  <TabsTrigger value="diagnostics" className="px-2 py-1 text-[11px] font-medium">Diagnostics</TabsTrigger>
+                  <TabsTrigger value="backtest" className="px-2 py-1 text-[11px] font-medium">Backtest</TabsTrigger>
+                  <TabsTrigger value="reports" className="px-2 py-1 text-[11px] font-medium">Reports</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="diagnostics" className="mt-0">
+                  <SignalDiagnosticsPanel 
+                    diagnostics={analysisResult.diagnostics} 
+                    rankedOpportunities={analysisResult.rankedOpportunities} 
+                  />
+                </TabsContent>
+
+                <TabsContent value="backtest" className="mt-0">
+                  <BacktestingDashboard 
+                    candles={candles} 
+                    config={config} 
+                    settings={settings} 
+                    onRunComplete={setLatestBacktestRun} 
+                  />
+                </TabsContent>
+
+                <TabsContent value="reports" className="mt-0">
+                  <ReportCenter 
+                    backtestRun={latestBacktestRun} 
+                    candles={candles} 
+                    config={config} 
+                    settings={settings} 
+                  />
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

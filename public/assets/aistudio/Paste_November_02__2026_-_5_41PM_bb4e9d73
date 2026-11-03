@@ -1,0 +1,2168 @@
+# PHASE 10 — INSTITUTIONAL-GRADE BACKTESTING, WALK-FORWARD VALIDATION, STRATEGY OPTIMIZATION, PRODUCTION RELIABILITY & COMPLETE REPORT GENERATION SYSTEM
+
+## PROJECT: TradeZella Canvas — Next.js + React + Finage API
+
+Act as a senior quantitative research engineer, algorithmic backtesting architect, trading systems validation specialist, Next.js developer, statistical performance researcher, financial reporting engineer and production reliability architect.
+
+Your task is to implement **Phase 10 — Complete Backtesting, Strategy Validation, Optimization, Reporting and Production Readiness** into my EXISTING TradeZella Canvas application.
+
+This is the final major development phase.
+
+I want a complete, professional backtesting platform that can:
+
+1. Backtest all existing trading strategies.
+2. Evaluate BUY and SELL signals independently.
+3. Analyze Scalping, Intraday and Swing strategies.
+4. Validate strategies using walk-forward testing.
+5. Optimize eligible strategy settings automatically within defined limits.
+6. Compare fixed and adaptive strategies.
+7. Detect overfitting and unreliable performance.
+8. Calculate realistic costs and trade outcomes.
+9. Show comprehensive performance analytics.
+10. Generate detailed professional reports.
+11. Download reports in multiple formats.
+12. Export complete trade-level and signal-level data.
+13. Save and reopen completed backtest reports.
+14. Run long historical calculations reliably.
+15. Protect existing chart and trading functionality.
+16. Verify the complete application before production deployment.
+
+**IMPORTANT: Implement actual production-quality code, functional workflows, report generation, download endpoints and automated tests.**
+
+Do not provide only a plan, mockup or list of recommendations.
+
+Do not rebuild my application from scratch.
+
+Do not remove or rewrite working trading algorithms unnecessarily.
+
+Do not compromise historical correctness to produce better-looking performance results.
+
+---
+
+# 1. EXISTING APPLICATION ARCHITECTURE
+
+My application is based on:
+
+- Next.js.
+- React.
+- Finage historical market data.
+- Automatic two-day historical API chunking.
+- UTC epoch timestamp normalization.
+- Historical candle merging and deduplication.
+- HTML5 Canvas candlestick chart.
+- Multiple trading timeframes.
+- Historical candle replay.
+- Strategy configuration.
+- BUY/SELL signal generation.
+- Trade logs.
+- CSV export.
+
+## Previous Phases
+
+### Phase 1 — Signal Foundation
+BUY/SELL detection, deduplication, scoring and non-repainting.
+
+### Phase 2 — Candle Psychology
+Candle strength, wick analysis, rejection, exhaustion, waterfall and momentum.
+
+### Phase 3 — SMC Intelligence
+BOS, CHoCH, MSS, liquidity, OB, FVG, Fibonacci and premium/discount.
+
+### Phase 4 — Automatic Strategy Settings
+Regime detection, volatility analysis and AUTO/HYBRID/MANUAL profiles.
+
+### Phase 5 — Scalping
+1m/3m/5m signal intelligence and fast entry planning.
+
+### Phase 6 — Intraday & Swing
+Multi-timeframe trend, liquidity, deep pullbacks and large-move setups.
+
+### Phase 7 — Unified Decision Engine
+Unified quality scoring, conflict resolution, signal ranking and lifecycle.
+
+### Phase 8 — Risk Management
+Position sizing, SL/TP, partial profits, trailing stops, loss protection and execution simulation.
+
+### Phase 9 — Professional Terminal
+Signal dashboard, automatic settings UI, chart visualization, risk dashboard, performance analytics and responsive interface.
+
+A separate optimization task may also have improved API fetching, caching, calculation speed and Canvas performance.
+
+Before implementation, inspect the actual repository and verify which features already exist.
+
+Do not assume previous phases are fully implemented simply because they were specified.
+
+Preserve all working functionality.
+
+---
+
+# 2. FIRST — COMPLETE CODEBASE & BACKTESTING AUDIT
+
+Inspect:
+
+- `src/app/page.jsx`
+- `src/lib/liquidity.js`
+- `src/services/finageService.js`
+- `src/app/api/finage/route.js`
+- `src/components/tradezella/CandleStickChart.jsx`
+- `src/components/tradezella/PlaybackControls.jsx`
+- `src/components/tradezella/TradeLog.jsx`
+- `src/components/tradezella/StrategySettings.jsx`
+- Existing signal engines.
+- Existing strategy modules.
+- Existing risk management.
+- Existing execution simulator.
+- Existing adaptive settings.
+- Existing reporting/export utilities.
+- Existing database schema and persistence layer, if present.
+
+Determine:
+
+- How historical candles are fetched.
+- How strategies are evaluated.
+- How signals are confirmed.
+- How entries are simulated.
+- How SL/TP are executed.
+- How partial exits work.
+- How equity is calculated.
+- How win rate and profit factor are calculated.
+- Whether execution costs are included.
+- Whether future information leaks into calculations.
+- Whether current backtests can be reproduced.
+- How reports could be persisted and downloaded.
+
+Reuse current working implementations.
+
+Avoid building another conflicting signal engine or trading simulator.
+
+---
+
+# 3. PROFESSIONAL HISTORICAL BACKTEST ENGINE
+
+Create a unified backtesting engine that evaluates existing strategies over user-selected historical periods.
+
+## Supported Trading Styles
+
+- Scalping.
+- Intraday.
+- Swing.
+- All Styles.
+
+## Supported Signal Directions
+
+- BUY.
+- SELL.
+- Both.
+
+## Supported Strategies
+
+Include all actually implemented strategies, such as:
+
+- Liquidity Sweep.
+- BOS/CHoCH/MSS.
+- Order Block.
+- FVG/IFVG.
+- Breakout.
+- Momentum.
+- Waterfall.
+- First Pullback.
+- Fibonacci Retracement.
+- Trend Continuation.
+- Swing Reversal.
+- Adaptive Strategy.
+- Unified Signal Engine.
+
+Do not create new detection logic merely for backtesting.
+
+The backtesting engine must consume the same strategy calculations used by the existing application.
+
+## Required Backtest Workflow
+
+1. User selects symbol.
+2. User selects date range.
+3. User selects trading style.
+4. User selects timeframe or configured MTF profile.
+5. User selects strategies.
+6. User selects AUTO/HYBRID/MANUAL settings.
+7. User configures simulation assumptions.
+8. System verifies required historical data.
+9. System processes candles chronologically.
+10. Strategies generate candidates.
+11. Unified engine evaluates signals.
+12. Risk engine constructs eligible trade plans.
+13. Execution simulator processes eligible orders.
+14. Trade management runs using historical information available at each step.
+15. Completed trades and open-trade states are recorded.
+16. Performance metrics are calculated.
+17. Results are displayed.
+18. User can generate and download reports.
+
+All stages must be reproducible.
+
+---
+
+# 4. HISTORICAL DATA INTEGRITY
+
+Preserve the Finage data-fetching pipeline.
+
+Including:
+
+- Maximum-two-day API requests.
+- Parallel fetching within rate limits.
+- Request deduplication.
+- Chunk caching.
+- Epoch timestamp normalization.
+- Chronological merging.
+- Duplicate-candle removal.
+- Accurate selected date boundaries.
+- Missing-data detection.
+- Complete historical coverage verification.
+
+## Date Example
+
+October 10 00:00 UTC to October 20 00:00 UTC, end exclusive:
+
+Five two-day requests.
+
+For October 10 through the entire calendar day of October 20:
+
+Fetch through October 21 00:00 UTC, requiring six chunks.
+
+Never silently omit the last selected day.
+
+## Historical Data Provenance
+
+Record:
+
+- Provider.
+- Symbol.
+- Timeframe.
+- Requested range.
+- Actual covered range.
+- Candle count.
+- Missing-data warnings.
+- Data quality flags.
+- Dataset checksum or equivalent reproducible identifier.
+- Whether candles are genuine provider data or simulated/demo data.
+
+### Critical Rule
+
+Do not mix simulated fallback candles with genuine Finage candles while presenting the result as a real historical backtest.
+
+If the required real historical data is unavailable, show a clear error or explicitly labeled demo evaluation.
+
+Never fabricate historical prices or missing market candles.
+
+---
+
+# 5. NO LOOK-AHEAD BIAS OR REPAINTING
+
+This is mandatory for every backtest.
+
+Implement chronological, decision-time-correct evaluation.
+
+### Strict Rules
+
+1. A strategy can only access candles available at its decision timestamp.
+2. An unfinished candle cannot be treated as confirmed.
+3. Higher-timeframe indicators must respect HTF completion times.
+4. Structural pivots must respect confirmation delay.
+5. Order Blocks and FVGs cannot be traded before their confirmation.
+6. Automatic Fibonacci anchors cannot use future-confirmed swing points.
+7. Market regime classification cannot use future candles.
+8. Adaptive settings cannot use future trade results.
+9. Historical signal scores must preserve their original information cutoff.
+10. Entry simulation must begin only after the corresponding order becomes eligible.
+
+Do not retroactively fill a trade at a candle price that existed before the trade signal was confirmed.
+
+## Replay Consistency
+
+Compare:
+
+- Full historical backtest.
+- Candle-by-candle replay.
+- Incremental completed-candle processing.
+
+They must produce equivalent confirmed signals and trade events under identical data and execution assumptions.
+
+---
+
+# 6. REALISTIC TRADE EXECUTION SIMULATION
+
+Reuse and strengthen the Phase 8 execution simulator.
+
+Support:
+
+- Market entries.
+- Limit entries.
+- Stop entries.
+- Retest entries.
+- Stop-loss exits.
+- Take-profit exits.
+- Partial closes.
+- Break-even modifications.
+- Trailing-stop modifications.
+- Trade expiration.
+- Setup invalidation.
+
+## Execution Costs
+
+Include:
+
+- Spread.
+- Slippage.
+- Commission.
+- Other configured broker fees.
+- Overnight financing/swap when applicable.
+- Currency conversion when required.
+
+Use historical bid/ask data when available.
+
+If only OHLC midpoint or quote candles are available, use explicitly documented execution assumptions.
+
+Do not silently assume zero spread or zero slippage.
+
+## Intrabar Ambiguity
+
+When SL and TP are both inside one historical candle:
+
+- Use verified lower-timeframe data when available.
+- Otherwise apply an explicit conservative or documented ambiguity rule.
+- Flag the affected result.
+
+Do not automatically assume the profitable exit occurred first.
+
+## Gap Handling
+
+Support market reopening and overnight gaps.
+
+A simulated stop loss must not always fill at the requested stop price when the historical price gaps beyond it.
+
+## Position Management
+
+Correctly track:
+
+- Original quantity.
+- Remaining quantity.
+- Partial exits.
+- Realized P/L.
+- Unrealized P/L.
+- Fees.
+- Stop changes.
+- Holding duration.
+
+Keep approved signals separate from executed trades.
+
+---
+
+# 7. ADVANCED STRATEGY PERFORMANCE METRICS
+
+Build a comprehensive analytics engine.
+
+## 7.1 Trade Statistics
+
+Calculate:
+
+- Total candidate signals.
+- Approved signals.
+- Rejected signals.
+- Expired signals.
+- Entry orders.
+- Triggered trades.
+- Open trades.
+- Closed trades.
+- Winning trades.
+- Losing trades.
+- Break-even trades.
+- Win rate.
+- Loss rate.
+- Average profit.
+- Average loss.
+- Largest win.
+- Largest loss.
+- Consecutive wins.
+- Consecutive losses.
+- Average holding time.
+
+Win rate must use clearly defined completed trade outcomes.
+
+Do not include unfilled signals.
+
+## 7.2 Financial Metrics
+
+Calculate:
+
+- Gross Profit.
+- Gross Loss.
+- Gross P/L.
+- Total Commissions.
+- Total Spread Cost.
+- Total Slippage Cost.
+- Financing Costs.
+- Net P/L.
+- Profit Factor.
+- Net Expectancy.
+- Average R Multiple.
+- Return on Simulated Equity.
+- Return on Risk Capital.
+- Maximum Drawdown.
+- Current Drawdown.
+- Drawdown Duration.
+- Recovery Factor.
+
+Use mathematically correct denominators and clearly documented definitions.
+
+For example:
+
+Win Rate = Winning Closed Trades / Eligible Closed Trades × 100.
+
+Profit Factor = Gross Winning P/L / Absolute Gross Losing P/L.
+
+Net Expectancy = Expected Net P/L Per Trade Based on Observed Trade Outcomes.
+
+Where metrics are undefined, display N/A with a reason rather than zero or an invented value.
+
+## 7.3 Risk-Adjusted Metrics
+
+Where statistically appropriate and supported by the data:
+
+- Sharpe Ratio.
+- Sortino Ratio.
+- Calmar Ratio.
+- Volatility of Returns.
+- Downside Deviation.
+- Maximum Equity Drawdown.
+- Exposure Time.
+
+Use consistent return sampling frequencies and annualization assumptions.
+
+Do not calculate an annualized Sharpe ratio incorrectly from irregular individual trade outcomes.
+
+Document methodology.
+
+---
+
+# 8. COMPLETE BUY VS SELL ANALYTICS
+
+One of the earlier issues in my app was one-sided signal generation.
+
+Phase 10 must explicitly analyze both directions.
+
+Show:
+
+- BUY candidates.
+- SELL candidates.
+- BUY approvals.
+- SELL approvals.
+- BUY triggered trades.
+- SELL triggered trades.
+- BUY win rate.
+- SELL win rate.
+- BUY expectancy.
+- SELL expectancy.
+- BUY profit factor.
+- SELL profit factor.
+- BUY drawdown contribution.
+- SELL drawdown contribution.
+
+Provide results by:
+
+- Strategy.
+- Timeframe.
+- Trading style.
+- Market regime.
+- Historical period.
+
+Do not force both directions to have equal signal counts.
+
+Use diagnostics to identify possible persistent directional defects without confusing genuine directional market conditions with implementation bugs.
+
+---
+
+# 9. SCALPING, INTRADAY & SWING COMPARISONS
+
+Build independent performance analysis for all three trading styles.
+
+## Scalping
+
+Evaluate:
+
+- 1m/3m/5m performance.
+- Fast liquidity entries.
+- Micro-MSS.
+- Waterfall continuation.
+- First-pullback setups.
+- Transaction cost sensitivity.
+- Average holding duration.
+- Signal frequency.
+
+## Intraday
+
+Evaluate:
+
+- Session-based performance.
+- Breakout/retest.
+- Intraday liquidity.
+- Session momentum.
+- Intraday structure.
+- Time-of-day performance.
+- Transaction costs.
+
+## Swing
+
+Evaluate:
+
+- HTF trend continuation.
+- Major liquidity reversals.
+- Order Block/FVG.
+- Fibonacci pullbacks.
+- Multi-session movement.
+- Overnight costs.
+- Gap exposure.
+- Holding duration.
+
+### Comparison Dashboard
+
+Allow side-by-side comparison of:
+
+- Win rate.
+- Net P/L.
+- Profit Factor.
+- Expectancy.
+- Maximum Drawdown.
+- Average R.
+- Trade count.
+- Trading costs.
+- Holding time.
+
+Do not compare performance from different date ranges or capital assumptions without clearly disclosing the differences.
+
+---
+
+# 10. PROFESSIONAL WALK-FORWARD VALIDATION ENGINE
+
+**This is a critical Phase 10 component.**
+
+Implement genuine chronological walk-forward testing.
+
+The purpose is to evaluate whether a strategy configured using earlier market data continues to perform on later, unseen data.
+
+## 10.1 Walk-Forward Structure
+
+Support:
+
+- Training Window.
+- Validation Window, when used.
+- Out-of-Sample Test Window.
+- Window Advancement.
+- Multiple Folds.
+- Aggregated OOS Results.
+
+### Example
+
+For a sufficiently long historical dataset:
+
+Fold 1:
+- Train: January–March.
+- Test: April.
+
+Fold 2:
+- Train: February–April.
+- Test: May.
+
+Fold 3:
+- Train: March–May.
+- Test: June.
+
+Fold 4:
+- Train: April–June.
+- Test: July.
+
+This is illustrative.
+
+Use actual trading-calendar timestamps and configurable month/window definitions.
+
+Do not require the example dates to be hardcoded.
+
+## 10.2 Walk-Forward Methods
+
+Support:
+
+### Rolling Window
+
+Use a fixed-duration training window that moves forward.
+
+### Anchored / Expanding Window
+
+Use an initial training start and expand the training history over time.
+
+Make the method selectable.
+
+## 10.3 Data Leakage Protection
+
+No fold may use future test outcomes during training or parameter selection.
+
+Where labels, trade horizons or positions overlap fold boundaries, implement appropriate purging, embargo or chronological separation.
+
+Do not remove arbitrary periods without documenting the method.
+
+Indicators may require warm-up candles before the scored test interval. Warm-up data can initialize calculations but must not introduce future observations or incorrectly enter test performance calculations.
+
+## 10.4 Parameter Selection
+
+For each fold:
+
+1. Build the training dataset.
+2. Evaluate eligible settings.
+3. Select parameters using only permitted training/validation information.
+4. Freeze the chosen parameters.
+5. Run the next OOS test interval.
+6. Record actual test performance.
+7. Advance the window.
+8. Repeat.
+
+Do not optimize on the OOS test window.
+
+## 10.5 Walk-Forward Reports
+
+Include:
+
+- Fold number.
+- Training dates.
+- Validation dates.
+- Test dates.
+- Selected settings.
+- Training metrics.
+- OOS metrics.
+- Parameter stability.
+- Number of trades.
+- Total net performance.
+- Drawdown.
+- Cost sensitivity.
+- Performance deterioration.
+
+Combine OOS results using a chronologically valid method without double-counting overlapping test periods.
+
+Do not simply average fold win rates when fold sample sizes differ.
+
+---
+
+# 11. PROFESSIONAL STRATEGY PARAMETER OPTIMIZATION
+
+Build a controlled optimization system.
+
+Use the Phase 4 adaptive-settings framework.
+
+Optimize only supported, configurable strategy parameters.
+
+Examples:
+
+- Confluence thresholds.
+- Minimum displacement ATR.
+- Candle body strength.
+- Liquidity tolerance.
+- MSS confirmation sensitivity.
+- Order Block quality threshold.
+- FVG gap sensitivity.
+- Waterfall sequence strength.
+- Pullback depth.
+- Signal spacing.
+- Entry confirmation policy.
+- Trailing-stop parameters.
+- Break-even trigger.
+- Target method.
+
+Do not optimize every parameter simultaneously by default.
+
+## 11.1 Optimization Methods
+
+Support practical methods such as:
+
+- Grid Search.
+- Seeded Random Search.
+- Manual Scenario Comparison.
+
+Add more advanced search methods only when justified by the existing architecture and evaluation budget.
+
+## 11.2 Parameter Bounds
+
+Every optimized parameter must have:
+
+- Minimum.
+- Maximum.
+- Step or sampling distribution.
+- Valid type.
+- Default.
+- Strategy applicability.
+- Settings version.
+
+Reject invalid combinations.
+
+## 11.3 Optimization Objectives
+
+Allow selection of appropriate objective functions:
+
+- Net Expectancy.
+- Profit Factor.
+- Risk-Adjusted Return.
+- Drawdown-Constrained Return.
+- Robust Multi-Metric Objective.
+
+Avoid maximizing win rate alone.
+
+A high win rate can still produce negative expectancy.
+
+## 11.4 Minimum Sample Rules
+
+Prevent misleading optimization from tiny sample sizes.
+
+Use configurable minimum trade counts and data-coverage requirements.
+
+If sample size is inadequate, mark the result as statistically limited.
+
+Do not artificially increase signal frequency to meet a trade-count target.
+
+## 11.5 Optimization Results
+
+Store:
+
+- Trial ID.
+- Parameter combination.
+- Dataset.
+- Training period.
+- Validation period.
+- Number of trades.
+- Net P/L.
+- Expectancy.
+- Drawdown.
+- Profit Factor.
+- Objective score.
+- Runtime.
+- Status.
+
+Support sorting and filtering optimization trials.
+
+---
+
+# 12. OVERFITTING & ROBUSTNESS ANALYSIS
+
+Add a dedicated Strategy Robustness evaluation.
+
+The goal is to identify cases where a strategy performs well only on the historical period used to tune it.
+
+## Robustness Checks
+
+Include:
+
+- Training vs OOS performance.
+- Parameter sensitivity.
+- Performance across adjacent parameter values.
+- Multiple market regimes.
+- Bullish vs bearish conditions.
+- Volatility conditions.
+- Timeframe sensitivity.
+- Trading-cost sensitivity.
+- Trade-count sufficiency.
+- Concentration of returns in a small number of trades.
+
+## Parameter Stability
+
+A robust candidate should not depend entirely on one extremely narrow parameter combination.
+
+Visualize parameter sensitivity where useful.
+
+Do not automatically select the highest-profit optimization trial.
+
+Prefer a documented robust selection objective.
+
+## Bootstrap / Monte Carlo Analysis
+
+Where sufficient data exists, optionally support:
+
+- Trade-return resampling.
+- Block bootstrap to account for serial dependence.
+- Trade sequence sensitivity.
+- Drawdown distribution estimates.
+- Parameter uncertainty summaries.
+
+Make the assumptions explicit.
+
+These simulations estimate variability under assumptions; they do not guarantee future outcomes.
+
+## Statistical Warnings
+
+Flag cases such as:
+
+- Too few trades.
+- High train/test performance gap.
+- Extremely unstable parameters.
+- High concentration in one strategy or period.
+- Excessive drawdown.
+- Strong sensitivity to spread.
+- Significant regime dependence.
+- Suspiciously perfect historical fills.
+
+Do not use arbitrary robustness scores without defining their components.
+
+---
+
+# 13. FIXED VS ADAPTIVE STRATEGY COMPARISON
+
+Evaluate Phase 4 AUTO mode against fixed settings.
+
+Use identical:
+
+- Historical periods.
+- Symbols.
+- Timeframes.
+- Data-source versions.
+- Execution assumptions.
+- Risk constraints.
+- Cost models.
+
+Compare:
+
+- Manual Fixed Settings.
+- Balanced Preset.
+- AUTO Adaptive Settings.
+- Alternative Validated Profiles.
+
+Show:
+
+- Approved signals.
+- Triggered trades.
+- Win rate.
+- Net expectancy.
+- Profit Factor.
+- Maximum Drawdown.
+- Costs.
+- OOS performance.
+- Signal frequency.
+- Parameter stability.
+
+Do not claim AUTO is better simply because it produces more signals or has a higher in-sample win rate.
+
+Preserve actual user settings and avoid automatically activating an optimized profile without explicit user selection.
+
+---
+
+# 14. COMPLETE REPORT GENERATION ENGINE
+
+**Major requirement: Build a real report generation system, not a simple CSV export button.**
+
+Create a reusable reporting architecture that converts verified backtest runs and strategy evaluations into downloadable professional reports.
+
+Report generation must be based on immutable or versioned run results.
+
+## Required Report Types
+
+### Report A — Complete Backtesting Report
+
+Include:
+
+- Report title.
+- Generated timestamp.
+- Symbol.
+- Date range.
+- Timeframe.
+- Trading style.
+- Active strategies.
+- Settings mode.
+- Dataset provenance.
+- Execution assumptions.
+- Executive performance summary.
+- Signal statistics.
+- Trade statistics.
+- Equity curve.
+- Drawdown curve.
+- Net profitability.
+- Strategy breakdown.
+- BUY/SELL breakdown.
+- Trade history.
+- Risk analysis.
+- Methodology and limitations.
+
+### Report B — Walk-Forward Validation Report
+
+Include:
+
+- Walk-forward methodology.
+- Rolling or anchored configuration.
+- Training/test date windows.
+- Number of folds.
+- Fold-by-fold parameters.
+- Training performance.
+- OOS performance.
+- Aggregated OOS equity curve.
+- Parameter stability.
+- Overfitting warnings.
+- Robustness assessment.
+- Data limitations.
+
+### Report C — Strategy Comparison Report
+
+Include:
+
+- Strategies compared.
+- Trading styles.
+- Timeframes.
+- Net P/L.
+- Win rate.
+- Expectancy.
+- Profit Factor.
+- Average R.
+- Drawdown.
+- Number of trades.
+- Transaction costs.
+- OOS performance where available.
+
+### Report D — Signal Quality Report
+
+Include:
+
+- BUY candidates.
+- SELL candidates.
+- Approved signals.
+- Rejected signals.
+- Duplicate suppression.
+- Signal grades.
+- Quality score distribution.
+- Entry readiness.
+- Unfilled signals.
+- Strategy-specific rejection reasons.
+- Outcome performance by grade.
+
+### Report E — Risk Management Report
+
+Include:
+
+- Position sizing.
+- Risk per trade.
+- Exposure.
+- SL behavior.
+- TP1/TP2/TP3.
+- Partial exits.
+- Break-even.
+- Trailing stops.
+- Drawdown.
+- Losing streaks.
+- Costs.
+- Risk-limit events.
+
+### Report F — Scalping Report
+
+Focus on:
+
+- 1m/3m/5m strategies.
+- Momentum.
+- Waterfall.
+- Liquidity reversals.
+- Fast entries.
+- Spread sensitivity.
+- Holding time.
+- Session performance.
+
+### Report G — Intraday Report
+
+Focus on:
+
+- Session structure.
+- Breakouts.
+- Intraday liquidity.
+- Entry timing.
+- Session-based performance.
+- Daily performance.
+
+### Report H — Swing Report
+
+Focus on:
+
+- HTF structure.
+- Major liquidity.
+- Fibonacci.
+- OB/FVG.
+- Larger targets.
+- Holding duration.
+- Overnight costs.
+- Gap risk.
+
+### Report I — Optimization Report
+
+Include:
+
+- Optimization objective.
+- Parameter ranges.
+- Trial count.
+- Selected configurations.
+- Trial metrics.
+- Parameter sensitivity.
+- Training/validation results.
+- OOS results when available.
+- Overfitting warnings.
+
+### Report J — Complete Research Report
+
+Combine all relevant sections into one comprehensive report.
+
+Do not insert fake sections or invented statistics when data is unavailable.
+
+Show N/A and the reason when necessary.
+
+---
+
+# 15. PROFESSIONAL PDF REPORT GENERATION
+
+Generate polished, multipage PDF reports.
+
+Use the existing project tooling where suitable or introduce a maintained reporting library if required.
+
+## PDF Requirements
+
+- Professional cover page.
+- Application/report title.
+- Report date.
+- Symbol and timeframe.
+- Historical analysis period.
+- Table of contents for long reports.
+- Executive summary.
+- Performance KPI section.
+- Equity curve.
+- Drawdown chart.
+- Strategy comparison tables.
+- BUY/SELL analysis.
+- Risk analysis.
+- Walk-forward results when available.
+- Settings summary.
+- Methodology.
+- Data and execution assumptions.
+- Limitations.
+- Report ID/version.
+- Page numbers.
+
+Use consistent typography, spacing, tables and chart styling.
+
+Avoid clipped tables or overlapping content.
+
+Use appropriate page breaks.
+
+Long reports must support multiple pages.
+
+Do not convert the entire existing webpage to an unreadable screenshot PDF.
+
+Render proper report sections and readable charts.
+
+Where report size becomes large, summarize trade tables in the PDF and include the complete trade data as a separate export.
+
+Do not claim results are audited or independently certified unless they actually are.
+
+---
+
+# 16. ADVANCED EXCEL REPORT GENERATION
+
+Generate real `.xlsx` workbooks.
+
+Use actual structured workbook sheets.
+
+Recommended worksheets:
+
+1. Overview.
+2. Configuration.
+3. Data Quality.
+4. Summary Metrics.
+5. All Signals.
+6. Executed Trades.
+7. Trade Events.
+8. Equity Curve.
+9. Drawdown.
+10. BUY Analysis.
+11. SELL Analysis.
+12. Strategy Performance.
+13. Timeframe Performance.
+14. Market Regime Analysis.
+15. Risk Analytics.
+16. Walk-Forward Folds.
+17. Optimization Trials.
+18. Methodology.
+
+Include only relevant sheets, or clearly label sheets that are intentionally empty.
+
+## Excel Formatting
+
+Use:
+
+- Clear column headers.
+- Frozen header rows.
+- Auto filters.
+- Appropriate number formats.
+- Currency formatting.
+- Percent formatting.
+- Date/time formatting.
+- Sensible column widths.
+- Consistent sheet naming.
+- Clear separation of inputs and calculated results.
+
+Where formulas are included, make them correct and auditable.
+
+Do not depend on formulas that have no cached result if the application needs immediate preview compatibility.
+
+Handle large workbooks efficiently.
+
+Do not truncate exports silently.
+
+### Export Security
+
+Prevent spreadsheet formula injection.
+
+Any untrusted text beginning with spreadsheet formula characters must be safely escaped or stored as plain text.
+
+Do not expose secrets or API credentials inside report files.
+
+---
+
+# 17. CSV, JSON & HTML EXPORTS
+
+## CSV
+
+Support:
+
+- Full signal history.
+- Full executed trade history.
+- Trade events.
+- Performance summary.
+- Optimization trials.
+- Walk-forward results.
+
+Requirements:
+
+- Correct escaping.
+- Stable headers.
+- Correct numeric values.
+- UTC timestamp fields.
+- Consistent schema version.
+- No malformed rows.
+- Spreadsheet formula-injection protection.
+
+## JSON
+
+Provide structured exports containing:
+
+- Report metadata.
+- Dataset identity.
+- Configuration.
+- Metrics.
+- Signal records.
+- Trade records.
+- Validation results.
+- Risk results.
+- Methodology/version information.
+
+Use stable, documented schemas.
+
+## HTML
+
+Provide a self-contained or correctly packaged report suitable for local viewing where supported.
+
+Include readable charts/tables and report metadata.
+
+Avoid unsafe embedded scripts or external dependencies that would expose private information.
+
+## ZIP
+
+Support downloading a complete report package.
+
+Example contents:
+
+- Main PDF Report.
+- Excel Workbook.
+- Signal History CSV.
+- Trade History CSV.
+- Walk-Forward Results CSV.
+- Optimization Results JSON.
+- Methodology README.
+- Report Manifest.
+
+Use a deterministic package structure and filenames.
+
+Exclude unavailable artifacts and list what was included.
+
+---
+
+# 18. REPORT DOWNLOAD CENTER — COMPLETE UI
+
+Build a dedicated **Reports & Downloads** section.
+
+This must be functional, not decorative.
+
+## Main Report Center
+
+Show:
+
+- Report Type.
+- Symbol.
+- Date Range.
+- Trading Style.
+- Timeframe.
+- Strategy.
+- Backtest Run.
+- Export Format.
+- Generate Report button.
+- Download button when ready.
+- Report History.
+
+## Suggested Navigation
+
+- Overview.
+- Backtesting Reports.
+- Walk-Forward Reports.
+- Strategy Comparison.
+- Risk Reports.
+- Signal Reports.
+- Optimization Reports.
+- Saved Reports.
+
+## Generate Report Flow
+
+1. Select completed backtest run.
+2. Select report type.
+3. Select relevant options.
+4. Validate required data.
+5. Create report generation job.
+6. Display status/progress.
+7. Generate report file.
+8. Verify file exists and is valid.
+9. Offer Download.
+10. Save report metadata/history if persistence is supported.
+
+Do not show a successful Download button before the artifact is available.
+
+## Download Formats
+
+- PDF.
+- Excel.
+- CSV.
+- JSON.
+- HTML.
+- ZIP package.
+
+Only show formats supported by the selected report.
+
+## Report History
+
+Display:
+
+- Report name.
+- Type.
+- Symbol.
+- Date range.
+- Created date.
+- Source backtest ID.
+- Format.
+- File size.
+- Status.
+- Download action.
+
+Support:
+
+- Search.
+- Filter.
+- Sort.
+- Re-download.
+- Delete according to access permissions.
+- Regenerate.
+- View associated backtest.
+
+Do not silently lose previously generated reports when the page refreshes if persistent report storage is configured.
+
+---
+
+# 19. REPORT TEMPLATE & DESIGN SYSTEM
+
+Create a consistent professional report design.
+
+Use a style suitable for a quantitative research or investment strategy analysis document.
+
+### Visual Requirements
+
+- Clean page composition.
+- Strong headings.
+- Compact, readable tables.
+- Clear financial number formatting.
+- Neutral professional typography.
+- Meaningful chart color coding.
+- Consistent spacing.
+- High-quality charts.
+- Page numbers.
+- Report metadata.
+
+### Executive Summary
+
+Every main report should explain:
+
+- What was tested.
+- Which data was used.
+- Which settings were active.
+- How execution was simulated.
+- What the historical results show.
+- Whether OOS validation was performed.
+- Key strengths.
+- Key weaknesses.
+- Major limitations.
+
+Never describe a strategy as guaranteed profitable.
+
+Never generate unsupported confidence claims.
+
+### Charts
+
+Use actual computed data.
+
+Include appropriate charts such as:
+
+- Equity Curve.
+- Drawdown Curve.
+- Monthly Returns.
+- Win/Loss Distribution.
+- Strategy Comparison.
+- BUY vs SELL.
+- R-Multiple Distribution.
+- Walk-Forward Fold Results.
+- Parameter Sensitivity.
+
+Do not invent chart values.
+
+---
+
+# 20. BACKTEST RUN & REPORT PERSISTENCE
+
+Create stable identifiers for backtest runs.
+
+Suggested metadata:
+
+- `runId`
+- `createdAt`
+- `symbol`
+- `dateRange`
+- `timeframes`
+- `tradingStyles`
+- `strategyIds`
+- `datasetId`
+- `datasetChecksum`
+- `strategyVersion`
+- `settingsSnapshot`
+- `executionModelVersion`
+- `riskProfile`
+- `runStatus`
+- `resultsChecksum`
+
+Each report should reference the source run ID and result version.
+
+## Persistence
+
+Reuse the existing persistence layer where available.
+
+If Prisma/database storage already exists, extend it using additive and backward-compatible schema changes.
+
+Do not introduce a second database unnecessarily.
+
+Store large report files in an appropriate file/object storage system where available.
+
+Store metadata and storage references in the database.
+
+Do not persist huge binary report files directly inside ordinary configuration records without justification.
+
+### Reproducibility
+
+A generated report must be traceable to:
+
+- Historical dataset.
+- Strategy version.
+- Settings.
+- Execution assumptions.
+- Calculation engine version.
+- Report template version.
+
+Changing current settings later must not silently rewrite old report results.
+
+---
+
+# 21. LONG-RUNNING BACKTEST JOB MANAGEMENT
+
+Large historical backtests may require significant processing.
+
+Do not block the browser UI during heavy computations.
+
+Implement job processing suitable for the existing deployment environment.
+
+## Job States
+
+- QUEUED.
+- RUNNING.
+- COMPLETED.
+- FAILED.
+- CANCELLED.
+
+Optional intermediate stages:
+
+- Fetching data.
+- Validating data.
+- Calculating signals.
+- Simulating trades.
+- Computing analytics.
+- Generating report.
+
+## Requirements
+
+- Bounded concurrency.
+- Resource limits.
+- Progress updates.
+- Cancellation.
+- Retry for transient infrastructure errors.
+- Idempotent job submission.
+- Safe handling of duplicate requests.
+- Durable results where supported.
+- Clear error messages.
+- Cleanup of temporary files.
+
+Use a durable queue/worker architecture if the actual hosting environment requires it for long-running workloads.
+
+Do not rely on fragile in-memory background processing for production persistence in a serverless environment.
+
+Do not claim a job is complete until its result is stored and validated.
+
+---
+
+# 22. BACKTESTING & REPORT API DESIGN
+
+Implement or extend internal APIs following existing Next.js conventions.
+
+Potential endpoints, adapted to the existing architecture:
+
+- Create backtest run.
+- Get run status.
+- Get run results.
+- Cancel run.
+- List completed runs.
+- Create optimization job.
+- Get optimization results.
+- Create report.
+- List reports.
+- Download report.
+- Delete report.
+
+Use consistent request/response validation.
+
+### Security Requirements
+
+- Protect credentials.
+- Validate all user parameters.
+- Validate date ranges.
+- Apply authorization where user accounts exist.
+- Prevent report ID enumeration from exposing other users' records.
+- Prevent path traversal.
+- Prevent unsafe filenames.
+- Protect temporary files.
+- Avoid arbitrary server-side file access.
+- Apply reasonable request and resource limits.
+
+### Download Responses
+
+Use correct:
+
+- Content-Type.
+- Content-Disposition.
+- File extension.
+- Filename.
+- File size where available.
+
+Stream large downloads where appropriate.
+
+Handle missing/expired artifacts cleanly.
+
+Do not return partial corrupt files as completed reports.
+
+---
+
+# 23. PRODUCTION RELIABILITY ENGINE
+
+Audit system reliability across the application.
+
+Focus on:
+
+- Finage API requests.
+- Caching.
+- Strategy calculations.
+- Backtesting jobs.
+- Report generation.
+- Database writes.
+- File storage.
+- Download endpoints.
+- Replay.
+- Chart UI.
+- Settings persistence.
+
+## Reliability Requirements
+
+- Consistent error handling.
+- Bounded retries.
+- Request cancellation.
+- Resource limits.
+- Durable job status where needed.
+- Clear data provenance.
+- Versioned calculations.
+- Idempotent operations.
+- Safe failure recovery.
+- No uncontrolled loops.
+- No duplicate report jobs.
+- No stale-result overwrites.
+
+### Error Categories
+
+Distinguish:
+
+- Data unavailable.
+- API limit exceeded.
+- Invalid configuration.
+- Insufficient warm-up data.
+- Calculation failure.
+- Execution simulation failure.
+- Report generation failure.
+- File-storage failure.
+- Download unavailable.
+- Job cancelled.
+
+Do not silently substitute a fabricated successful result after a failure.
+
+---
+
+# 24. PERFORMANCE OPTIMIZATION
+
+Preserve and improve the previous A-to-Z performance work.
+
+Backtests may process tens or hundreds of thousands of candles, depending on available historical data and resources.
+
+Optimize:
+
+- Historical cache reuse.
+- Timeframe aggregation.
+- Shared indicator calculations.
+- SMC state updates.
+- Signal aggregation.
+- Backtesting event processing.
+- Equity calculation.
+- Performance statistics.
+- Walk-forward fold execution.
+- Parameter trial evaluation.
+- Report chart generation.
+- PDF rendering.
+- Excel export.
+- Large CSV streaming.
+
+## Avoid Repeated Work
+
+Do not recalculate historical signals when only downloading a previously completed report.
+
+Do not refetch Finage data when exporting results from an existing immutable backtest run.
+
+Do not regenerate reports automatically on every page render.
+
+Cache valid completed results using appropriate versioned keys.
+
+Do not use caching that silently returns stale strategy results after settings change.
+
+---
+
+# 25. ADVANCED BACKTESTING DASHBOARD
+
+Create a professional Backtesting & Validation workspace.
+
+## Top Controls
+
+- Symbol.
+- Date Range.
+- Trading Style.
+- Timeframe.
+- Strategy Selection.
+- Settings Profile.
+- Backtest Mode.
+- Run Backtest.
+
+## Backtest Modes
+
+- Standard Backtest.
+- Walk-Forward Validation.
+- Parameter Optimization.
+- Strategy Comparison.
+
+## Summary Cards
+
+Show:
+
+- Net P/L.
+- Win Rate.
+- Profit Factor.
+- Net Expectancy.
+- Maximum Drawdown.
+- Triggered Trades.
+- Average R.
+- Cost Summary.
+
+## Analytics Sections
+
+- Equity Curve.
+- Drawdown.
+- Trade Distribution.
+- Strategy Performance.
+- BUY/SELL.
+- Trading Style.
+- Market Regime.
+- Walk-Forward.
+- Optimization.
+
+## Bottom Panels
+
+- All Trades.
+- All Signals.
+- Trade Events.
+- Rejected Setups.
+- Risk Events.
+- Backtest Diagnostics.
+- Reports & Downloads.
+
+Use functional filters.
+
+Do not display duplicate metric cards.
+
+Ensure all relevant charts respond to shared filter state.
+
+---
+
+# 26. WALK-FORWARD DASHBOARD
+
+Provide a dedicated walk-forward interface.
+
+Show:
+
+- Training window.
+- Test window.
+- Number of folds.
+- Rolling/Anchored method.
+- Optimization objective.
+- Parameter search budget.
+- Validation progress.
+
+## Results
+
+Display:
+
+- Fold-by-fold metrics.
+- Selected settings by fold.
+- Combined OOS results.
+- Training vs OOS comparisons.
+- Parameter stability.
+- Equity curve.
+- Drawdown.
+- Robustness warnings.
+
+Provide direct controls for:
+
+- Generate Walk-Forward PDF.
+- Download Excel.
+- Download Fold Results CSV.
+- Download Configuration JSON.
+
+All outputs must reflect the completed walk-forward run.
+
+---
+
+# 27. STRATEGY OPTIMIZATION DASHBOARD
+
+Build a functional optimization workspace.
+
+Allow selection of:
+
+- Strategy.
+- Historical range.
+- Parameter bounds.
+- Optimization method.
+- Trial budget.
+- Objective function.
+- Risk limits.
+- Validation approach.
+
+Show:
+
+- Trials completed.
+- Best training configuration under the selected objective.
+- Validation performance.
+- Parameter sensitivity.
+- OOS performance when available.
+- Trial table.
+- Runtime.
+- Warnings.
+
+Do not recommend the highest in-sample-profit configuration as automatically best.
+
+Provide a comparison against the original fixed profile.
+
+### Applying Optimized Settings
+
+When the user selects a configuration:
+
+- Show parameter differences.
+- Show its validation history.
+- Show relevant limitations.
+- Require explicit Apply action.
+- Respect AUTO/HYBRID/MANUAL precedence.
+- Preserve the previous configuration for rollback.
+
+Do not silently overwrite the user's existing strategy settings.
+
+---
+
+# 28. COMPLETE REPORT GENERATION USER EXPERIENCE
+
+Build a modern report workflow.
+
+## Report Preview
+
+Before download, show:
+
+- Report title.
+- Selected historical range.
+- Symbol.
+- Trading style.
+- Strategies included.
+- Key calculated metrics.
+- Available sections.
+- Report format.
+- Estimated document contents.
+
+The preview must come from actual results.
+
+## Download Experience
+
+Support one-click download for an already generated report.
+
+Display generation progress for new reports.
+
+Show a clear success state only after the report artifact exists.
+
+Handle:
+
+- Failed generation.
+- Expired report files.
+- Missing source run.
+- Unsupported format.
+- Incomplete backtest.
+- Cancellation.
+
+## Report Packages
+
+Provide a **Download Complete Report Package** action that creates a ZIP containing the supported selected outputs.
+
+For large datasets, generate files efficiently without freezing the UI.
+
+## Naming Convention
+
+Use clear sanitized filenames conceptually like:
+
+`TradeZella_XAUUSD_Backtest_2026-10-01_2026-10-31.pdf`
+
+`TradeZella_XAUUSD_WalkForward_2026-10.xlsx`
+
+`TradeZella_XAUUSD_Trades_2026-10.csv`
+
+Use actual run parameters and report type.
+
+Do not hardcode these examples.
+
+---
+
+# 29. DIAGNOSTICS & AUDITABILITY
+
+Create development or authorized diagnostic views.
+
+Track:
+
+- Dataset ID.
+- Candle count.
+- Missing data warnings.
+- Provider request counts.
+- Calculation version.
+- Strategy execution time.
+- Number of raw candidates.
+- Approved signals.
+- Rejected signals.
+- Duplicate suppression.
+- Triggered trades.
+- Ambiguous execution events.
+- Backtest duration.
+- Optimization trial count.
+- Walk-forward fold count.
+- Report generation duration.
+- File size.
+- Error counts.
+
+Provide traceable calculation logs where appropriate.
+
+Avoid logging credentials or personal account secrets.
+
+Make diagnostics lightweight in production.
+
+---
+
+# 30. REQUIRED AUTOMATED TESTING
+
+Implement meaningful unit, integration, end-to-end and export validation tests.
+
+## Historical Data
+
+1. Two-day API chunking.
+2. Date boundaries.
+3. Timestamp normalization.
+4. Candle merging.
+5. Duplicate removal.
+6. Missing-data reporting.
+7. Cache consistency.
+8. Provider data provenance.
+
+## Signal & Backtesting
+
+9. BUY detection consistency.
+10. SELL detection consistency.
+11. Signal confirmation timing.
+12. No future-data leakage.
+13. Valid entry execution.
+14. Correct SL execution.
+15. Correct TP execution.
+16. Partial exits.
+17. Break-even.
+18. Trailing stops.
+19. Trade expiration.
+20. Spread/slippage handling.
+21. Same-candle SL/TP ambiguity.
+22. Weekend gap handling.
+23. Account equity correctness.
+24. Risk-limit enforcement.
+
+## Performance Metrics
+
+25. Win rate.
+26. Net P/L.
+27. Gross profit/loss.
+28. Profit factor.
+29. Expectancy.
+30. Average R.
+31. Maximum drawdown.
+32. Drawdown duration.
+33. Sharpe/Sortino where defined.
+34. BUY/SELL breakdown.
+35. Scalping/Intraday/Swing breakdown.
+
+## Walk-Forward
+
+36. Rolling folds.
+37. Anchored folds.
+38. Correct chronological split.
+39. No train/test leakage.
+40. Proper warm-up handling.
+41. Frozen test parameters.
+42. Correct aggregated OOS results.
+43. Parameter selection reproducibility.
+
+## Optimization
+
+44. Parameter boundary validation.
+45. Trial reproducibility.
+46. Seeded random search.
+47. Objective calculation.
+48. Search budget enforcement.
+49. Insufficient sample warnings.
+50. Fixed vs adaptive comparison.
+
+## Report Generation
+
+51. PDF generation.
+52. PDF multipage layout.
+53. Excel workbook generation.
+54. Correct Excel sheets.
+55. CSV export.
+56. CSV escaping and formula-injection protection.
+57. JSON schema validity.
+58. HTML report.
+59. ZIP package.
+60. Correct download headers.
+61. Correct report filename.
+62. Correct source run reference.
+63. Report regeneration.
+64. Missing report handling.
+65. No fabricated statistics.
+66. No exposed secrets.
+
+## Reliability
+
+67. Job cancellation.
+68. Job retries.
+69. Duplicate job prevention.
+70. Failure recovery.
+71. Large historical datasets.
+72. Large CSV export.
+73. Large XLSX export.
+74. Report storage recovery.
+75. Memory stability.
+76. Performance benchmarks.
+77. Responsive dashboard.
+78. Full regression tests across Phases 1–9.
+79. Production build verification.
+80. Reproducibility of completed backtests and reports.
+
+Use fixed deterministic fixtures with known expected outcomes.
+
+Also validate against available real historical datasets.
+
+Passing unit tests alone does not demonstrate trading profitability.
+
+---
+
+# 31. FINAL VALIDATION AGAINST PREVIOUS PHASES
+
+Before completing Phase 10, verify:
+
+### Phase 1
+
+Both BUY and SELL detection work.
+
+No unnecessary duplicate signals.
+
+### Phase 2
+
+Candle psychology and waterfall momentum remain correct.
+
+### Phase 3
+
+SMC, liquidity, BOS, CHoCH, MSS, OB, FVG and Fibonacci remain functional.
+
+### Phase 4
+
+AUTO/HYBRID/MANUAL settings work.
+
+Decision-time adaptive parameters remain historically correct.
+
+### Phase 5
+
+Scalping strategies work on their supported timeframes.
+
+### Phase 6
+
+Intraday and swing strategies work independently.
+
+### Phase 7
+
+Unified scoring and conflict resolution remain correct.
+
+### Phase 8
+
+SL/TP, sizing, partial exits, trailing and risk analytics remain correct.
+
+### Phase 9
+
+Trading terminal, responsive layouts, chart overlays, settings and signal dashboards remain functional.
+
+### Performance Optimization
+
+Finage caching, chart viewport rendering, incremental calculations and replay responsiveness remain intact.
+
+Do not modify working historical signals merely to produce better backtest results.
+
+---
+
+# 32. IMPLEMENTATION PRIORITY
+
+Complete the work in this order.
+
+## P0 — Historical & Backtesting Correctness
+
+1. Audit existing systems.
+2. Validate historical data.
+3. Establish reproducible run snapshots.
+4. Verify no future-data leakage.
+5. Implement/repair chronological execution simulation.
+6. Verify trade and equity accounting.
+
+## P1 — Professional Analytics
+
+7. Implement complete performance metrics.
+8. Implement BUY/SELL breakdowns.
+9. Implement strategy comparison.
+10. Implement scalping/intraday/swing analytics.
+11. Implement drawdown and risk analytics.
+
+## P2 — Walk-Forward & Optimization
+
+12. Implement rolling/anchored validation.
+13. Implement parameter search.
+14. Add overfitting safeguards.
+15. Add robustness analysis.
+16. Compare fixed and adaptive settings.
+17. Verify OOS calculations.
+
+## P3 — Report Generation & Downloads
+
+18. Build reusable reporting data models.
+19. Implement PDF generation.
+20. Implement Excel generation.
+21. Implement CSV export.
+22. Implement JSON export.
+23. Implement HTML output.
+24. Implement ZIP report packages.
+25. Build report history and persistence.
+26. Build secure download endpoints.
+27. Create Reports & Downloads dashboard.
+
+## P4 — Production Reliability
+
+28. Implement reliable backtest jobs.
+29. Add report-job progress and cancellation.
+30. Add caching and efficient result storage.
+31. Add diagnostics and error handling.
+32. Benchmark large historical datasets.
+33. Verify responsiveness.
+34. Run regression tests.
+35. Run available lint, type-check and production build commands.
+36. Report actual results and limitations.
+
+Do not stop after implementing only the report UI.
+
+A report is useful only when its underlying calculations are correct.
+
+---
+
+# 33. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rewrite the application from scratch.
+- Replace Finage unnecessarily.
+- Break historical API chunking.
+- Break epoch timestamp handling.
+- Truncate historical candles silently.
+- Replace the HTML5 Canvas renderer.
+- Break replay.
+- Remove existing trading strategies.
+- Reintroduce BUY/SELL directional bias.
+- Reintroduce duplicate signals.
+- Use future candles for historical decisions.
+- Optimize on the final OOS dataset.
+- Present in-sample results as unseen performance.
+- Count unfilled signals as profitable trades.
+- Assume zero spread.
+- Assume guaranteed SL fills.
+- Invent historical trading results.
+- Create fake walk-forward statistics.
+- Automatically apply the highest-profit settings.
+- Promise a fixed win rate.
+- Claim a strategy is profitable without evidence.
+- Generate placeholder PDF reports and mark them complete.
+- Display fake download buttons.
+- Create corrupt or partial exports.
+- Leak API credentials.
+- Create unlimited backtest jobs.
+- Use infinite retries.
+- Introduce unnecessary dependencies.
+- Break existing Phase 1–9 functionality.
+- Implement automatic real-money execution.
+
+---
+
+# 34. PHASE 10 COMPLETION CRITERIA
+
+Phase 10 is complete only when:
+
+1. Backtests run against verified historical datasets.
+2. Signal and execution timing are correct.
+3. Trading costs and assumptions are explicit.
+4. Backtest outcomes are reproducible.
+5. Comprehensive trading metrics are accurate.
+6. BUY and SELL performance can be evaluated separately.
+7. Scalping, Intraday and Swing are independently comparable.
+8. Walk-forward validation works.
+9. OOS performance is calculated without leakage.
+10. Parameter optimization respects bounded search spaces.
+11. Overfitting and sample-size limitations are identified.
+12. Fixed and adaptive strategies can be compared.
+13. Equity and drawdown charts are correct.
+14. Complete PDF reports can be generated and downloaded.
+15. Excel reports contain correct structured worksheets.
+16. CSV exports contain complete valid records.
+17. JSON exports use a stable schema.
+18. HTML reports work where supported.
+19. ZIP report packages contain the selected verified files.
+20. Report history and re-download work when persistence is configured.
+21. Long-running jobs are manageable and recoverable as supported by the deployment architecture.
+22. Downloads are secure and reliable.
+23. Large datasets do not unnecessarily freeze the UI.
+24. Historical replay remains consistent.
+25. Existing Phases 1–9 remain functional.
+26. Available tests, lint, type checks and production build pass, or failures are accurately documented.
+
+## FINAL DELIVERABLES
+
+After implementation, provide:
+
+1. Files created and modified.
+2. Backtesting engine architecture.
+3. Historical execution assumptions.
+4. Data provenance handling.
+5. Performance metric formulas.
+6. Walk-forward implementation.
+7. Optimization methods.
+8. Overfitting prevention.
+9. Fixed versus adaptive comparison.
+10. PDF report generator.
+11. Excel report generator.
+12. CSV and JSON exporters.
+13. HTML and ZIP exporters.
+14. Report history implementation.
+15. Download endpoint implementation.
+16. Backtesting dashboard changes.
+17. Walk-forward dashboard changes.
+18. Optimization dashboard changes.
+19. Report Center changes.
+20. Job processing and reliability improvements.
+21. Historical test results.
+22. Validation and non-repainting results.
+23. Performance benchmarks.
+24. Actual export/download test results.
+25. Phase 1–9 regression results.
+26. Known limitations and unresolved issues.
+
+## FINAL OBJECTIVE
+
+Transform TradeZella Canvas into a complete professional trading research, signal analysis, backtesting, optimization and reporting platform.
+
+The final application must allow users to:
+
+- Analyze historical Forex and Gold market data.
+- Find BUY and SELL opportunities.
+- Use Scalping, Intraday and Swing strategies.
+- Understand signal quality and supporting evidence.
+- Evaluate realistic simulated trading performance.
+- Compare different strategies.
+- Run walk-forward testing.
+- Optimize eligible settings with safeguards.
+- Identify weak or overfitted strategies.
+- Analyze drawdown and risk.
+- Generate professional financial research reports.
+- Download PDF, Excel, CSV, JSON, HTML and ZIP reports.
+- Revisit previous backtest results.
+- Inspect individual historical trades.
+- Use a stable, responsive trading terminal.
+
+Prioritize historical correctness, transparent methodology, realistic execution, reproducibility and measurable performance.
+
+**Implement Phase 10 completely while preserving all existing application functionality.**
+
+Do not stop after creating the UI. The entire backtesting, validation, reporting and download workflow must work end to end.
+
+Do not claim production readiness or strategy profitability unless supported by actual verification.

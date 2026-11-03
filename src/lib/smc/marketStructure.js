@@ -62,20 +62,29 @@ export function analyzeMarketStructure(candles, settings = {}) {
   const internalSwings = detectSwings(candles, 1, 1);
   const externalSwings = detectSwings(candles, 3, 3);
 
+  const internalHighs = internalSwings.filter(s => s.type === 'HIGH').sort((a, b) => a.confirmationIndex - b.confirmationIndex);
+  const internalLows = internalSwings.filter(s => s.type === 'LOW').sort((a, b) => a.confirmationIndex - b.confirmationIndex);
+
   const structureEvents = [];
   let internalTrend = 'Ranging';
   let lastConfirmedHigh = null;
   let lastConfirmedLow = null;
 
+  let highPtr = 0;
+  let lowPtr = 0;
+
   for (let i = 2; i < candles.length; i++) {
     const candle = candles[i];
 
-    // Find swings confirmed on or before current candle
-    const activeInternalHighs = internalSwings.filter(s => s.type === 'HIGH' && s.confirmationIndex <= i);
-    const activeInternalLows = internalSwings.filter(s => s.type === 'LOW' && s.confirmationIndex <= i);
+    while (highPtr < internalHighs.length && internalHighs[highPtr].confirmationIndex <= i) {
+      highPtr++;
+    }
+    while (lowPtr < internalLows.length && internalLows[lowPtr].confirmationIndex <= i) {
+      lowPtr++;
+    }
 
-    const prevHigh = activeInternalHighs.length > 0 ? activeInternalHighs[activeInternalHighs.length - 1] : null;
-    const prevLow = activeInternalLows.length > 0 ? activeInternalLows[activeInternalLows.length - 1] : null;
+    const prevHigh = highPtr > 0 ? internalHighs[highPtr - 1] : null;
+    const prevLow = lowPtr > 0 ? internalLows[lowPtr - 1] : null;
 
     // 1. Bullish BOS / CHoCH: candle close above previous confirmed swing high
     if (prevHigh && candle.close > prevHigh.price && prevHigh !== lastConfirmedHigh) {

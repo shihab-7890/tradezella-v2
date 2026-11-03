@@ -9,9 +9,14 @@ export function detectOrderBlocks(candles, structureEvents = [], atrList = [], s
   const orderBlocks = [];
   const breakerBlocks = [];
 
+  const candleTimeMap = new Map();
+  for (let i = 0; i < candles.length; i++) {
+    candleTimeMap.set(candles[i].time, i);
+  }
+
   for (const event of structureEvents) {
-    const idx = candles.findIndex(c => c.time === event.time);
-    if (idx < 1) continue;
+    const idx = candleTimeMap.get(event.time);
+    if (idx === undefined || idx < 1) continue;
 
     const isBuy = event.direction === 'BUY';
 
@@ -62,17 +67,31 @@ export function detectOrderBlocks(candles, structureEvents = [], atrList = [], s
     }
   }
 
-  // Lifecycle check for OB touches & mitigations
+  // Lifecycle check for OB touches & mitigations using activeObs list
+  const activeObs = [];
+  let obPointer = 0;
+
   for (let i = 0; i < candles.length; i++) {
     const c = candles[i];
-    for (const ob of orderBlocks) {
-      if (ob.confirmationTime > c.time || ob.status === 'INVALIDATED' || ob.status === 'FULLY_MITIGATED') continue;
+
+    while (obPointer < orderBlocks.length && orderBlocks[obPointer].confirmationTime <= c.time) {
+      activeObs.push(orderBlocks[obPointer]);
+      obPointer++;
+    }
+
+    for (let k = activeObs.length - 1; k >= 0; k--) {
+      const ob = activeObs[k];
+      if (ob.status === 'INVALIDATED' || ob.status === 'FULLY_MITIGATED') {
+        activeObs.splice(k, 1);
+        continue;
+      }
 
       if (ob.direction === 'BUY') {
         if (c.low <= ob.high && c.low >= ob.low) {
           ob.status = 'TOUCHED';
         } else if (c.close < ob.low) {
           ob.status = 'INVALIDATED';
+          activeObs.splice(k, 1);
           // Converts to Breaker Block
           breakerBlocks.push({
             id: `breaker-bear-${c.time}`,
@@ -90,6 +109,7 @@ export function detectOrderBlocks(candles, structureEvents = [], atrList = [], s
           ob.status = 'TOUCHED';
         } else if (c.close > ob.high) {
           ob.status = 'INVALIDATED';
+          activeObs.splice(k, 1);
           // Converts to Breaker Block
           breakerBlocks.push({
             id: `breaker-bull-${c.time}`,

@@ -20,16 +20,16 @@ export const TradeLog = memo(function TradeLog({
     const csvContent = [
       headers.join(','),
       ...tradeLog.map(log => [
-        new Date(log.time).toLocaleString(),
-        log.decision || (log.isApproved ? 'APPROVED' : 'WATCH'),
-        log.direction || log.type,
-        log.price,
-        log.unifiedScore !== undefined ? log.unifiedScore : (log.score ? log.score * 10 : ''),
-        log.qualityTier || '',
-        log.tradingStyle || '',
-        log.strategy || '',
-        `"${log.notes || ''}"`,
-        `"${log.conflictWarning || ''}"`,
+        `"${new Date(log.time).toLocaleString().replace(/"/g, '""')}"`,
+        `"${(log.decision || (log.isApproved ? 'APPROVED' : 'WATCH')).replace(/"/g, '""')}"`,
+        `"${(log.direction || log.type || '').replace(/"/g, '""')}"`,
+        log.price !== undefined ? Number(log.price).toFixed(4) : '',
+        log.unifiedScore !== undefined ? log.unifiedScore : (log.score ? Math.round(log.score * 10) : ''),
+        `"${(log.qualityTier || 'B').replace(/"/g, '""')}"`,
+        `"${(log.tradingStyle || 'Intraday').replace(/"/g, '""')}"`,
+        `"${(log.strategy || '').replace(/"/g, '""')}"`,
+        `"${(log.notes || '').replace(/"/g, '""')}"`,
+        `"${(log.conflictWarning || '').replace(/"/g, '""')}"`,
       ].join(','))
     ].join('\n');
 

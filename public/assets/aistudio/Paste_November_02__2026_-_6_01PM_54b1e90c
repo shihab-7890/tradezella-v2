@@ -1,0 +1,1067 @@
+# CRITICAL TASK — TRADEZELLA SIGNAL ACCURACY, QUALITY CONTROL, DEDUPLICATION & INTELLIGENT DECISION SYSTEM REPAIR
+
+## PROJECT: TradeZella Canvas — Next.js + Finage API
+
+Act as a senior quantitative strategy engineer, algorithmic trading researcher, Next.js architect, professional backtesting specialist, and trading signal quality analyst.
+
+I have already implemented multiple development phases involving candle psychology, SMC, liquidity, waterfall, scalping, intraday, swing, adaptive settings, unified scoring, risk management and backtesting.
+
+**However, the current system is producing too many signals. It is confusing, has questionable A+ classifications, and does not clearly demonstrate which opportunities are actually worth trading.**
+
+I want to transform this into a professional, selective, easy-to-understand trading signal finder.
+
+**IMPORTANT: Implement actual fixes to the existing application. Do not simply hide arrows or increase every threshold.**
+
+The objective is to improve real signal quality and validated cost-adjusted trading performance, while maintaining useful opportunities.
+
+Do not promise any guaranteed accuracy percentage.
+
+---
+
+# 1. FIRST — AUDIT THE ACTUAL TRADING RESULTS
+
+I have exported `trade_log.csv` and an HTML backtesting report.
+
+Use these files if available in the development workspace, and reproduce the issues using the underlying application.
+
+The supplied exports have the following findings:
+
+- 224 signal records.
+- All 224 records have decision APPROVED.
+- 115 BUY records.
+- 109 SELL records.
+- 177 signals are graded A+.
+- 47 signals are graded A.
+- A+ grades appear with scores between 50 and 65 out of 100.
+- Signal quality scores range from 40 to 65.
+- Nine timestamps have both BUY and SELL records.
+- Trading Style metadata is empty in every exported signal.
+- The HTML report shows zero executed trades.
+- The HTML report includes suppressed signals under an Executed Trades heading.
+- The report repeatedly lists a SELL idea at price 3993.62 across successive minutes.
+- The CSV has a malformed Time field containing an unescaped comma.
+
+The CSV and HTML report have not been proven to represent the exact same backtest run. Verify their run IDs, filters and underlying datasets before reconciling them.
+
+These results suggest that scoring, grading, lifecycle handling, event reporting, signal visibility, and/or backtesting integration may contain serious problems.
+
+Do not assume the exact root causes without inspecting the code.
+
+### Required initial audit
+
+Investigate:
+
+1. Why all exported signal decisions are APPROVED.
+2. Why low-to-moderate numerical scores receive A+ labels.
+3. Why no rejected candidates appear in the exported signal history.
+4. Whether filtering happens before candidate creation, after approval, or only during rendering.
+5. Why simultaneous BUY and SELL setups occur without meaningful conflict metadata.
+6. Why trading-style metadata is empty.
+7. Why the report has no executed trades.
+8. Whether entry orders are actually created from approved setups.
+9. Whether completed trade outcomes are correctly recorded.
+10. Why suppressed setups are repeated across many candles.
+11. Whether repeated historical calculations create duplicate event records.
+12. Whether reports improperly mix raw candidates, approved signals and executed trades.
+13. Whether the CSV exporter correctly escapes timestamps and quoted fields.
+14. Whether real Finage candles or simulated fallback candles were used.
+15. Whether market closures or incomplete data cause misleading signals.
+
+Produce an internal root-cause assessment and fix verified defects.
+
+---
+
+# 2. REBUILD THE CENTRAL SIGNAL DECISION PIPELINE
+
+Do not replace all existing trading algorithms.
+
+Use the existing Phase 1–9 detectors.
+
+Implement or repair one authoritative signal decision pipeline:
+
+MARKET DATA
+↓
+MARKET STRUCTURE & REGIME
+↓
+CANDLE PSYCHOLOGY / SMC / MOMENTUM
+↓
+RAW SETUP CANDIDATES
+↓
+SETUP IDENTITY & DEDUPLICATION
+↓
+STRATEGY-SPECIFIC VALIDATION
+↓
+UNIFIED QUALITY SCORING
+↓
+CONFLICT ANALYSIS
+↓
+ENTRY & RISK FEASIBILITY
+↓
+APPROVED / WATCH / WAIT / REJECTED
+↓
+CHART / SIGNAL CENTER
+↓
+SIMULATED EXECUTION
+↓
+TRADE RESULTS / REPORTING
+
+### Critical architecture rule
+
+Only the central decision engine can publish an approved trading signal.
+
+Individual strategies may detect patterns and create candidates, but must not independently publish final BUY/SELL arrows.
+
+Prevent multiple components from applying different approval rules to the same candidate.
+
+---
+
+# 3. IMPLEMENT A REAL SIGNAL QUALITY GATE
+
+Currently, the system appears to approve too many setup candidates.
+
+Create a proper eligibility process.
+
+A candidate must pass:
+
+### Gate A — Valid Historical Data
+
+- Correct candle timestamps.
+- Valid OHLC.
+- Sufficient warm-up history.
+- No unidentified simulated data.
+- No future information leakage.
+- No known invalid market-data interval.
+
+### Gate B — Valid Strategy Setup
+
+Verify the actual requirements of its originating strategy.
+
+Examples:
+
+Liquidity reversal:
+- Established liquidity.
+- Valid sweep/reclaim.
+- Meaningful rejection or structural confirmation.
+
+Waterfall continuation:
+- Confirmed momentum sequence.
+- Credible continuation or pullback setup.
+- No invalidation of the underlying movement.
+
+BOS continuation:
+- Valid confirmed structural break.
+- Entry continuation condition.
+- Correct market context.
+
+Do not require every indicator simultaneously.
+
+### Gate C — Setup Freshness
+
+Reject or expire:
+
+- Already-consumed setup.
+- Repeated unchanged setup.
+- Expired entry opportunity.
+- Invalidated zone.
+- Entry too late relative to the strategy.
+- Historical setup with no remaining valid entry.
+
+### Gate D — Entry Feasibility
+
+Verify:
+
+- Eligible entry price or zone.
+- Correct confirmation timing.
+- Valid structural stop.
+- Acceptable risk/reward.
+- Remaining distance to target.
+- Spread and transaction-cost assumptions.
+- Excessive extension/chasing risk.
+
+### Gate E — Decision Quality
+
+Only qualifying candidates should become approved trade ideas.
+
+Candidates that do not pass should remain WATCH, WAIT, REJECTED or EXPIRED as appropriate.
+
+Do not classify every detected candle pattern as an approved signal.
+
+---
+
+# 4. REPAIR SCORE AND A+ GRADE CLASSIFICATION
+
+The current export labels numerical scores of 50–65 as A+.
+
+This needs a proper audit.
+
+Check:
+
+- Whether the score actually uses a 0–10 or 0–100 scale.
+- Whether the UI applies an incorrect conversion.
+- Whether grading uses old threshold definitions.
+- Whether scores are double-normalized.
+- Whether the scoring engine uses consistent scales.
+- Whether legacy reports use incompatible score versions.
+
+Create one canonical versioned score system.
+
+### Example initial grading policy
+
+- A+: 85–100.
+- A: 75–84.
+- B: 65–74.
+- WATCH: 50–64.
+- REJECTED: Below 50.
+
+These are initial policy examples, not statistically proven thresholds. Verify score distributions and historical outcomes before adopting them.
+
+Keep legacy scores labeled with their original scoring version rather than silently changing historical meaning.
+
+### Score evidence groups
+
+Evaluate:
+
+1. Market structure.
+2. Liquidity relevance.
+3. Candle psychology and momentum.
+4. Strategy-specific confirmation.
+5. Higher-timeframe context.
+6. Market regime suitability.
+7. Entry quality and risk feasibility.
+
+Avoid double-counting multiple indicators derived from the same impulse.
+
+### Important
+
+A 90/100 signal quality score is not automatically a 90% probability of winning.
+
+Use scores to rank strategy evidence and evaluate their relationship to actual historical outcomes.
+
+---
+
+# 5. CREATE HIGH-QUALITY SIGNAL MODES
+
+Add a simple control:
+
+**Signal Quality Mode**
+
+Supported:
+
+### QUALITY FIRST — Recommended default
+
+Display only fully approved, high-quality setups.
+
+Require validated strategy-specific confirmations, but avoid a universal all-indicator checklist.
+
+### BALANCED
+
+Display normal approved opportunities with moderately permissive rules.
+
+### EXPLORATION
+
+Allow additional candidates for study, replay and debugging.
+
+Do not automatically classify exploratory candidates as actionable trade recommendations.
+
+### Important
+
+Quality First should be the default view for new configurations.
+
+Preserve saved user settings.
+
+Do not remove existing manual control or overwrite existing configurations.
+
+AUTO mode may select suitable strategy profiles, but must respect hard risk, data-quality and user-lock rules.
+
+---
+
+# 6. ONE SETUP = ONE PRIMARY SIGNAL
+
+Fix repeated signals.
+
+Each underlying trading opportunity must have a stable identity.
+
+Possible identity components:
+
+- Symbol.
+- Trading style.
+- Setup timeframe.
+- Strategy family.
+- Direction.
+- Structural event ID.
+- Liquidity event ID.
+- OB/FVG zone ID.
+- Waterfall sequence ID.
+- Setup origin timestamp.
+
+### Example
+
+One bearish waterfall may contain:
+
+- Bearish displacement.
+- BOS.
+- FVG.
+- Order Block.
+- Pullback.
+- Continuation candle.
+
+These should be evidence attached to a primary trade idea, not six separate SELL arrows.
+
+A genuinely independent first-pullback setup may qualify as a separate trade idea if its conditions are satisfied.
+
+### Prevent repeated event logging
+
+If a suppressed candidate remains suppressed for 50 consecutive candles, record the suppression decision once.
+
+Do not append the same rejected/suppressed event on every candle unless an actual state transition occurs.
+
+State updates should not create a new signal.
+
+Use deterministic IDs and idempotent processing.
+
+---
+
+# 7. FIX BUY/SELL CONFLICTS
+
+Both directions must be analyzed independently.
+
+However, contradictory opportunities must be understandable.
+
+### Case 1 — Same timeframe, same underlying setup
+
+If one event generates both BUY and SELL candidates:
+
+- Validate whether both interpretations are legitimate.
+- Examine structure and confirmation timestamps.
+- Reject invalid direction assignments.
+- If unresolved, classify as conflict or WAIT.
+
+Do not approve both automatically.
+
+### Case 2 — Separate timeframes
+
+Example:
+
+5m SELL scalp.
+
+4h BUY swing.
+
+These may be legitimate independent setups.
+
+Keep them separate and clearly label the trade horizon.
+
+### Case 3 — Reversal vs continuation
+
+Example:
+
+Bearish waterfall continuation.
+
+Possible bullish reversal due to exhaustion.
+
+Do not issue a BUY solely because SELL momentum is extended.
+
+Require actual reversal confirmation.
+
+### Required metadata
+
+Every conflict should include:
+
+- Conflict type.
+- Related candidate IDs.
+- Timeframes.
+- Trading styles.
+- Confirmation status.
+- Resolution.
+- Reason code.
+
+Do not leave conflict metadata empty when a genuine conflict was detected.
+
+---
+
+# 8. PROFESSIONAL ENTRY TIMING VALIDATION
+
+Too many late or early signals can make the entire platform unreliable.
+
+Audit:
+
+- Signal formation.
+- Candidate detection.
+- Confirmation time.
+- Publication time.
+- Entry eligibility.
+- Actual simulated order trigger.
+
+Distinguish:
+
+### Early Candidate
+
+Setup developing.
+
+Not yet approved.
+
+### Confirmed Setup
+
+Strategy confirmation completed.
+
+Still requires entry and risk feasibility checks.
+
+### Approved Opportunity
+
+Qualified under the signal policy.
+
+May be waiting for entry.
+
+### Triggered Trade
+
+Simulated order actually filled under the execution model.
+
+### Closed Trade
+
+A real simulated trade outcome exists.
+
+Do not label an approved-but-unfilled opportunity as a profitable trade.
+
+Do not place historical entry signals before the necessary confirmation candle.
+
+---
+
+# 9. MAKE SCALPING, INTRADAY AND SWING CLEAR
+
+The system currently has too many overlapping strategy concepts.
+
+Create a simple user-level separation.
+
+### Scalping
+
+- 1m / 3m / 5m.
+- Microstructure.
+- Fast momentum.
+- Liquidity reversal.
+- Waterfall continuation.
+- First pullback.
+
+### Intraday
+
+- 5m / 15m / 30m / 1h.
+- Session structure.
+- Intraday liquidity.
+- Breakout/retest.
+- Momentum continuation.
+
+### Swing
+
+- 15m / 1h / 4h / Daily.
+- Macro structure.
+- HTF liquidity.
+- Major OB/FVG.
+- Fibonacci pullbacks.
+- Trend continuation.
+
+When the user selects Scalping, show Scalping opportunities by default.
+
+Do not mix unrelated Swing and Intraday signals into the same primary signal list.
+
+Provide an All Styles analysis view when explicitly selected.
+
+Persist the selected trading style.
+
+---
+
+# 10. IMPROVE CHART — SHOW ONLY IMPORTANT SIGNALS
+
+The candlestick chart is currently too cluttered.
+
+Create a CLEAN SIGNAL CHART MODE.
+
+### Default chart
+
+Show:
+
+- Candlesticks.
+- Volume when available.
+- Selected important structure.
+- Approved high-quality BUY/SELL markers.
+- Selected signal details.
+
+Hide by default:
+
+- Rejected candidates.
+- Suppressed signals.
+- Internal detector events.
+- Repeated supporting indicators.
+- Old historical Entry/SL/TP lines.
+- Unselected trade targets.
+- Excessive text labels.
+
+### Signal marker
+
+One compact marker containing:
+
+- BUY or SELL.
+- Quality grade.
+- Optional short setup label.
+
+Clicking a marker opens:
+
+- Strategy.
+- Direction.
+- Quality evidence.
+- Confirmation.
+- Entry.
+- SL.
+- TP.
+- Risk/reward.
+- Current status.
+- Rejection/conflict details when applicable.
+
+### Visibility controls
+
+Add:
+
+- Approved Signals.
+- Watch Candidates.
+- Show All Analysis.
+- Show Entry.
+- Show Stop Loss.
+- Show Take Profit.
+- Show Selected Trade Levels.
+
+These must affect visualization only.
+
+Do not change the underlying trading calculation when visibility changes.
+
+### Performance
+
+- Render visible-range markers only.
+- Avoid overlapping labels.
+- Avoid chart-wide rerenders for display-only changes.
+- Keep zoom, pan and replay smooth.
+
+---
+
+# 11. SIMPLIFY THE MAIN TERMINAL
+
+I want a professional trading system that is easy to understand.
+
+The main screen should prioritize:
+
+### Top Market Bar
+
+- Symbol.
+- Timeframe.
+- Date Range.
+- Trading Style.
+- AUTO / MANUAL.
+- Quality Mode.
+
+### Market Intelligence
+
+- Market Bias.
+- Trend Strength.
+- Volatility.
+- Momentum State.
+- Current Decision.
+
+### Main Chart
+
+Clean candlesticks and high-quality trade markers.
+
+### Best Opportunity Panel
+
+Show:
+
+- Best eligible BUY setup.
+- Best eligible SELL setup.
+- Highest-ranked ready opportunity.
+- WATCH/WAIT status.
+- Trade confirmation.
+- Entry/SL/TP when valid.
+
+Do not force a BUY or SELL if no valid setup exists.
+
+### Bottom Sections
+
+- Approved Signals.
+- Watch Candidates.
+- Trade History.
+- Backtesting.
+- Analytics.
+- Diagnostics.
+
+Use tabs rather than showing every section simultaneously.
+
+### Critical
+
+A user should understand the current system decision within a few seconds of opening the terminal.
+
+Avoid redundant cards and excessive settings.
+
+---
+
+# 12. REPAIR TRADE LOG AND REPORT GENERATION
+
+The provided backtesting report contains zero executed trades but shows suppressed candidates under an Executed Trades section.
+
+This is misleading.
+
+Separate the data models and report tables.
+
+## Candidate Log
+
+Contains detected strategy candidates.
+
+## Signal Decision Log
+
+Contains approved, watch, rejected, expired and invalidated decisions.
+
+## Execution Log
+
+Contains actual simulated order entries and exits.
+
+## Closed Trade Log
+
+Contains completed trade outcomes and realized P/L.
+
+### Required fixes
+
+1. Do not label suppressed signals as executed trades.
+2. Do not repeat one suppression event each minute.
+3. Do not show a winning/losing trade when no execution occurred.
+4. Do not report win rate as 0% when no eligible closed trades exist.
+5. Do not report undefined profit factor as 0.
+6. Show N/A with explanations for undefined statistics.
+7. Use correct denominator for every metric.
+8. Preserve data provenance and run ID.
+9. Ensure each report is generated from the correct completed backtest run.
+10. Fix CSV timestamp escaping.
+11. Fix missing trading-style fields.
+12. Include setup IDs, decision reasons and lifecycle states in exports.
+
+### End-to-end verification
+
+Trace at least one known deterministic setup through:
+
+Candidate → Approved → Entry Order → Triggered → Position Open → Closed → Report.
+
+Verify every event is correctly recorded.
+
+If the system creates approved signals but zero simulated trades, determine whether the cause is missing execution logic, unfilled entries, risk rejections, incorrect filters or an export/report integration defect.
+
+Do not manufacture trade results to fix the report.
+
+---
+
+# 13. MEASURE ACTUAL SIGNAL QUALITY
+
+Do not optimize for the number of signals or displayed A+ grades.
+
+Use actual completed simulated trade outcomes.
+
+Analyze:
+
+- Approved setup count.
+- Triggered trade count.
+- Closed trade count.
+- BUY win rate.
+- SELL win rate.
+- Net expectancy.
+- Profit Factor.
+- Average R.
+- Maximum Drawdown.
+- Trading costs.
+- Results by strategy.
+- Results by score grade.
+- Results by market regime.
+- Results by timeframe.
+
+### Quality validation
+
+Compare grades against real historical outcomes.
+
+For example:
+
+Do A+ trades actually have stronger net expectancy than A or B trades?
+
+Do they remain useful after spread and slippage?
+
+Are results consistent on unseen historical periods?
+
+If not, revise the score model based on proper training/validation evidence.
+
+Do not falsely claim increased accuracy by removing losing trades after observing their outcomes.
+
+---
+
+# 14. OPTIMIZE EXISTING STRATEGY SELECTION
+
+Use the Phase 4 adaptive market regime engine.
+
+Different market conditions should prioritize appropriate strategy families.
+
+### Bullish Trend
+
+Prioritize:
+
+- Bullish continuation.
+- Bullish pullback.
+- Bullish breakout retest.
+
+### Bearish Trend
+
+Prioritize:
+
+- Bearish continuation.
+- Waterfall SELL.
+- Bearish pullback.
+
+### Range
+
+Prioritize:
+
+- Range-edge sweep.
+- Rejection.
+- Failed breakout.
+
+### Breakout Expansion
+
+Prioritize:
+
+- Momentum breakout.
+- First pullback.
+- Continuation.
+
+### Uncertain / High-Risk Conditions
+
+Prioritize WAIT unless a strategy-specific eligible setup independently qualifies.
+
+Do not automatically disable every countertrend signal.
+
+A valid countertrend reversal should remain possible, with the required separate reversal evidence.
+
+### Critical
+
+Do not make the adaptive engine optimize itself using future backtest outcomes.
+
+Preserve bounded parameters and historical settings snapshots.
+
+---
+
+# 15. STRATEGY QUALITY COMPARISON
+
+Determine which existing strategies produce the most useful outcomes on actual historical data.
+
+Evaluate individually:
+
+- OB + MSS.
+- FVG Imbalance.
+- Candle Psychology Reversal.
+- Waterfall Early.
+- Waterfall First Pullback.
+- SMC Sweep + MSS.
+- BOS Continuation.
+- Sweep + OB + FVG.
+- Other implemented strategy families.
+
+Your CSV currently contains many OB+MSS signals.
+
+Investigate whether that reflects legitimate setup frequency, overly permissive detection, duplicated structures, incorrect candidate approval or scoring behavior.
+
+Do not disable OB+MSS merely because it generates the most signals.
+
+Evaluate each strategy by:
+
+- Valid setups.
+- Approval rate.
+- Execution rate.
+- Net expectancy.
+- Profit Factor.
+- Drawdown.
+- Transaction costs.
+- Trade frequency.
+- Out-of-sample stability.
+
+Only adjust strategy eligibility and weights based on documented rules and properly separated validation data.
+
+---
+
+# 16. WALK-FORWARD & OUT-OF-SAMPLE VERIFICATION
+
+Use Phase 10 walk-forward testing.
+
+Separate:
+
+- Training.
+- Validation.
+- Out-of-sample testing.
+
+Ensure:
+
+- No future price leakage.
+- No future outcome leakage.
+- No tuning on the final test dataset.
+- Realistic transaction costs.
+- Adequate sample-size checks.
+- Consistent entry/exit policies.
+
+Compare the existing configuration with the revised quality-first system on identical datasets.
+
+Report:
+
+- Signal reduction.
+- Approved signal count.
+- Execution rate.
+- Win rate.
+- Net expectancy.
+- Profit Factor.
+- Drawdown.
+- Sharpe/Sortino when defined.
+- Performance by strategy.
+- OOS results.
+
+Reducing signals is not automatically an improvement.
+
+The goal is fewer misleading recommendations and better validated decision quality.
+
+A 90% win rate with poor expectancy is not necessarily better than a 50% win rate with positive expectancy.
+
+---
+
+# 17. PERFORMANCE OPTIMIZATION
+
+The decision engine must remain fast.
+
+Avoid:
+
+- Re-running all detectors when opening settings.
+- Recalculating all historical signals when hiding chart markers.
+- Repeated duplicate suppression per render.
+- Repeated full-history scanning for every completed candle.
+- Redundant ATR calculations.
+- Rebuilding all signal objects on every replay step.
+- Excessive Canvas text drawing.
+- Unbounded candidate/event logs.
+
+Use:
+
+- Shared indicator calculations.
+- Incremental updates.
+- Stable setup IDs.
+- Cached structure events.
+- Bounded calculation caches.
+- Efficient candidate indexes.
+- Viewport-based chart rendering.
+- Memoized derived UI data when appropriate.
+- Web Workers for measured computational bottlenecks if justified.
+
+Preserve the existing Finage two-day API chunking, caching and timestamp merging.
+
+---
+
+# 18. REQUIRED TESTS
+
+Implement tests for the observed failures and the corrected behavior.
+
+### Approval and Grades
+
+- Scores below required thresholds are not automatically approved.
+- Grade mappings use the correct score version.
+- A+ classification is consistent.
+- WATCH and REJECTED states actually occur on appropriate fixtures.
+
+### Deduplication
+
+- Same setup across repeated candles creates one primary record.
+- Suppressed event is not appended repeatedly.
+- Independent trade opportunities remain possible.
+
+### Conflicts
+
+- Conflicting same-setup BUY/SELL candidates are correctly handled.
+- Separate timeframe setups remain independent.
+- Reversal signals require their own confirmation.
+
+### Signal Timing
+
+- Confirmations use completed candles.
+- No future data leakage.
+- Replay and batch results agree.
+
+### Execution
+
+- Approved signal can create an eligible entry order.
+- Unfilled entries remain unfilled.
+- Triggered trades record correct fills.
+- Closed trades produce correct P/L.
+- Execution costs are included or explicitly marked as unavailable.
+
+### Reporting
+
+- Candidate count differs correctly from executed trade count.
+- Suppressed signals never appear as executed trades.
+- No-trade reports show N/A for undefined metrics.
+- CSV has exactly the declared columns.
+- Time fields are correctly escaped.
+- Trading-style metadata is present when known.
+- Report source run ID matches the selected run.
+
+### Regression
+
+- Scalping works.
+- Intraday works.
+- Swing works.
+- AUTO/HYBRID/MANUAL modes work.
+- Waterfall signals work.
+- SMC signals work.
+- Finage data loading works.
+- Two-day historical requests work.
+- Chart zoom and pan work.
+- Entry/SL/TP visibility toggles work.
+- Historical replay works.
+- Full report generation/download works.
+
+Use deterministic fixtures and available historical data.
+
+---
+
+# 19. IMPLEMENTATION ORDER
+
+Follow this exact priority order:
+
+## P0 — Correctness and Root-Cause Repair
+
+1. Audit the CSV and HTML report discrepancies.
+2. Trace candidate → approval → execution → report.
+3. Fix invalid grading and scoring conversions.
+4. Fix unconditional or excessively permissive approvals.
+5. Fix repeated suppression events.
+6. Fix missing metadata and malformed CSV.
+7. Fix executed-trade/report misclassification.
+
+## P1 — Signal Quality
+
+8. Implement strategy-specific validation gates.
+9. Implement proper WATCH/WAIT/REJECTED states.
+10. Improve correlated-evidence scoring.
+11. Implement conflict handling.
+12. Add entry freshness and anti-chase protection.
+13. Improve setup identity and deduplication.
+14. Integrate validated regime suitability.
+
+## P2 — Clear UI
+
+15. Default to Quality First display.
+16. Show only approved trade markers.
+17. Hide rejected/internal detector events.
+18. Show selected-trade Entry/SL/TP.
+19. Simplify the Signal Center.
+20. Separate Scalping, Intraday and Swing.
+21. Show clear reasons for each decision.
+
+## P3 — Testing and Validation
+
+22. Run end-to-end trade simulation tests.
+23. Verify report metrics.
+24. Run fixed versus revised comparisons.
+25. Run walk-forward validation.
+26. Evaluate trading costs.
+27. Compare quality grades against actual outcomes.
+28. Benchmark speed and memory.
+29. Run regression tests.
+30. Run lint, type-check and production build.
+
+Do not stop after simply hiding signals from the chart.
+
+Fix the underlying signal decision and reporting behavior.
+
+---
+
+# 20. STRICT RESTRICTIONS
+
+DO NOT:
+
+- Rewrite the complete application.
+- Remove existing trading strategies.
+- Break Finage integration.
+- Break two-day API chunking.
+- Break timestamp normalization.
+- Break historical candle merging.
+- Break the Canvas chart.
+- Break replay.
+- Force a BUY or SELL every few candles.
+- Force equal BUY/SELL counts.
+- Use future candle information.
+- Regrade old scores silently.
+- Increase thresholds blindly.
+- Require all SMC indicators for every signal.
+- Hide rejected signals from diagnostic history.
+- Count suppressed signals as trades.
+- Count unfilled entries as wins or losses.
+- Manufacture A+ signals.
+- Invent 70%, 80% or 90% accuracy.
+- Fabricate trading performance.
+- Use future results to eliminate past losing trades.
+- Automatically increase position risk.
+- Break existing risk-management rules.
+- Disable all signals merely to make the chart look clean.
+- Introduce unnecessary dependencies.
+- Claim production readiness without tests.
+
+---
+
+# 21. FINAL COMPLETION REQUIREMENTS
+
+The task is complete only when:
+
+1. The root causes of signal overload have been identified.
+2. Approval is meaningfully selective.
+3. Signal grades match their documented scoring scale.
+4. Independent BUY and SELL detection works.
+5. Genuine conflicts are explained.
+6. Duplicate setup publication is prevented.
+7. Repeated suppressed events no longer flood reports.
+8. Trading styles are correctly recorded.
+9. Chart visibility defaults are clean.
+10. High-quality approved setups are distinguishable from candidates.
+11. Entry/SL/TP planning remains correct.
+12. Approved signals are connected correctly to execution simulation.
+13. Trade reports accurately distinguish signals from executed trades.
+14. Undefined performance metrics display N/A.
+15. Historical replay remains non-repainting.
+16. Existing Phases 1–10 remain functional.
+17. The revised system is compared with the previous system using consistent data.
+18. Out-of-sample performance is reported transparently.
+19. Performance and responsiveness remain acceptable.
+20. Tests and production build complete, or failures are accurately documented.
+
+## REQUIRED FINAL REPORT
+
+After implementation, provide:
+
+- Verified root causes.
+- Files modified.
+- Signal approval rules fixed.
+- Scoring/grade conversion fixed.
+- Deduplication changes.
+- Conflict-resolution changes.
+- CSV/report corrections.
+- Before/after approved signal counts.
+- Before/after A+ counts.
+- BUY vs SELL comparison.
+- Triggered and closed trade counts.
+- Cost-adjusted performance.
+- Walk-forward test results.
+- Chart UI changes.
+- Replay regression results.
+- Remaining limitations.
+
+**FINAL OBJECTIVE**
+
+Turn the existing TradeZella Canvas platform into a clean, explainable and empirically validated signal finder.
+
+I want fewer confusing signals, fewer repeated arrows, genuine approval and rejection logic, correct quality grades, understandable BUY/SELL decisions, and actual historical evidence about which strategies perform well.
+
+The chart should show high-quality approved opportunities by default, while raw candidates remain accessible for investigation.
+
+Preserve all existing trading capabilities, but improve the complete decision flow from raw pattern detection to final trade result.
+
+**DO NOT FINISH UNTIL THE ROOT CAUSES OF THE CURRENT CSV AND REPORT ISSUES HAVE BEEN INVESTIGATED AND THE VERIFIED DEFECTS FIXED.**

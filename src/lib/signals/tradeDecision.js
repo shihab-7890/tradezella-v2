@@ -7,86 +7,97 @@ import { DECISION_STATUS, CONFLICT_TYPES } from './types.js';
 
 export function getAdaptiveScoreThreshold(activeSettings = {}, regimeInfo = {}) {
   // If caller explicitly provides a threshold, prioritize it
-  if (activeSettings.confluenceScoreThreshold !== undefined) {
-    const raw = Number(activeSettings.confluenceScoreThreshold);
-    if (raw <= 5) return raw * 20; // 0-5 scale mapped to 0-100 (e.g. 2.5 -> 50, 4.0 -> 80)
-    if (raw <= 10) return raw * 10; // 0-10 scale mapped to 0-100
-    return raw;
-  }
   if (activeSettings.unifiedScoreThreshold !== undefined) {
     return activeSettings.unifiedScoreThreshold;
   }
+  if (activeSettings.confluenceScoreThreshold !== undefined && activeSettings.confluenceScoreThreshold <= 10) {
+    const raw = Number(activeSettings.confluenceScoreThreshold);
+    if (raw <= 5) return raw * 20; // 0-5 scale mapped to 0-100
+    if (raw <= 10) return raw * 10; // 0-10 scale mapped to 0-100
+    return raw;
+  }
 
   const mode = activeSettings.settingsMode || activeSettings.autoMode || activeSettings.adaptiveMode || 'AUTO';
-  const preset = activeSettings.qualityPreset || 'Balanced'; // 'Light' | 'Balanced' | 'Selective'
+  const preset = activeSettings.qualityPreset || 'QUALITY_FIRST'; // 'QUALITY_FIRST' | 'Balanced' | 'Selective' | 'Light'
 
   if (mode === 'MANUAL') {
     if (preset === 'Light') return 50;
-    if (preset === 'Selective') return 75;
-    return 60;
+    if (preset === 'Balanced') return 65;
+    if (preset === 'QUALITY_FIRST' || preset === 'Selective') return 75;
+    return 75;
   }
 
-  // AUTO / HYBRID: Regime-aware bounded threshold
+  // AUTO / HYBRID: Regime-aware bounded threshold (Default 75 for QUALITY_FIRST)
   const regime = regimeInfo?.regime || 'Ranging';
-  let baseThreshold = 60;
+  let baseThreshold = 75;
   if (preset === 'Light') baseThreshold = 50;
-  if (preset === 'Selective') baseThreshold = 75;
+  if (preset === 'Balanced') baseThreshold = 65;
+  if (preset === 'QUALITY_FIRST' || preset === 'Selective') baseThreshold = 75;
 
   if (regime.includes('Strong Trend')) {
-    return Math.max(45, baseThreshold - 5); // Slightly more permissive during strong momentum
+    return Math.max(50, baseThreshold - 5); // Slightly more permissive during strong momentum
   }
   if (regime.includes('High Volatility') || regime === 'Ranging') {
-    return Math.min(75, baseThreshold + 5); // Stricter in chop or high volatility
+    return Math.min(85, baseThreshold + 5); // Stricter in chop or high volatility
   }
 
   return baseThreshold;
 }
 
 /**
- * Evaluates trade decision for each candidate in accordance with the 6-priority hierarchy.
+ * Evaluates trade decision for each candidate in accordance with the Multi-Gate Quality Pipeline (Gates A-E).
  */
 export function evaluateTradeDecision(candidate, threshold, activeSettings = {}) {
   const { direction, unifiedScore = 0, conflictType, conflictResolution, evidence } = candidate;
 
-  // Priority 1: Data Integrity
+  // Gate A: Data Integrity (Valid OHLCV & non-null price/timestamp)
   if (!candidate.price || candidate.price <= 0 || (candidate.time !== undefined && (candidate.time === null || isNaN(candidate.time) || candidate.time <= 0))) {
     return {
       decision: DECISION_STATUS.REJECTED,
       isApproved: false,
       reasonCode: 'REJECT_DATA_INTEGRITY',
-      explanation: 'Rejected: Missing or malformed price/timestamp data.',
+      explanation: 'Rejected (Gate A): Missing or malformed price/timestamp data.',
     };
   }
 
-  // Priority 2: Setup Validity
+  // Gate B: Strategy Setup Validity (Confirmed setup pattern, valid direction)
   const isCandidateOnly = candidate.type?.toLowerCase().includes('candidate');
   if (isCandidateOnly) {
     return {
       decision: direction === 'BUY' ? DECISION_STATUS.WATCH : DECISION_STATUS.WATCH,
       isApproved: false,
       reasonCode: 'WATCH_PENDING_CONFIRMATION',
-      explanation: `Watch: ${direction} setup developing; awaiting final MSS / close confirmation.`,
+      explanation: `Watch (Gate B): ${direction} setup developing; awaiting final close/MSS confirmation.`,
     };
   }
 
-  // Priority 3: Risk & Execution Feasibility
+  // Gate C: Freshness & Level Consumption
+  if (evidence?.marketStructure && evidence.marketStructure.isFresh === false) {
+    return {
+      decision: DECISION_STATUS.REJECTED,
+      isApproved: false,
+      reasonCode: 'REJECT_STALE_LEVEL',
+      explanation: `Rejected (Gate C): Key structure level or zone already consumed/invalidated.`,
+    };
+  }
+
+  // Gate D: Entry & Risk Feasibility (R:R >= 1.1, non-zero SL/TP, conflict subordination checks)
   const rr = candidate.riskReward || 0;
   if (rr > 0 && rr < 1.1) {
     return {
       decision: DECISION_STATUS.REJECTED,
       isApproved: false,
       reasonCode: 'REJECT_INADEQUATE_RR',
-      explanation: `Rejected: Risk-to-reward ratio (${rr.toFixed(1)}:1) is below minimal threshold (1.1:1).`,
+      explanation: `Rejected (Gate D): Risk-to-reward ratio (${rr.toFixed(1)}:1) is below minimal threshold (1.1:1).`,
     };
   }
 
-  // Priority 4: Conflict Resolution
   if (conflictType === CONFLICT_TYPES.SAME_SETUP_OPPOSITE && conflictResolution === 'WAIT_AMBIGUOUS_CONTRADICTION') {
     return {
       decision: DECISION_STATUS.WAIT,
       isApproved: false,
       reasonCode: 'WAIT_AMBIGUOUS_CONFLICT',
-      explanation: `Wait: Opposing ${direction} and counter-direction setups active at same price zone with equal weight.`,
+      explanation: `Wait (Gate D): Opposing ${direction} and counter-direction setups active at same price zone with equal weight.`,
     };
   }
 
@@ -95,11 +106,11 @@ export function evaluateTradeDecision(candidate, threshold, activeSettings = {})
       decision: DECISION_STATUS.REJECTED,
       isApproved: false,
       reasonCode: 'REJECT_SUBORDINATED_CONFLICT',
-      explanation: `Rejected: Subordinated to higher-confidence counter-trend setup at the same level.`,
+      explanation: `Rejected (Gate D): Subordinated to higher-confidence counter-trend setup at the same level.`,
     };
   }
 
-  // Priority 5: Quality Score Ranking vs Threshold
+  // Gate E: Decision Quality / Confluence Score Ranking vs Threshold
   const meetsThreshold = unifiedScore >= threshold;
 
   if (!meetsThreshold) {
@@ -108,18 +119,18 @@ export function evaluateTradeDecision(candidate, threshold, activeSettings = {})
         decision: direction === 'BUY' ? 'WATCH BUY' : 'WATCH SELL',
         isApproved: false,
         reasonCode: 'WATCH_SCORE_MODERATE',
-        explanation: `Watch: Setup score (${unifiedScore.toFixed(1)}/100) is eligible for observation but below approval threshold (${threshold}).`,
+        explanation: `Watch (Gate E): Quality score (${unifiedScore.toFixed(1)}/100) is eligible for observation but below approval threshold (${threshold}).`,
       };
     }
     return {
       decision: DECISION_STATUS.REJECTED,
       isApproved: false,
       reasonCode: 'REJECT_SCORE_BELOW_THRESHOLD',
-      explanation: `Rejected: Quality score (${unifiedScore.toFixed(1)}/100) is below minimum threshold (${threshold}).`,
+      explanation: `Rejected (Gate E): Quality score (${unifiedScore.toFixed(1)}/100) is below minimum threshold (${threshold}).`,
     };
   }
 
-  // Priority 6: APPROVED DECISION
+  // Gate E Passed: APPROVED DECISION
   const decision = direction === 'BUY' ? 'BUY APPROVED' : 'SELL APPROVED';
   const strat = candidate.strategy || 'Confluence';
   const confList = (candidate.confirmations || []).join(' + ');

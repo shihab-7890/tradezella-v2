@@ -55,18 +55,33 @@ export function detectFairValueGaps(candles, settings = {}) {
     }
   }
 
-  // FVG Lifecycle & IFVG Qualification
+  // FVG Lifecycle & IFVG Qualification with active-list tracking
+  const activeFvgs = [];
+  let fvgPointer = 0;
+
   for (let i = 0; i < candles.length; i++) {
     const c = candles[i];
 
-    for (const fvg of fvgs) {
-      if (fvg.confirmationTime > c.time || fvg.status === 'FULLY_MITIGATED' || fvg.status === 'INVALIDATED') continue;
+    // Add newly confirmed FVGs to active list
+    while (fvgPointer < fvgs.length && fvgs[fvgPointer].confirmationTime <= c.time) {
+      activeFvgs.push(fvgs[fvgPointer]);
+      fvgPointer++;
+    }
+
+    // Process active FVGs
+    for (let k = activeFvgs.length - 1; k >= 0; k--) {
+      const fvg = activeFvgs[k];
+      if (fvg.status === 'FULLY_MITIGATED' || fvg.status === 'INVALIDATED') {
+        activeFvgs.splice(k, 1);
+        continue;
+      }
 
       if (fvg.direction === 'BUY') {
         if (c.low <= fvg.midpoint && c.low >= fvg.bottom) {
           fvg.status = 'PARTIAL_FILL';
         } else if (c.close < fvg.bottom) {
           fvg.status = 'INVALIDATED';
+          activeFvgs.splice(k, 1);
           // Qualifies as Inverse Bullish-to-Bearish FVG (IFVG)
           ifvgs.push({
             id: `ifvg-bear-${c.time}`,
@@ -85,6 +100,7 @@ export function detectFairValueGaps(candles, settings = {}) {
           fvg.status = 'PARTIAL_FILL';
         } else if (c.close > fvg.top) {
           fvg.status = 'INVALIDATED';
+          activeFvgs.splice(k, 1);
           // Qualifies as Inverse Bearish-to-Bullish FVG (IFVG)
           ifvgs.push({
             id: `ifvg-bull-${c.time}`,
